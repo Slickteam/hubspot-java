@@ -1,0 +1,31 @@
+### Gradle ###
+
+.gradle
+**/build/
+!src/**/build/
+
+# Ignore Gradle GUI config
+gradle-app.setting
+
+# Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
+!gradle-wrapper.jar
+
+# Cache of project
+.gradletasknamecache
+
+
+### Intellij ###
+
+# .idea folder
+.idea/
+
+# File-based project format
+*.iws
+*.iml
+
+# IntelliJ
+out/
+target/
+
+# mpeltonen/sbt-idea plugin
+.idea_modules/
