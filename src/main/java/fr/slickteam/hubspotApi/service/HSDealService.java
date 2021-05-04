@@ -118,7 +118,7 @@ public class HSDealService {
 
     public void delete(Long id) throws HubSpotException {
         if (id == 0) {
-            throw new HubSpotException("User ID must be provided");
+            throw new HubSpotException("Deal ID must be provided");
         }
         String url = DEAL_URL + id;
 

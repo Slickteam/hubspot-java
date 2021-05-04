@@ -113,7 +113,7 @@ public class HSCompanyServiceIT {
         HSCompany company = new HSCompany();
 
         exception.expect(HubSpotException.class);
-        exception.expectMessage(StringContains.containsString("User ID must be provided"));
+        exception.expectMessage(StringContains.containsString("Company ID must be provided"));
         hubSpot.company().delete(company);
     }
 }

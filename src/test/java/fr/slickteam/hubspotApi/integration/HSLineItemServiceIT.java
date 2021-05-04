@@ -233,7 +233,7 @@ public class HSLineItemServiceIT {
         HSLineItem lineItem = new HSLineItem().setHsProductId(testProductId);
 
         exception.expect(HubSpotException.class);
-        exception.expectMessage(StringContains.containsString("User ID must be provided"));
+        exception.expectMessage(StringContains.containsString("Line item ID must be provided"));
         hubSpot.lineItem().delete(lineItem);
     }
 

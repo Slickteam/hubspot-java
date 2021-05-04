@@ -219,7 +219,7 @@ public class HSDealServiceIT {
         HSDeal deal = new HSDeal().setDealName(testDealName);
 
         exception.expect(HubSpotException.class);
-        exception.expectMessage(StringContains.containsString("User ID must be provided"));
+        exception.expectMessage(StringContains.containsString("Deal ID must be provided"));
         hubSpot.deal().delete(deal);
     }
 }
