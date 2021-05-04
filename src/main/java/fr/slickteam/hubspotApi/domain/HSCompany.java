@@ -8,13 +8,13 @@ import java.util.Map;
  */
 public class HSCompany extends HSObject {
 
-    private static String ID = "vid";
-    private static String NAME = "name";
-    private static String PHONE_NUMBER = "phone";
-    private static String ADDRESS = "address";
-    private static String POSTAL_CODE = "zip";
-    private static String CITY = "city";
-    private static String COUNTRY = "country";
+    private static final String ID = "vid";
+    private static final String NAME = "name";
+    private static final String PHONE_NUMBER = "phone";
+    private static final String ADDRESS = "address";
+    private static final String POSTAL_CODE = "zip";
+    private static final String CITY = "city";
+    private static final String COUNTRY = "country";
 
     public HSCompany() {
     }

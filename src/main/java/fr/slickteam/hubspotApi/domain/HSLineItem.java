@@ -4,9 +4,9 @@ import java.util.Map;
 
 public class HSLineItem extends HSObject {
 
-    private static String ID = "vid";
-    private static String HS_PRODUCT_ID = "hs_product_id";
-    private static String QUANTITY = "quantity";
+    private static final String ID = "vid";
+    private static final String HS_PRODUCT_ID = "hs_product_id";
+    private static final String QUANTITY = "quantity";
 
     public HSLineItem() {
     }

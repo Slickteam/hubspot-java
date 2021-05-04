@@ -4,12 +4,12 @@ import java.util.Map;
 
 public class HSContact extends HSObject {
 
-    private static String ID = "vid";
-    private static String FIRST_NAME = "firstname";
-    private static String LAST_NAME = "lastname";
-    private static String EMAIL = "email";
-    private static String PHONE_NUMBER = "phone";
-    private static String LIFE_CYCLE_STAGE = "lifecyclestage";
+    private static final String ID = "vid";
+    private static final String FIRST_NAME = "firstname";
+    private static final String LAST_NAME = "lastname";
+    private static final String EMAIL = "email";
+    private static final String PHONE_NUMBER = "phone";
+    private static final String LIFE_CYCLE_STAGE = "lifecyclestage";
 
     public HSContact() {
     }

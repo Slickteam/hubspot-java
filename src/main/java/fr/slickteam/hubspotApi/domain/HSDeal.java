@@ -5,11 +5,11 @@ import java.util.Map;
 
 public class HSDeal extends HSObject {
 
-    private static String ID = "vid";
-    private static String DEAL_NAME = "dealname";
-    private static String DEAL_STAGE = "dealstage";
-    private static String PIPELINE = "pipeline";
-    private static String AMOUNT = "amount";
+    private static final String ID = "vid";
+    private static final String DEAL_NAME = "dealname";
+    private static final String DEAL_STAGE = "dealstage";
+    private static final String PIPELINE = "pipeline";
+    private static final String AMOUNT = "amount";
 
     public HSDeal() {
     }
