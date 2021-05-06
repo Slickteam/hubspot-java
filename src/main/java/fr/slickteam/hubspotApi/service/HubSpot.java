@@ -35,9 +35,12 @@ public class HubSpot {
         return new HSService(httpService);
     }
 
-
     public HSAssociationService association() {
         return new HSAssociationService(httpService);
+    }
+
+    public HSProductService product() {
+        return new HSProductService(httpService);
     }
 
 }
