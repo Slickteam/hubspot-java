@@ -83,25 +83,6 @@ public class HSLineItemServiceIT {
     }
 
     @Test
-    public void createLineItemIncorrectProperty_Test() throws Exception {
-        HSLineItem lineItem = new HSLineItem(testProductId, testQuantity);
-        lineItem.setProperty("badpropertyz", "Test value 1");
-
-        exception.expect(HubSpotException.class);
-        hubSpot.lineItem().create(lineItem);
-    }
-
-    @Test
-    @Ignore
-    public void createLineItemMissedRequiredProperty_Test() throws Exception {
-        HSLineItem lineItem = new HSLineItem();
-
-        exception.expect(HubSpotException.class);
-        hubSpot.lineItem().create(lineItem);
-    }
-
-
-    @Test
     public void getLineItem_Id_Test() throws Exception {
         long lineItemId = hubSpot
                 .lineItem()
@@ -170,23 +151,6 @@ public class HSLineItemServiceIT {
 
         exception.expect(HubSpotException.class);
         hubSpot.lineItem().patch(missedLineItem);
-    }
-
-    @Test
-    public void patchLineItemIncorrectProperty_Test() throws Exception {
-        String test_property = "badpropertyz";
-        String test_value = "Test value 1";
-        HSLineItem lineItem = hubSpot
-                .lineItem()
-                .create(new HSLineItem(testProductId, testQuantity));
-        createdLineItemId = lineItem.getId();
-
-        HSLineItem editLineItem = new HSLineItem();
-        editLineItem.setId(lineItem.getId());
-        editLineItem.setProperty(test_property, test_value);
-
-        exception.expect(HubSpotException.class);
-        hubSpot.lineItem().patch(editLineItem);
     }
 
     @Test
