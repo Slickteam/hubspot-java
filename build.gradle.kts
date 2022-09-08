@@ -8,6 +8,7 @@ plugins {
 
 repositories {
     jcenter()
+    mavenCentral()
 }
 
 group = "fr.slickteam.hubspotApi"
@@ -15,18 +16,18 @@ version = "1.3.2"
 description = "hubspot-java"
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 }
 
 dependencies {
-    implementation("com.google.guava:guava:29.0-jre")
-    implementation("org.json:json:20200518")
+    implementation("com.google.guava:guava:31.1-jre")
+    implementation("org.json:json:20220320")
     implementation("com.mashape.unirest:unirest-java:1.4.9")
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.11.2")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.13.4")
     implementation("org.codehaus.jackson:jackson-mapper-asl:1.9.13")
     implementation("org.mockito:mockito-core:3.4.6")
-    testImplementation ("junit:junit:4.12")
+    testImplementation ("junit:junit:4.13.2")
 }
 
 tasks.withType<JavaCompile> {
