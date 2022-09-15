@@ -2,6 +2,11 @@ package fr.slickteam.hubspotApi.service;
 
 import fr.slickteam.hubspotApi.utils.HubSpotException;
 
+/**
+ * HSAssociationService - HubSpot association service
+ *
+ * Service to associate hubspot objects.
+ */
 public class HSAssociationService {
 
     private static final String BASE_PATH = "/crm/v3/objects/";
@@ -20,11 +25,23 @@ public class HSAssociationService {
     private HttpService httpService;
     private HSService hsService;
 
+    /**
+     * Constructor with HTTPService injected
+     *
+     * @param httpService - HTTP service for HubSpot API
+     */
     public HSAssociationService(HttpService httpService) {
         this.httpService = httpService;
         this.hsService = new HSService(httpService);
     }
 
+    /**
+     * Associate a contact and a company
+     *
+     * @param contactId - ID of the contact to link
+     * @param companyId - ID of the company to link
+     * @throws HubSpotException - if HTTP call fails
+     */
     public void contactToCompany(long contactId, long companyId) throws HubSpotException {
         String url =
                 BASE_PATH + CONTACTS + contactId + "/" + ASSOCIATION + COMPANIES + companyId + "/" + CONTACT_TO_COMPANY;
@@ -32,6 +49,13 @@ public class HSAssociationService {
         httpService.putRequest(url);
     }
 
+    /**
+     * Associate a deal and a contact
+     *
+     * @param dealId - ID of the deal to link
+     * @param contactId - ID of the contact to link
+     * @throws HubSpotException - if HTTP call fails
+     */
     public void dealToContact(long dealId, long contactId) throws HubSpotException {
         String url =
                 BASE_PATH + DEAL + dealId + "/" + ASSOCIATION + CONTACT + contactId + "/" + DEAL_TO_CONTACT;
@@ -39,6 +63,13 @@ public class HSAssociationService {
         httpService.putRequest(url);
     }
 
+    /**
+     * Associate a deal and a lineItem
+     *
+     * @param dealId - ID of the deal to link
+     * @param lineItemId - ID of the lineItem to link
+     * @throws HubSpotException - if HTTP call fails
+     */
     public void dealToLineItem(long dealId, long lineItemId) throws HubSpotException {
         String url =
                 BASE_PATH + DEAL + dealId + "/" + ASSOCIATION + LINE_ITEM + lineItemId + "/" + DEAL_TO_LINE_ITEM;

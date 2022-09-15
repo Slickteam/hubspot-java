@@ -15,6 +15,9 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.function.BiFunction;
 
+/**
+ * Service for handling requests to HubSpot API.
+ */
 public class HttpService {
 
     private final String apiBase;

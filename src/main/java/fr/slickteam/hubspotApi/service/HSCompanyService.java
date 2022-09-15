@@ -8,28 +8,58 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * HubSpot Company Service
+ *
+ * Service for managing HubSpot companies
+ */
 public class HSCompanyService {
 
     private final static String COMPANY_URL = "/crm/v3/objects/companies/";
     private HttpService httpService;
     private HSService hsService;
 
+    /**
+     * Constructor with HTTPService injected
+     *
+     * @param httpService - HTTP service for HubSpot API
+     */
     public HSCompanyService(HttpService httpService) {
         this.httpService = httpService;
         hsService = new HSService(httpService);
     }
 
-	public HSCompany create(HSCompany HSCompany) throws HubSpotException {
-		JSONObject jsonObject = (JSONObject) httpService.postRequest(COMPANY_URL, HSCompany.toJsonString());
-		HSCompany.setId(jsonObject.getLong("id"));
-		return HSCompany;
+    /**
+     * Create a new company
+     *
+     * @param hsCompany - company to create
+     * @return created company
+     * @throws HubSpotException - if HTTP call fails
+     */
+	public HSCompany create(HSCompany hsCompany) throws HubSpotException {
+		JSONObject jsonObject = (JSONObject) httpService.postRequest(COMPANY_URL, hsCompany.toJsonString());
+		hsCompany.setId(jsonObject.getLong("id"));
+		return hsCompany;
     }
 
+    /**
+     * Add a contact to a company
+     *
+     * @param contactId - ID of the contact to add
+     * @param companyId - ID of the company
+     * @throws HubSpotException - if HTTP call fails
+     */
 	public void addContact(long contactId, long companyId) throws HubSpotException {
 		String url = "/companies/v2/companies/" + companyId + "/contacts/" + contactId;
 		httpService.putRequest(url, "");
 	}
 
+    /**
+     * Parse company data from HubSpot API response
+     *
+     * @param jsonBody - body from HubSpot API response
+     * @return the company
+     */
 	public HSCompany parseCompanyData(JSONObject jsonBody) {
 		HSCompany company = new HSCompany();
 
@@ -39,6 +69,13 @@ public class HSCompanyService {
 		return company;
 	}
 
+    /**
+     * Get HubSpot company by its ID.
+     *
+     * @param id - ID of the company
+     * @return the company
+     * @throws HubSpotException - if HTTP call fails
+     */
     public HSCompany getByID(long id) throws HubSpotException{
         String url = COMPANY_URL + id ;
         return getCompany(url);
@@ -56,6 +93,13 @@ public class HSCompanyService {
         }
     }
 
+    /**
+     * Get companies by their domain.
+     *
+     * @param domain - domain of companies
+     * @return List of companies for the domain
+     * @throws HubSpotException - if HTTP call fails
+     */
 	public List<HSCompany> getByDomain(String domain) throws HubSpotException {
 		List<HSCompany> companies = new ArrayList<>();
 		String url = COMPANY_URL + domain;
@@ -67,6 +111,13 @@ public class HSCompanyService {
 		return companies;
 	}
 
+    /**
+     * Patch a company.
+     *
+     * @param company - company to update
+     * @return Updated company
+     * @throws HubSpotException - if HTTP call fails
+     */
 	public HSCompany patch(HSCompany company) throws HubSpotException {
 		String url = COMPANY_URL + company.getId();
 		String properties = company.toJsonString();
@@ -79,10 +130,22 @@ public class HSCompanyService {
 		}
 	}
 
+    /**
+     * Delete a company.
+     *
+     * @param company - company to delete
+     * @throws HubSpotException - if HTTP call fails
+     */
     public void delete(HSCompany company) throws HubSpotException {
         delete(company.getId());
     }
 
+    /**
+     * Delete a company.
+     *
+     * @param id - ID of the company to delete
+     * @throws HubSpotException - if HTTP call fails
+     */
     public void delete(Long id) throws HubSpotException {
         if (id == 0) {
             throw new HubSpotException("Company ID must be provided");

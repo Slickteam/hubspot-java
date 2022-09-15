@@ -12,6 +12,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * HubSpot Deal Service
+ *
+ * Service for managing HubSpot deals
+ */
 public class HSDealService {
 
     private final static String LINE_ITEM_URL = "/crm/v3/objects/line_items/";
@@ -21,11 +26,23 @@ public class HSDealService {
     private HttpService httpService;
     private HSService hsService;
 
+    /**
+     * Constructor with HTTPService injected
+     *
+     * @param httpService - HTTP service for HubSpot API
+     */
     public HSDealService(HttpService httpService) {
         this.httpService = httpService;
         hsService = new HSService(httpService);
     }
 
+    /**
+     * Get HubSpot deal by its ID.
+     *
+     * @param id - ID of the deal
+     * @return the deal
+     * @throws HubSpotException - if HTTP call fails
+     */
     public HSDeal getByID(long id) throws HubSpotException {
         String url = DEAL_URL + id;
         return getDeal(url);
@@ -43,6 +60,13 @@ public class HSDealService {
         }
     }
 
+    /**
+     * Get HubSpot LineItems for a deal.
+     *
+     * @param deal - HubSpot deal
+     * @return list of HubSpot LineItems
+     * @throws HubSpotException - if HTTP call fails
+     */
     public List<HSLineItem> getHSLineItemsForHSDeal(HSDeal deal) throws HubSpotException {
         String filter = getFiltersLineItemsAssociatedWithDeal(deal);
         String url = LINE_ITEM_URL + SEARCH;
@@ -84,12 +108,25 @@ public class HSDealService {
         return HubSpotHelper.mapFiltersToJson(filterFields).toString();
     }
 
-    public HSDeal create(HSDeal HSDeal) throws HubSpotException {
-        JSONObject jsonObject = (JSONObject) httpService.postRequest(DEAL_URL, HSDeal.toJsonString());
+    /**
+     * Create a new deal
+     *
+     * @param hsDeal - deal to create
+     * @return created deal
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public HSDeal create(HSDeal hsDeal) throws HubSpotException {
+        JSONObject jsonObject = (JSONObject) httpService.postRequest(DEAL_URL, hsDeal.toJsonString());
 
         return parseDealData(jsonObject);
     }
 
+    /**
+     * Parse deal data from HubSpot API response
+     *
+     * @param jsonBody - body from HubSpot API response
+     * @return the company
+     */
     public HSDeal parseDealData(JSONObject jsonBody) {
         HSDeal deal = new HSDeal();
 
@@ -99,6 +136,13 @@ public class HSDealService {
         return deal;
     }
 
+    /**
+     * Patch a deal.
+     *
+     * @param deal - deal to update
+     * @return Updated deal
+     * @throws HubSpotException - if HTTP call fails
+     */
     public HSDeal patch(HSDeal deal) throws HubSpotException {
         String url = DEAL_URL + deal.getId();
 
@@ -112,10 +156,22 @@ public class HSDealService {
         }
     }
 
+    /**
+     * Delete a deal.
+     *
+     * @param deal - deal to delete
+     * @throws HubSpotException - if HTTP call fails
+     */
     public void delete(HSDeal deal) throws HubSpotException {
         delete(deal.getId());
     }
 
+    /**
+     * Delete a deal.
+     *
+     * @param id - ID of the deal to delete
+     * @throws HubSpotException - if HTTP call fails
+     */
     public void delete(Long id) throws HubSpotException {
         if (id == 0) {
             throw new HubSpotException("Deal ID must be provided");

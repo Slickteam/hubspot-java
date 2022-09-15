@@ -5,6 +5,9 @@ import fr.slickteam.hubspotApi.utils.HubSpotProperties;
 import java.io.File;
 import java.util.Properties;
 
+/**
+ * Class for OAuth2 properties configuration.
+ */
 public class OAuthConfig {
 
     private String accessToken;

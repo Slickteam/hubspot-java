@@ -3,6 +3,8 @@ package fr.slickteam.hubspotApi.domain;
 import java.util.Map;
 
 /**
+ * Model class for HubSpot Company
+ *
  * Author: dlunev
  * Date: 4/26/16 11:34 AM
  */
