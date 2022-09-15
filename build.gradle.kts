@@ -2,8 +2,6 @@ plugins {
     `java-library`
     `maven-publish`
     signing
-    id("nebula.info") version "11.4.1"
-    id("nebula.maven-scm") version "18.4.0"
 }
 
 repositories {
@@ -42,6 +40,32 @@ publishing {
         create<MavenPublication>("maven") {
             from(components["java"])
             withBuildIdentifier()
+            pom {
+                name.set("hubspot-java")
+                description.set("Java Wrapper for HubSpot API")
+                url.set("https://github.com/Slickteam/hubspot-java")
+                licenses {
+                    license {
+                        name.set("GNU GENERAL PUBLIC LICENSE, Version 3, 29 June 2007")
+                        url.set("https://www.gnu.org/licenses/gpl-3.0.txt")
+                    }
+                }
+                developers {
+                    developer {
+                        id.set("DepositFix")
+                        name.set("DepositFix")
+                    }
+                    developer {
+                        id.set("Slickteam")
+                        name.set("Slickteam")
+                    }
+                }
+                scm {
+                    connection.set("scm:git:https://github.com/Slickteam/hubspot-java.git")
+                    developerConnection.set("scm:git:git@github.com:Slickteam/hubspot-java.git")
+                    url.set("https://github.com/Slickteam/hubspot-java")
+                }
+            }
         }
     }
     repositories {
@@ -53,6 +77,7 @@ publishing {
                 username = ossrhLogin
                 password = ossrhPassword
             }
+
         }
     }
 }
