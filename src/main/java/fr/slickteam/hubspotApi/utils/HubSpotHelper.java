@@ -11,8 +11,8 @@
 package fr.slickteam.hubspotApi.utils;
 
 import com.google.common.base.Strings;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import kong.unirest.json.JSONArray;
+import kong.unirest.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,14 +26,14 @@ public class HubSpotHelper {
                 .put("value", value);
     }
 
-    public static void putJsonObject(JSONArray ja, String property, String value){
-        if(!Strings.isNullOrEmpty(value) && !value.equals("null")){
+    public static void putJsonObject(JSONArray ja, String property, String value) {
+        if (!Strings.isNullOrEmpty(value) && !value.equals("null")) {
             ja.put(getJsonObject(property, value));
         }
     }
 
-    public static JSONObject putJsonObject(JSONObject jo, String property, Object value){
-        if(!Strings.isNullOrEmpty(value + "") && !value.equals("null")){
+    public static JSONObject putJsonObject(JSONObject jo, String property, Object value) {
+        if (!Strings.isNullOrEmpty(value + "") && !value.equals("null")) {
             jo.put(property, value);
         }
 

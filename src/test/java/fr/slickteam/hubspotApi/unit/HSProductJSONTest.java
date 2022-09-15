@@ -1,17 +1,14 @@
 package fr.slickteam.hubspotApi.unit;
 
-import fr.slickteam.hubspotApi.domain.HSCompany;
 import fr.slickteam.hubspotApi.domain.HSProduct;
-import fr.slickteam.hubspotApi.service.HSCompanyService;
 import fr.slickteam.hubspotApi.service.HSProductService;
 import fr.slickteam.hubspotApi.service.HubSpot;
 import fr.slickteam.hubspotApi.utils.Helper;
-import org.json.JSONObject;
+import kong.unirest.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 
 import static org.junit.Assert.assertEquals;
 

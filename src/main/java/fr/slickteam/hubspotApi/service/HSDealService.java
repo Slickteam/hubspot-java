@@ -4,8 +4,8 @@ import fr.slickteam.hubspotApi.domain.HSDeal;
 import fr.slickteam.hubspotApi.domain.HSLineItem;
 import fr.slickteam.hubspotApi.utils.HubSpotException;
 import fr.slickteam.hubspotApi.utils.HubSpotHelper;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import kong.unirest.json.JSONArray;
+import kong.unirest.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,7 +14,7 @@ import java.util.Map;
 
 /**
  * HubSpot Deal Service
- *
+ * <p>
  * Service for managing HubSpot deals
  */
 public class HSDealService {
@@ -23,8 +23,8 @@ public class HSDealService {
     private final static String DEAL_URL = "/crm/v3/objects/deals/";
     private final static String SEARCH = "search/";
 
-    private HttpService httpService;
-    private HSService hsService;
+    private final HttpService httpService;
+    private final HSService hsService;
 
     /**
      * Constructor with HTTPService injected

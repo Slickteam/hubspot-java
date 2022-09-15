@@ -2,13 +2,14 @@ package fr.slickteam.hubspotApi.service;
 
 import fr.slickteam.hubspotApi.domain.HSObject;
 import fr.slickteam.hubspotApi.utils.HubSpotException;
-import org.json.JSONObject;
+import kong.unirest.json.JSONObject;
 
+import java.util.Optional;
 import java.util.Set;
 
 public class HSService {
 
-    private HttpService httpService;
+    private final HttpService httpService;
 
     public HSService(HttpService httpService) {
         this.httpService = httpService;
@@ -19,13 +20,15 @@ public class HSService {
 
         Set<String> keys = jsonProperties.keySet();
 
-        keys.stream().forEach(key ->
-                                      hsObject.setProperty(key,
-                                                           jsonProperties.get(key) instanceof JSONObject ?
-                                                                   ((JSONObject) jsonProperties.get(key)).getString(
-                                                                           "value") :
-                                                                   jsonProperties.get(key).toString()
-                                      )
+        keys.forEach(key ->
+                hsObject.setProperty(key,
+                        jsonProperties.get(key) instanceof JSONObject ?
+                                ((JSONObject) jsonProperties.get(key)).getString(
+                                        "value") :
+                                Optional.ofNullable(jsonProperties.get(key))
+                                        .map(Object::toString)
+                                        .orElse(null)
+                )
         );
         return hsObject;
     }

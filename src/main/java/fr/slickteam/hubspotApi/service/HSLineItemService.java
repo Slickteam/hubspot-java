@@ -2,18 +2,18 @@ package fr.slickteam.hubspotApi.service;
 
 import fr.slickteam.hubspotApi.domain.HSLineItem;
 import fr.slickteam.hubspotApi.utils.HubSpotException;
-import org.json.JSONObject;
+import kong.unirest.json.JSONObject;
 
 /**
  * HubSpot LineItem Service
- *
+ * <p>
  * Service for managing HubSpot line items
  */
 public class HSLineItemService {
 
     private final static String LINE_ITEM_URL = "/crm/v3/objects/line_items/";
-    private HttpService httpService;
-    private HSService hsService;
+    private final HttpService httpService;
+    private final HSService hsService;
 
     /**
      * Constructor with HTTPService injected
@@ -32,8 +32,8 @@ public class HSLineItemService {
      * @return the line item
      * @throws HubSpotException - if HTTP call fails
      */
-    public HSLineItem getByID(long id) throws HubSpotException{
-        String url = LINE_ITEM_URL + id ;
+    public HSLineItem getByID(long id) throws HubSpotException {
+        String url = LINE_ITEM_URL + id;
         return getLineItem(url);
     }
 

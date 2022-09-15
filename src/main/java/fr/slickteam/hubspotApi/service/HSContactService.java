@@ -3,13 +3,13 @@ package fr.slickteam.hubspotApi.service;
 import com.google.common.base.Strings;
 import fr.slickteam.hubspotApi.domain.HSContact;
 import fr.slickteam.hubspotApi.utils.HubSpotException;
-import org.json.JSONObject;
+import kong.unirest.json.JSONObject;
 
 import java.util.Optional;
 
 /**
  * HubSpot Contact Service
- *
+ * <p>
  * Service for managing HubSpot contacts
  */
 public class HSContactService {
@@ -38,8 +38,8 @@ public class HSContactService {
      * @return the contact
      * @throws HubSpotException - if HTTP call fails
      */
-    public HSContact getByID(long id) throws HubSpotException{
-        String url = CONTACT_URL + id ;
+    public HSContact getByID(long id) throws HubSpotException {
+        String url = CONTACT_URL + id;
         return getContact(url);
     }
 

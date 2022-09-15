@@ -2,7 +2,7 @@ package fr.slickteam.hubspotApi.domain;
 
 import com.google.common.base.Strings;
 import fr.slickteam.hubspotApi.utils.HubSpotHelper;
-import org.json.JSONObject;
+import kong.unirest.json.JSONObject;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -23,7 +23,7 @@ public class HSObject {
     }
 
     public HSObject addProperties(Map<String, String> properties) {
-        properties.forEach((k, v) -> this.setProperty(k, v));
+        properties.forEach(this::setProperty);
         return this;
     }
 

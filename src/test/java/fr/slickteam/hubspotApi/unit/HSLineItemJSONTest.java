@@ -2,10 +2,9 @@ package fr.slickteam.hubspotApi.unit;
 
 import fr.slickteam.hubspotApi.domain.HSLineItem;
 import fr.slickteam.hubspotApi.service.HSLineItemService;
-import fr.slickteam.hubspotApi.service.HttpService;
 import fr.slickteam.hubspotApi.service.HubSpot;
 import fr.slickteam.hubspotApi.utils.Helper;
-import org.json.JSONObject;
+import kong.unirest.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -29,8 +28,8 @@ public class HSLineItemJSONTest {
         JSONObject jsonObject = new JSONObject(inputData);
 
         HSLineItem lineItem = service.parseLineItemData(jsonObject);
-        assertEquals(lineItem.getId(),71);
-        assertEquals(lineItem.getProperty("test"),"1");
+        assertEquals(lineItem.getId(), 71);
+        assertEquals(lineItem.getProperty("test"), "1");
     }
 
     @Test

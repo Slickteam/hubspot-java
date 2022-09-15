@@ -1,12 +1,10 @@
 package fr.slickteam.hubspotApi.unit;
 
 import fr.slickteam.hubspotApi.domain.HSDeal;
-import fr.slickteam.hubspotApi.domain.HSObject;
 import fr.slickteam.hubspotApi.service.HSDealService;
 import fr.slickteam.hubspotApi.service.HubSpot;
 import fr.slickteam.hubspotApi.utils.Helper;
-import fr.slickteam.hubspotApi.utils.HubSpotException;
-import org.json.JSONObject;
+import kong.unirest.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 

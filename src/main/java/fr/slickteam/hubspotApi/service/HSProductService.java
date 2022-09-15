@@ -2,20 +2,19 @@ package fr.slickteam.hubspotApi.service;
 
 import fr.slickteam.hubspotApi.domain.HSProduct;
 import fr.slickteam.hubspotApi.utils.HubSpotException;
-import org.json.JSONObject;
+import kong.unirest.json.JSONObject;
 
 /**
  * HubSpot Product Service
- *
+ * <p>
  * Service for managing HubSpot products
  */
 public class HSProductService {
 
     private final static String PRODUCT_URL = "/crm/v3/objects/products/";
-    private final static String SEARCH = "search/";
 
-    private HttpService httpService;
-    private HSService hsService;
+    private final HttpService httpService;
+    private final HSService hsService;
 
     /**
      * Constructor with HTTPService injected

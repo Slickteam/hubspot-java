@@ -4,7 +4,7 @@ import fr.slickteam.hubspotApi.domain.HSContact;
 import fr.slickteam.hubspotApi.service.HSContactService;
 import fr.slickteam.hubspotApi.service.HubSpot;
 import fr.slickteam.hubspotApi.utils.Helper;
-import org.json.JSONObject;
+import kong.unirest.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -14,7 +14,7 @@ import static org.junit.Assert.assertEquals;
 
 public class HSContactJSONTest {
 
-    HSContactService service ;
+    HSContactService service;
 
     @Before
     public void setUp() throws IOException {
@@ -27,8 +27,8 @@ public class HSContactJSONTest {
         JSONObject jsonObject = new JSONObject(inputData);
 
         HSContact contact = service.parseContactData(jsonObject);
-        assertEquals(contact.getId(),71);
-        assertEquals(contact.getProperty("test"),"1");
+        assertEquals(contact.getId(), 71);
+        assertEquals(contact.getProperty("test"), "1");
     }
 
     @Test

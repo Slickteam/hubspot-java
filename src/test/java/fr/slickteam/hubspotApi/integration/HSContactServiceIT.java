@@ -1,7 +1,7 @@
 package fr.slickteam.hubspotApi.integration;
 
-import fr.slickteam.hubspotApi.service.HSContactService;
 import fr.slickteam.hubspotApi.domain.HSContact;
+import fr.slickteam.hubspotApi.service.HSContactService;
 import fr.slickteam.hubspotApi.service.HubSpot;
 import fr.slickteam.hubspotApi.utils.Helper;
 import fr.slickteam.hubspotApi.utils.HubSpotException;
@@ -18,9 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class HSContactServiceIT {
 
@@ -77,7 +75,7 @@ public class HSContactServiceIT {
     @Test
     public void should_not_get_contact_by_email_when_contact_does_not_exist() throws Exception {
 
-        Optional<HSContact>  foundContact = hubSpot.contact().getByEmail(testEmail1);
+        Optional<HSContact> foundContact = hubSpot.contact().getByEmail(testEmail1);
 
         assertFalse(foundContact.isPresent());
     }
@@ -85,7 +83,7 @@ public class HSContactServiceIT {
     @Test
     public void should_not_get_contact_when_email_is_null() throws Exception {
 
-        Optional<HSContact>  foundContact = hubSpot.contact().getByEmail(null);
+        Optional<HSContact> foundContact = hubSpot.contact().getByEmail(null);
 
         assertFalse(foundContact.isPresent());
     }
@@ -186,10 +184,10 @@ public class HSContactServiceIT {
         createdContactIds.add(contact.getId());
         contact.setProperty(test_property, test_value);
         HSContact missedContact = new HSContact(contact.getEmail(),
-                                                contact.getFirstname(),
-                                                contact.getLastname(),
-                                                contact.getPhoneNumber(),
-                                                contact.getLifeCycleStage());
+                contact.getFirstname(),
+                contact.getLastname(),
+                contact.getPhoneNumber(),
+                contact.getLifeCycleStage());
 
         exception.expect(HubSpotException.class);
         hubSpot.contact().patch(missedContact);
@@ -215,10 +213,10 @@ public class HSContactServiceIT {
     @Test
     public void patchContact_Bad_Email_Test() throws Exception {
         HSContact contact = new HSContact(testBadEmail,
-                                          testFirstname,
-                                          testLastname,
-                                          testPhoneNumber,
-                                          testLifeCycleStage).setId(1);
+                testFirstname,
+                testLastname,
+                testPhoneNumber,
+                testLifeCycleStage).setId(1);
         exception.expect(HubSpotException.class);
         hubSpot.contact().create(contact);
         createdContactIds.add(contact.getId());
@@ -229,10 +227,10 @@ public class HSContactServiceIT {
     @Test
     public void patchContact_Not_Found_Test() throws Exception {
         HSContact contact = new HSContact(testBadEmail,
-                                          testFirstname,
-                                          testLastname,
-                                          testPhoneNumber,
-                                          testLifeCycleStage).setId(-777);
+                testFirstname,
+                testLastname,
+                testPhoneNumber,
+                testLifeCycleStage).setId(-777);
 
 
         HSContact editContact = new HSContact();
@@ -274,7 +272,7 @@ public class HSContactServiceIT {
         HSContact contact = new HSContact().setEmail(testEmail1);
 
         exception.expect(HubSpotException.class);
-        exception.expectMessage(StringContains.containsString("User ID must be provided"));
+        exception.expectMessage(StringContains.containsString("Contact ID must be provided"));
         hubSpot.contact().delete(contact);
     }
 }

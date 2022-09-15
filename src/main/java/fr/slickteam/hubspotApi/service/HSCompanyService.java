@@ -2,22 +2,22 @@ package fr.slickteam.hubspotApi.service;
 
 import fr.slickteam.hubspotApi.domain.HSCompany;
 import fr.slickteam.hubspotApi.utils.HubSpotException;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import kong.unirest.json.JSONArray;
+import kong.unirest.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * HubSpot Company Service
- *
+ * <p>
  * Service for managing HubSpot companies
  */
 public class HSCompanyService {
 
     private final static String COMPANY_URL = "/crm/v3/objects/companies/";
-    private HttpService httpService;
-    private HSService hsService;
+    private final HttpService httpService;
+    private final HSService hsService;
 
     /**
      * Constructor with HTTPService injected
@@ -36,10 +36,10 @@ public class HSCompanyService {
      * @return created company
      * @throws HubSpotException - if HTTP call fails
      */
-	public HSCompany create(HSCompany hsCompany) throws HubSpotException {
-		JSONObject jsonObject = (JSONObject) httpService.postRequest(COMPANY_URL, hsCompany.toJsonString());
-		hsCompany.setId(jsonObject.getLong("id"));
-		return hsCompany;
+    public HSCompany create(HSCompany hsCompany) throws HubSpotException {
+        JSONObject jsonObject = (JSONObject) httpService.postRequest(COMPANY_URL, hsCompany.toJsonString());
+        hsCompany.setId(jsonObject.getLong("id"));
+        return hsCompany;
     }
 
     /**
@@ -49,10 +49,10 @@ public class HSCompanyService {
      * @param companyId - ID of the company
      * @throws HubSpotException - if HTTP call fails
      */
-	public void addContact(long contactId, long companyId) throws HubSpotException {
-		String url = "/companies/v2/companies/" + companyId + "/contacts/" + contactId;
-		httpService.putRequest(url, "");
-	}
+    public void addContact(long contactId, long companyId) throws HubSpotException {
+        String url = "/companies/v2/companies/" + companyId + "/contacts/" + contactId;
+        httpService.putRequest(url, "");
+    }
 
     /**
      * Parse company data from HubSpot API response
@@ -60,14 +60,14 @@ public class HSCompanyService {
      * @param jsonBody - body from HubSpot API response
      * @return the company
      */
-	public HSCompany parseCompanyData(JSONObject jsonBody) {
-		HSCompany company = new HSCompany();
+    public HSCompany parseCompanyData(JSONObject jsonBody) {
+        HSCompany company = new HSCompany();
 
-		company.setId(jsonBody.getLong("id"));
+        company.setId(jsonBody.getLong("id"));
 
-		hsService.parseJSONData(jsonBody, company);
-		return company;
-	}
+        hsService.parseJSONData(jsonBody, company);
+        return company;
+    }
 
     /**
      * Get HubSpot company by its ID.
@@ -76,8 +76,8 @@ public class HSCompanyService {
      * @return the company
      * @throws HubSpotException - if HTTP call fails
      */
-    public HSCompany getByID(long id) throws HubSpotException{
-        String url = COMPANY_URL + id ;
+    public HSCompany getByID(long id) throws HubSpotException {
+        String url = COMPANY_URL + id;
         return getCompany(url);
     }
 
@@ -100,16 +100,16 @@ public class HSCompanyService {
      * @return List of companies for the domain
      * @throws HubSpotException - if HTTP call fails
      */
-	public List<HSCompany> getByDomain(String domain) throws HubSpotException {
-		List<HSCompany> companies = new ArrayList<>();
-		String url = COMPANY_URL + domain;
-		JSONArray jsonArray = (JSONArray)httpService.getRequest(url);
+    public List<HSCompany> getByDomain(String domain) throws HubSpotException {
+        List<HSCompany> companies = new ArrayList<>();
+        String url = COMPANY_URL + domain;
+        JSONArray jsonArray = (JSONArray) httpService.getRequest(url);
 
-		for (int i = 0; i < jsonArray.length(); i++) {
-			companies.add(parseCompanyData(jsonArray.optJSONObject(i)));
-		}
-		return companies;
-	}
+        for (int i = 0; i < jsonArray.length(); i++) {
+            companies.add(parseCompanyData(jsonArray.optJSONObject(i)));
+        }
+        return companies;
+    }
 
     /**
      * Patch a company.
@@ -118,17 +118,17 @@ public class HSCompanyService {
      * @return Updated company
      * @throws HubSpotException - if HTTP call fails
      */
-	public HSCompany patch(HSCompany company) throws HubSpotException {
-		String url = COMPANY_URL + company.getId();
-		String properties = company.toJsonString();
+    public HSCompany patch(HSCompany company) throws HubSpotException {
+        String url = COMPANY_URL + company.getId();
+        String properties = company.toJsonString();
 
-		try {
-			httpService.patchRequest(url, properties);
-			return company;
-		} catch (HubSpotException e) {
-			throw new HubSpotException("Cannot update company: " + company + ". Reason: " + e.getMessage(), e);
-		}
-	}
+        try {
+            httpService.patchRequest(url, properties);
+            return company;
+        } catch (HubSpotException e) {
+            throw new HubSpotException("Cannot update company: " + company + ". Reason: " + e.getMessage(), e);
+        }
+    }
 
     /**
      * Delete a company.

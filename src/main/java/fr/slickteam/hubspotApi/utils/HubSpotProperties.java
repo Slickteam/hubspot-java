@@ -1,10 +1,5 @@
 package fr.slickteam.hubspotApi.utils;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import java.util.HashMap;
-
 /**
  * Author: dlunev
  * Date: 8/18/15 3:27 PM
@@ -16,7 +11,7 @@ public class HubSpotProperties {
     private String clientId;
     private String clientSecret;
     private String redirectUrl;
-    private String refreshToken;  
+    private String refreshToken;
 
     public String getApiBase() {
         return apiBase;

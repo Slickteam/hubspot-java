@@ -24,10 +24,7 @@ java {
 
 dependencies {
     implementation("com.google.guava:guava:31.1-jre")
-    implementation("org.json:json:20220320")
-    implementation("com.mashape.unirest:unirest-java:1.4.9")
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.13.4")
-    implementation("org.codehaus.jackson:jackson-mapper-asl:1.9.13")
+    implementation("com.konghq:unirest-java:3.13.11")
     implementation("org.mockito:mockito-core:3.4.6")
     testImplementation ("junit:junit:4.13.2")
 }
@@ -52,7 +49,7 @@ publishing {
             val releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
             val snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
             url = uri(if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
-            credentials{
+            credentials {
                 username = ossrhLogin
                 password = ossrhPassword
             }
