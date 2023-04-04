@@ -8,8 +8,8 @@ repositories {
     mavenCentral()
 }
 
-group = "fr.slickteam.hubspotApi"
-version = "1.3.4-SNAPSHOT"
+group = "fr.slickteam.hubspot.api"
+version = "1.4.0-SNAPSHOT"
 description = "Java Wrapper for HubSpot API"
 
 java {
