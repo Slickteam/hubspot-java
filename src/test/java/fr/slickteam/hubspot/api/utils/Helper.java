@@ -22,12 +22,12 @@ public class Helper {
     public static HubSpotProperties provideHubspotProperties() throws IOException {
         HubSpotProperties hubSpotProperties = new HubSpotProperties();
 
-        hubSpotProperties.setApiBase(HubSpotPropertiesHelper.loadPropertyValue("hubspot.apiBase"));
-        hubSpotProperties.setAccessToken(HubSpotPropertiesHelper.loadPropertyValue("hubspot.accessToken"));
-        hubSpotProperties.setClientId(HubSpotPropertiesHelper.loadPropertyValue("hubspot.clientId"));
-        hubSpotProperties.setClientSecret(HubSpotPropertiesHelper.loadPropertyValue("hubspot.clientSecret"));
-        hubSpotProperties.setRedirectUrl(HubSpotPropertiesHelper.loadPropertyValue("hubspot.redirectUrl"));
-        hubSpotProperties.setRefreshToken(HubSpotPropertiesHelper.loadPropertyValue("hubspot.refreshToken"));
+        hubSpotProperties.setApiBase(HubSpotPropertiesHelper.loadPropertyValue("apiBase"));
+        hubSpotProperties.setAccessToken(HubSpotPropertiesHelper.loadPropertyValue("accessToken"));
+        hubSpotProperties.setClientId(HubSpotPropertiesHelper.loadPropertyValue("clientId"));
+        hubSpotProperties.setClientSecret(HubSpotPropertiesHelper.loadPropertyValue("clientSecret"));
+        hubSpotProperties.setRedirectUrl(HubSpotPropertiesHelper.loadPropertyValue("redirectUrl"));
+        hubSpotProperties.setRefreshToken(HubSpotPropertiesHelper.loadPropertyValue("refreshToken"));
 
         return hubSpotProperties;
     }

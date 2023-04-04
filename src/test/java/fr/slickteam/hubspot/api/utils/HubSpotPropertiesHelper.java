@@ -21,6 +21,10 @@ public class HubSpotPropertiesHelper {
     }
 
     public static String loadPropertyValue(String propertyName) throws IOException {
-        return loadProperties().getProperty(propertyName);
+        String valueFromFile = loadProperties().getProperty(propertyName);
+        if (valueFromFile != null && valueFromFile.isBlank()) {
+            return System.getenv(propertyName);
+        }
+        return valueFromFile;
     }
 }
