@@ -2,7 +2,7 @@ package fr.slickteam.hubspot.api.integration;
 
 import fr.slickteam.hubspot.api.domain.*;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
-import fr.slickteam.hubspotApi.domain.*;
+import fr.slickteam.hubspot.api.domain.*;
 import fr.slickteam.hubspot.api.service.HubSpot;
 import fr.slickteam.hubspot.api.utils.Helper;
 import org.junit.After;
