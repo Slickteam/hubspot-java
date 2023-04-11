@@ -7,7 +7,7 @@ stages:
   - publish
 
 variables:
-  VERSION: 1.4.0
+  VERSION: 2.0.0
   GRADLE_OPTS: "-Dorg.gradle.daemon=false"
   # GRADLE_USER_HOME: /cache/.gradle
   CREDENTIAL_PROPERTIES: "-PmavenReleasesRepositoryUsername=$NEXUS_BOT_LOGIN -PmavenReleasesRepositoryPassword=$NEXUS_BOT_PASSWORD -PmavenSnapshotsRepositoryUsername=$NEXUS_BOT_LOGIN -PmavenSnapshotsRepositoryPassword=$NEXUS_BOT_PASSWORD"
