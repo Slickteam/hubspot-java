@@ -5,6 +5,8 @@ import fr.slickteam.hubspot.api.utils.HubSpotHelper;
 import kong.unirest.json.JSONObject;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Date;
@@ -53,12 +55,9 @@ public class HSObject {
         return !Strings.isNullOrEmpty(getProperty(property)) ? new BigDecimal(getProperty(property)) : BigDecimal.valueOf(0);
     }
 
-    public Date getBigDecimalProperty(String property) {
-        return !Strings.isNullOrEmpty(getProperty(property)) ? new BigDecimal(getProperty(property)) : BigDecimal.valueOf(0);
-    }
-
-    public long getDateProperty(Date property) {
-        return !Strings.isNullOrEmpty(getProperty(property)) ? new Date(getProperty(property)) : new Date();
+    public LocalDateTime getDateProperty(String property) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        return !Strings.isNullOrEmpty(getProperty(property)) ? LocalDateTime.parse((getProperty(property)), formatter) : LocalDateTime.now();
     }
 
     public String toJsonString() {

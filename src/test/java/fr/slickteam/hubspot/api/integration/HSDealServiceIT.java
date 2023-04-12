@@ -14,6 +14,7 @@ import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -24,7 +25,7 @@ public class HSDealServiceIT {
     private final String testDealName = "Test deal";
     private final String testDealStage = "qualifiedtobuy";
     private final String testPipeline = "default";
-    private final String testCloseDate = new Date();
+    private final LocalDateTime testCloseDate = LocalDateTime.now();
     private final BigDecimal testAmount = BigDecimal.valueOf(50);
     private Long createdDealId;
 
@@ -146,7 +147,8 @@ public class HSDealServiceIT {
         HSDeal missedDeal = new HSDeal(deal.getDealName(),
                                                 deal.getDealStage(),
                                                 deal.getPipeline(),
-                                                deal.getAmount());
+                                                deal.getAmount(),
+                                                deal.getCloseDate());
 
         exception.expect(HubSpotException.class);
         hubSpot.deal().patch(missedDeal);

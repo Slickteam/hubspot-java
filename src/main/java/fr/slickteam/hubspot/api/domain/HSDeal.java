@@ -1,8 +1,8 @@
 package fr.slickteam.hubspot.api.domain;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.Date;
 
 public class HSDeal extends HSObject {
 
@@ -11,12 +11,12 @@ public class HSDeal extends HSObject {
     private static final String DEAL_STAGE = "dealstage";
     private static final String PIPELINE = "pipeline";
     private static final String AMOUNT = "amount";
-    private static final String CLOSEDATE = "closedate";
+    private static final String CLOSE_DATE = "closedate";
 
     public HSDeal() {
     }
 
-    public HSDeal(String dealname, String dealstage, String pipeline, BigDecimal amount, Date closedate) {
+    public HSDeal(String dealname, String dealstage, String pipeline, BigDecimal amount, LocalDateTime closedate) {
         this.setDealName(dealname);
         this.setDealStage(dealstage);
         this.setPipeline(pipeline);
@@ -24,7 +24,7 @@ public class HSDeal extends HSObject {
         this.setCloseDate(closedate);
     }
 
-    public HSDeal(long id, String dealname, String dealstage, String pipeline, BigDecimal amount, Map<String, String> properties, Date closedate) {
+    public HSDeal(long id, String dealname, String dealstage, String pipeline, BigDecimal amount, Map<String, String> properties, LocalDateTime closedate) {
         super(properties);
         this.setId(id);
         this.setDealName(dealname);
@@ -79,10 +79,10 @@ public class HSDeal extends HSObject {
         return this;
     }
 
-    public Date getCloseDate() { return getDateProperty(CLOSEDATE); }
+    public LocalDateTime getCloseDate() { return getDateProperty(CLOSE_DATE); }
 
-    public HSDeal setCloseDate(Date closedate) {
-        setProperty(CLOSEDATE, closedate.toString());
+    public HSDeal setCloseDate(LocalDateTime closedate) {
+        setProperty(CLOSE_DATE, closedate.toString());
         return this;
     }
 }
