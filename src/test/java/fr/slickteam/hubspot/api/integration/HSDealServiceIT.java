@@ -24,6 +24,7 @@ public class HSDealServiceIT {
     private final String testDealName = "Test deal";
     private final String testDealStage = "qualifiedtobuy";
     private final String testPipeline = "default";
+    private final String testCloseDate = new Date();
     private final BigDecimal testAmount = BigDecimal.valueOf(50);
     private Long createdDealId;
 
@@ -48,7 +49,7 @@ public class HSDealServiceIT {
 
     @Test
     public void createDeal_Test() throws Exception {
-        HSDeal deal = new HSDeal(testDealName, testDealStage, testPipeline, testAmount);
+        HSDeal deal = new HSDeal(testDealName, testDealStage, testPipeline, testAmount, testCloseDate);
         deal = hubSpot.deal().create(deal);
 
         createdDealId = deal.getId();
@@ -59,7 +60,7 @@ public class HSDealServiceIT {
 
     @Test
     public void createDeal_NetworkError_Test() throws Exception {
-        HSDeal deal = new HSDeal(testDealName, testDealStage, testPipeline, testAmount);
+        HSDeal deal = new HSDeal(testDealName, testDealStage, testPipeline, testAmount, testCloseDate);
 
         HSDealService mockHSDealService = mock(HSDealService.class);
         Mockito.doThrow(new HubSpotException("Network error")).when(mockHSDealService).create(deal);
@@ -71,7 +72,7 @@ public class HSDealServiceIT {
 
     @Test
     public void createDealIncorrectProperty_Test() throws Exception {
-        HSDeal deal = new HSDeal(testDealName, testDealStage, testPipeline, testAmount);
+        HSDeal deal = new HSDeal(testDealName, testDealStage, testPipeline, testAmount, testCloseDate);
         deal.setProperty("badpropertyz", "Test value 1");
 
         exception.expect(HubSpotException.class);
@@ -82,7 +83,7 @@ public class HSDealServiceIT {
     public void getDeal_Id_Test() throws Exception {
         long dealId = hubSpot
                 .deal()
-                .create(new HSDeal(testDealName, testDealStage, testPipeline, testAmount))
+                .create(new HSDeal(testDealName, testDealStage, testPipeline, testAmount, testCloseDate))
                 .getId();
         createdDealId = dealId;
 
@@ -105,7 +106,7 @@ public class HSDealServiceIT {
         String test_value = "new phone number";
         HSDeal deal = hubSpot
                 .deal()
-                .create(new HSDeal(testDealName, testDealStage, testPipeline, testAmount));
+                .create(new HSDeal(testDealName, testDealStage, testPipeline, testAmount, testCloseDate));
         createdDealId = deal.getId();
 
         HSDeal editDeal = new HSDeal();
@@ -121,7 +122,7 @@ public class HSDealServiceIT {
     public void patchDealIncorrectPredefinedFieldValue_Test() throws Exception {
         HSDeal deal = hubSpot
                 .deal()
-                .create(new HSDeal(testDealName, testDealStage, testPipeline, testAmount));
+                .create(new HSDeal(testDealName, testDealStage, testPipeline, testAmount, testCloseDate));
         createdDealId = deal.getId();
 
         HSDeal editDeal = new HSDeal();
@@ -139,7 +140,7 @@ public class HSDealServiceIT {
         String test_value = "Test value 1";
         HSDeal deal = hubSpot
                 .deal()
-                .create(new HSDeal(testDealName, testDealStage, testPipeline, testAmount));
+                .create(new HSDeal(testDealName, testDealStage, testPipeline, testAmount, testCloseDate));
         createdDealId = deal.getId();
         deal.setProperty(test_property, test_value);
         HSDeal missedDeal = new HSDeal(deal.getDealName(),
@@ -157,7 +158,7 @@ public class HSDealServiceIT {
         String test_value = "Test value 1";
         HSDeal deal = hubSpot
                 .deal()
-                .create(new HSDeal(testDealName, testDealStage, testPipeline, testAmount));
+                .create(new HSDeal(testDealName, testDealStage, testPipeline, testAmount, testCloseDate));
         createdDealId = deal.getId();
 
         HSDeal editDeal = new HSDeal();
@@ -170,7 +171,7 @@ public class HSDealServiceIT {
 
     @Test
     public void patchDeal_Bad_Stage_Test() throws Exception {
-        HSDeal deal = new HSDeal(testDealName, "wrong stage", testPipeline, testAmount).setId(1);
+        HSDeal deal = new HSDeal(testDealName, "wrong stage", testPipeline, testAmount, testCloseDate).setId(1);
         exception.expect(HubSpotException.class);
         hubSpot.deal().create(deal);
         createdDealId = deal.getId();
@@ -178,7 +179,7 @@ public class HSDealServiceIT {
 
     @Test
     public void patchDeal_Not_Found_Test() throws Exception {
-        HSDeal deal = new HSDeal(testDealName, testDealStage, testPipeline, testAmount).setId(-777);
+        HSDeal deal = new HSDeal(testDealName, testDealStage, testPipeline, testAmount, testCloseDate).setId(-777);
 
 
         HSDeal editDeal = new HSDeal();
@@ -193,7 +194,7 @@ public class HSDealServiceIT {
 
     @Test
     public void deleteDeal_Test() throws Exception {
-        HSDeal deal = new HSDeal(testDealName, testDealStage, testPipeline, testAmount);
+        HSDeal deal = new HSDeal(testDealName, testDealStage, testPipeline, testAmount, testCloseDate);
         deal = hubSpot.deal().create(deal);
         createdDealId = deal.getId();
 
@@ -205,7 +206,7 @@ public class HSDealServiceIT {
 
     @Test
     public void deleteDeal_by_id_Test() throws Exception {
-        HSDeal deal = new HSDeal(testDealName, testDealStage, testPipeline, testAmount);
+        HSDeal deal = new HSDeal(testDealName, testDealStage, testPipeline, testAmount, testCloseDate);
         deal = hubSpot.deal().create(deal);
         createdDealId = deal.getId();
 

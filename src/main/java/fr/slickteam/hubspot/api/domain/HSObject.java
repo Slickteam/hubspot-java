@@ -7,6 +7,7 @@ import kong.unirest.json.JSONObject;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Date;
 
 public class HSObject {
     protected Map<String, String> properties = new HashMap<>();
@@ -50,6 +51,14 @@ public class HSObject {
 
     public BigDecimal getBigDecimalProperty(String property) {
         return !Strings.isNullOrEmpty(getProperty(property)) ? new BigDecimal(getProperty(property)) : BigDecimal.valueOf(0);
+    }
+
+    public Date getBigDecimalProperty(String property) {
+        return !Strings.isNullOrEmpty(getProperty(property)) ? new BigDecimal(getProperty(property)) : BigDecimal.valueOf(0);
+    }
+
+    public long getDateProperty(Date property) {
+        return !Strings.isNullOrEmpty(getProperty(property)) ? new Date(getProperty(property)) : new Date();
     }
 
     public String toJsonString() {

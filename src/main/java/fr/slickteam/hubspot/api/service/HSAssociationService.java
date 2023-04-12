@@ -20,6 +20,7 @@ public class HSAssociationService {
     private static final String DEAL_TO_CONTACT = "deal_to_contact";
     private static final String CONTACT_TO_COMPANY = "contact_to_company";
 
+
     private static final String ASSOCIATION = "associations/";
 
     private HttpService httpService;

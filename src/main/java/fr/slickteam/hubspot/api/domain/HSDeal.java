@@ -2,6 +2,7 @@ package fr.slickteam.hubspot.api.domain;
 
 import java.math.BigDecimal;
 import java.util.Map;
+import java.util.Date;
 
 public class HSDeal extends HSObject {
 
@@ -10,24 +11,27 @@ public class HSDeal extends HSObject {
     private static final String DEAL_STAGE = "dealstage";
     private static final String PIPELINE = "pipeline";
     private static final String AMOUNT = "amount";
+    private static final String CLOSEDATE = "closedate";
 
     public HSDeal() {
     }
 
-    public HSDeal(String dealname, String dealstage, String pipeline, BigDecimal amount) {
+    public HSDeal(String dealname, String dealstage, String pipeline, BigDecimal amount, Date closedate) {
         this.setDealName(dealname);
         this.setDealStage(dealstage);
         this.setPipeline(pipeline);
         this.setAmount(amount);
+        this.setCloseDate(closedate);
     }
 
-    public HSDeal(long id, String dealname, String dealstage, String pipeline, BigDecimal amount, Map<String, String> properties) {
+    public HSDeal(long id, String dealname, String dealstage, String pipeline, BigDecimal amount, Map<String, String> properties, Date closedate) {
         super(properties);
         this.setId(id);
         this.setDealName(dealname);
         this.setDealStage(dealstage);
         this.setPipeline(pipeline);
         this.setAmount(amount);
+        this.setCloseDate(closedate);
     }
 
     public long getId() {
@@ -72,6 +76,13 @@ public class HSDeal extends HSObject {
 
     public HSDeal setAmount(BigDecimal amount) {
         setProperty(AMOUNT, amount.toString());
+        return this;
+    }
+
+    public Date getCloseDate() { return getDateProperty(CLOSEDATE); }
+
+    public HSDeal setCloseDate(Date closedate) {
+        setProperty(CLOSEDATE, closedate.toString());
         return this;
     }
 }
