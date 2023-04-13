@@ -14,6 +14,7 @@ import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 import static org.junit.Assert.*;
@@ -25,7 +26,7 @@ public class HSDealServiceIT {
     private final String testDealName = "Test deal";
     private final String testDealStage = "qualifiedtobuy";
     private final String testPipeline = "default";
-    private final LocalDateTime testCloseDate = LocalDateTime.now();
+    private final Instant testCloseDate = Instant.now();
     private final BigDecimal testAmount = BigDecimal.valueOf(50);
     private Long createdDealId;
 

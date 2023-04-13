@@ -1,8 +1,6 @@
 package fr.slickteam.hubspot.api.integration;
-
 import fr.slickteam.hubspot.api.domain.*;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
-import fr.slickteam.hubspot.api.domain.*;
 import fr.slickteam.hubspot.api.service.HubSpot;
 import fr.slickteam.hubspot.api.utils.Helper;
 import org.junit.After;
@@ -13,6 +11,7 @@ import org.junit.rules.ExpectedException;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDateTime;
 
 
 public class HSAssociationIT {
@@ -36,7 +35,7 @@ public class HSAssociationIT {
     private final String testDealStage = "qualifiedtobuy";
     private final String testPipeline = "default";
     private final BigDecimal testAmount = BigDecimal.valueOf(50);
-
+    private final Instant testClosedate = Instant.now();
     private String testProductId = null;
     private final long testQuantity = 1;
 
@@ -130,7 +129,7 @@ public class HSAssociationIT {
 
     @Test
     public void associate_deal_to_contact_success() throws HubSpotException {
-        HSDeal deal = hubSpot.deal().create(new HSDeal(testDealName, testDealStage, testPipeline, testAmount));
+        HSDeal deal = hubSpot.deal().create(new HSDeal(testDealName, testDealStage, testPipeline, testAmount, testClosedate));
         HSContact contact = hubSpot.contact().create(new HSContact(testEmail1,
                                                                    testFirstname,
                                                                    testLastname,
@@ -145,7 +144,7 @@ public class HSAssociationIT {
 
     @Test
     public void associate_deal_to_contact_bad_company_id_exception() throws HubSpotException {
-        HSDeal deal = hubSpot.deal().create(new HSDeal(testDealName, testDealStage, testPipeline, testAmount));
+        HSDeal deal = hubSpot.deal().create(new HSDeal(testDealName, testDealStage, testPipeline, testAmount, testClosedate));
 
         createdDealId = deal.getId();
 
@@ -172,7 +171,7 @@ public class HSAssociationIT {
 
     @Test
     public void associate_deal_to_line_item_success() throws HubSpotException {
-        HSDeal deal = hubSpot.deal().create(new HSDeal(testDealName, testDealStage, testPipeline, testAmount));
+        HSDeal deal = hubSpot.deal().create(new HSDeal(testDealName, testDealStage, testPipeline, testAmount, testClosedate));
         HSLineItem lineItem = hubSpot.lineItem().create(new HSLineItem(testProductId, testQuantity));
 
         createdDealId = deal.getId();
@@ -183,7 +182,7 @@ public class HSAssociationIT {
 
     @Test
     public void associate_deal_to_line_item_bad_company_id_exception() throws HubSpotException {
-        HSDeal deal = hubSpot.deal().create(new HSDeal(testDealName, testDealStage, testPipeline, testAmount));
+        HSDeal deal = hubSpot.deal().create(new HSDeal(testDealName, testDealStage, testPipeline, testAmount, testClosedate));
 
         createdDealId = deal.getId();
 

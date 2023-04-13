@@ -13,6 +13,8 @@ import org.junit.rules.ExpectedException;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static java.lang.Thread.sleep;
@@ -25,6 +27,7 @@ public class HSLineItemServiceIT {
     private final String testDealStage = "qualifiedtobuy";
     private final String testPipeline = "default";
     private final BigDecimal testAmount = BigDecimal.valueOf(75);
+    private final Instant testClosedate = Instant.now();
     private String testProductId = null;
     private final long testQuantity = 1;
     private Long createdLineItemId;
@@ -203,7 +206,7 @@ public class HSLineItemServiceIT {
 
     @Test
     public void getHSLineItemsForHSDeal_success() throws Exception {
-        HSDeal deal = hubSpot.deal().create(new HSDeal(testDealName, testDealStage, testPipeline, testAmount));
+        HSDeal deal = hubSpot.deal().create(new HSDeal(testDealName, testDealStage, testPipeline, testAmount, testClosedate));
         createdDealId = deal.getId();
         HSLineItem lineItem = hubSpot.lineItem().create(new HSLineItem(testProductId, testQuantity));
         createdLineItemId = lineItem.getId();
@@ -222,7 +225,7 @@ public class HSLineItemServiceIT {
 
     @Test
     public void getHSLineItemsForHSDeal_without_line_items_success() throws Exception {
-        HSDeal deal = hubSpot.deal().create(new HSDeal(testDealName, testDealStage, testPipeline, testAmount));
+        HSDeal deal = hubSpot.deal().create(new HSDeal(testDealName, testDealStage, testPipeline, testAmount, testClosedate));
         createdDealId = deal.getId();
 
         List<HSLineItem> results = hubSpot.deal().getHSLineItemsForHSDeal(deal);
