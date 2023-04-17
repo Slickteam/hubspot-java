@@ -6,6 +6,7 @@ import kong.unirest.json.JSONObject;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -46,15 +47,23 @@ public class HSObject {
     }
 
     public long getLongProperty(String property) {
-        return !Strings.isNullOrEmpty(getProperty(property)) ? Long.parseLong(getProperty(property)) : 0;
+        return Strings.isNullOrEmpty(getProperty(property)) ? 0 : Long.parseLong(getProperty(property)) ;
     }
 
     public BigDecimal getBigDecimalProperty(String property) {
-        return !Strings.isNullOrEmpty(getProperty(property)) ? new BigDecimal(getProperty(property)) : BigDecimal.valueOf(0);
+        return Strings.isNullOrEmpty(getProperty(property)) ? BigDecimal.valueOf(0) : new BigDecimal(getProperty(property));
     }
 
     public Instant getDateProperty(String property) {
-        return !Strings.isNullOrEmpty(getProperty(property)) ? Instant.parse((getProperty(property))) : Instant.now();
+        if (Strings.isNullOrEmpty(getProperty(property))) {
+            return Instant.now();
+        } else {
+            try {
+                return Instant.parse(getProperty(property));
+            } catch (DateTimeParseException e) {
+                throw new IllegalArgumentException("Invalid Instant value for property " + property);
+            }
+        }
     }
 
     public String toJsonString() {
