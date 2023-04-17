@@ -6,11 +6,8 @@ import kong.unirest.json.JSONObject;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Date;
 
 public class HSObject {
     protected Map<String, String> properties = new HashMap<>();

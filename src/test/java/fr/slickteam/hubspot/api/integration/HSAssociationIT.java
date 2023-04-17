@@ -11,7 +11,6 @@ import org.junit.rules.ExpectedException;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.LocalDateTime;
 
 
 public class HSAssociationIT {

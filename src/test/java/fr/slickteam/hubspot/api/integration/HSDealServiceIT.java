@@ -1,10 +1,10 @@
 package fr.slickteam.hubspot.api.integration;
 
-import fr.slickteam.hubspot.api.utils.HubSpotException;
 import fr.slickteam.hubspot.api.domain.HSDeal;
 import fr.slickteam.hubspot.api.service.HSDealService;
 import fr.slickteam.hubspot.api.service.HubSpot;
 import fr.slickteam.hubspot.api.utils.Helper;
+import fr.slickteam.hubspot.api.utils.HubSpotException;
 import org.hamcrest.core.StringContains;
 import org.junit.After;
 import org.junit.Before;
@@ -15,10 +15,10 @@ import org.mockito.Mockito;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.LocalDateTime;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class HSDealServiceIT {
 
