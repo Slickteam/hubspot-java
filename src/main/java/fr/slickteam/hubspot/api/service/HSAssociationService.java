@@ -9,13 +9,14 @@ import java.util.List;
 
 /**
  * HSAssociationService - HubSpot association service
- *
  * Service to associate hubspot objects.
  */
 public class HSAssociationService {
+    private class BasePath {
+        public static final String V3 = "/crm/v3/objects/";
+        public static final String V4 = "/crm/v4/objects/";
+    }
 
-    private static final String BASE_PATH_V3 = "/crm/v3/objects/";
-    private static final String BASE_PATH_V4 = "/crm/v4/objects/";
     private static final String CONTACT = "contact/";
     private static final String CONTACTS = "contacts/";
     private static final String COMPANIES = "companies/";
@@ -29,7 +30,7 @@ public class HSAssociationService {
 
     private static final String ASSOCIATION = "associations/";
 
-    private HttpService httpService;
+    private final HttpService httpService;
 
     /**
      * Constructor with HTTPService injected
@@ -49,7 +50,7 @@ public class HSAssociationService {
      */
     public void contactToCompany(long contactId, long companyId) throws HubSpotException {
         String url =
-                BASE_PATH_V3 + CONTACTS + contactId + "/" + ASSOCIATION + COMPANIES + companyId + "/" + CONTACT_TO_COMPANY;
+                BasePath.V3 + CONTACTS + contactId + "/" + ASSOCIATION + COMPANIES + companyId + "/" + CONTACT_TO_COMPANY;
 
         httpService.putRequest(url);
     }
@@ -62,7 +63,7 @@ public class HSAssociationService {
      */
     public List<String> contactToCompanyIdList(long contactId) throws HubSpotException {
         String url =
-                BASE_PATH_V4 + CONTACTS + contactId + "/" + ASSOCIATION + COMPANIES;
+                BasePath.V4 + CONTACTS + contactId + "/" + ASSOCIATION + COMPANIES;
         return getCompanyIdList(url);
     }
 
@@ -103,7 +104,7 @@ public class HSAssociationService {
      */
     public void dealToContact(long dealId, long contactId) throws HubSpotException {
         String url =
-                BASE_PATH_V3 + DEAL + dealId + "/" + ASSOCIATION + CONTACT + contactId + "/" + DEAL_TO_CONTACT;
+                BasePath.V3 + DEAL + dealId + "/" + ASSOCIATION + CONTACT + contactId + "/" + DEAL_TO_CONTACT;
 
         httpService.putRequest(url);
     }
@@ -117,7 +118,7 @@ public class HSAssociationService {
      */
     public void dealToLineItem(long dealId, long lineItemId) throws HubSpotException {
         String url =
-                BASE_PATH_V3 + DEAL + dealId + "/" + ASSOCIATION + LINE_ITEM + lineItemId + "/" + DEAL_TO_LINE_ITEM;
+                BasePath.V3 + DEAL + dealId + "/" + ASSOCIATION + LINE_ITEM + lineItemId + "/" + DEAL_TO_LINE_ITEM;
 
         httpService.putRequest(url);
     }
