@@ -1,6 +1,11 @@
 package fr.slickteam.hubspot.api.service;
 
 import fr.slickteam.hubspot.api.utils.HubSpotException;
+import kong.unirest.json.JSONArray;
+import kong.unirest.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * HSAssociationService - HubSpot association service
@@ -9,7 +14,8 @@ import fr.slickteam.hubspot.api.utils.HubSpotException;
  */
 public class HSAssociationService {
 
-    private static final String BASE_PATH = "/crm/v3/objects/";
+    private static final String BASE_PATH_V3 = "/crm/v3/objects/";
+    private static final String BASE_PATH_V4 = "/crm/v4/objects/";
     private static final String CONTACT = "contact/";
     private static final String CONTACTS = "contacts/";
     private static final String COMPANIES = "companies/";
@@ -24,7 +30,6 @@ public class HSAssociationService {
     private static final String ASSOCIATION = "associations/";
 
     private HttpService httpService;
-    private HSService hsService;
 
     /**
      * Constructor with HTTPService injected
@@ -33,7 +38,6 @@ public class HSAssociationService {
      */
     public HSAssociationService(HttpService httpService) {
         this.httpService = httpService;
-        this.hsService = new HSService(httpService);
     }
 
     /**
@@ -45,9 +49,49 @@ public class HSAssociationService {
      */
     public void contactToCompany(long contactId, long companyId) throws HubSpotException {
         String url =
-                BASE_PATH + CONTACTS + contactId + "/" + ASSOCIATION + COMPANIES + companyId + "/" + CONTACT_TO_COMPANY;
+                BASE_PATH_V3 + CONTACTS + contactId + "/" + ASSOCIATION + COMPANIES + companyId + "/" + CONTACT_TO_COMPANY;
 
         httpService.putRequest(url);
+    }
+
+    /**
+     * Associate a contact and a company
+     *
+     * @param contactId - ID of the contact to link
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public List<String> contactToCompanyIdList(long contactId) throws HubSpotException {
+        String url =
+                BASE_PATH_V4 + CONTACTS + contactId + "/" + ASSOCIATION + COMPANIES;
+        return getCompanyIdList(url);
+    }
+
+    private List<String> getCompanyIdList(String url) throws HubSpotException {
+        try {
+            return companiesDataToIdList((JSONArray) httpService.getRequest(url));
+        } catch (HubSpotException e) {
+            if (e.getMessage().equals("Not Found")) {
+                return new ArrayList<>();
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    /**
+     * Parse company json List from HubSpot API response to id list
+     *
+     * @param jsonArray - company array from HubSpot API response
+     * @return a list of companies id
+     */
+    public List<String> companiesDataToIdList(JSONArray jsonArray) {
+        List<String> companyIdList = new ArrayList<>();
+        for (Object company : jsonArray) {
+            JSONObject jsonCompany = (JSONObject) company;
+            long companyId = jsonCompany.getLong("id");
+            companyIdList.add(Long.toString(companyId));
+        }
+        return companyIdList;
     }
 
     /**
@@ -59,7 +103,7 @@ public class HSAssociationService {
      */
     public void dealToContact(long dealId, long contactId) throws HubSpotException {
         String url =
-                BASE_PATH + DEAL + dealId + "/" + ASSOCIATION + CONTACT + contactId + "/" + DEAL_TO_CONTACT;
+                BASE_PATH_V3 + DEAL + dealId + "/" + ASSOCIATION + CONTACT + contactId + "/" + DEAL_TO_CONTACT;
 
         httpService.putRequest(url);
     }
@@ -73,7 +117,7 @@ public class HSAssociationService {
      */
     public void dealToLineItem(long dealId, long lineItemId) throws HubSpotException {
         String url =
-                BASE_PATH + DEAL + dealId + "/" + ASSOCIATION + LINE_ITEM + lineItemId + "/" + DEAL_TO_LINE_ITEM;
+                BASE_PATH_V3 + DEAL + dealId + "/" + ASSOCIATION + LINE_ITEM + lineItemId + "/" + DEAL_TO_LINE_ITEM;
 
         httpService.putRequest(url);
     }
