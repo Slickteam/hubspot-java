@@ -12,7 +12,7 @@ import java.util.List;
  * Service to associate hubspot objects.
  */
 public class HSAssociationService {
-    private class BasePath {
+    private static class BasePath {
         public static final String V3 = "/crm/v3/objects/";
         public static final String V4 = "/crm/v4/objects/";
     }
