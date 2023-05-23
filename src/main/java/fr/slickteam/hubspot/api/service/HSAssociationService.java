@@ -61,15 +61,15 @@ public class HSAssociationService {
      * @param contactId - ID of the contact to link
      * @throws HubSpotException - if HTTP call fails
      */
-    public List<String> contactToCompanyIdList(long contactId) throws HubSpotException {
+    public List<Long> contactToCompanyIdList(long contactId) throws HubSpotException {
         String url =
                 BasePath.V4 + CONTACTS + contactId + "/" + ASSOCIATION + COMPANIES;
         return getCompanyIdList(url);
     }
 
-    private List<String> getCompanyIdList(String url) throws HubSpotException {
+    private List<Long> getCompanyIdList(String url) throws HubSpotException {
         try {
-            return companiesDataToIdList((JSONArray) httpService.getRequest(url));
+            return parseJsonArrayToIdList((JSONArray) httpService.getRequest(url));
         } catch (HubSpotException e) {
             if (e.getMessage().equals("Not Found")) {
                 return new ArrayList<>();
@@ -80,17 +80,16 @@ public class HSAssociationService {
     }
 
     /**
-     * Parse company json List from HubSpot API response to id list
+     * Parse json List from HubSpot API response to string id list
      *
      * @param jsonArray - company array from HubSpot API response
      * @return a list of companies id
      */
-    public List<String> companiesDataToIdList(JSONArray jsonArray) {
-        List<String> companyIdList = new ArrayList<>();
-        for (Object company : jsonArray) {
-            JSONObject jsonCompany = (JSONObject) company;
-            long companyId = jsonCompany.getLong("id");
-            companyIdList.add(Long.toString(companyId));
+    public List<Long> parseJsonArrayToIdList(JSONArray jsonArray) {
+        List<Long> companyIdList = new ArrayList<>();
+        for (Object objectId : jsonArray) {
+            JSONObject jsonId = (JSONObject) objectId;
+            companyIdList.add(jsonId.getLong("id"));
         }
         return companyIdList;
     }

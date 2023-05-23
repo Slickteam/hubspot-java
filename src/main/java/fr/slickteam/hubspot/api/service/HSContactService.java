@@ -1,10 +1,13 @@
 package fr.slickteam.hubspot.api.service;
 
 import com.google.common.base.Strings;
+import fr.slickteam.hubspot.api.domain.HSCompany;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
 import fr.slickteam.hubspot.api.domain.HSContact;
 import kong.unirest.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -14,21 +17,24 @@ import java.util.Optional;
  */
 public class HSContactService {
 
-    private final static String CONTACT_URL = "/crm/v3/objects/contacts/";
+    private static final String CONTACT_URL = "/crm/v3/objects/contacts/";
     public static final String ID_PROPERTY_EMAIL = "idProperty=email";
     public static final String PARAMETER_OPERATOR = "?";
     private final HttpService httpService;
     private final HSService hsService;
+    private final HSAssociationService associationService;
+    private final HSCompanyService companyService;
 
     /**
      * Constructor with HTTPService injected
      *
-     * @param httpService - HTTP service for HubSpot API
+     * @param httpService        - HTTP service for HubSpot API
      */
     public HSContactService(HttpService httpService) {
         this.httpService = httpService;
         hsService = new HSService(httpService);
-
+        associationService = new HSAssociationService(httpService);
+        companyService = new HSCompanyService(httpService);
     }
 
     /**
@@ -65,6 +71,26 @@ public class HSContactService {
                 throw e;
             }
         }
+    }
+
+    private List<HSCompany> getContactCompanies(Long contactId) throws HubSpotException {
+        List<HSCompany> companies = new ArrayList<>();
+
+        // Get the associated company IDs for the contact
+        List<Long> companyIds = associationService.contactToCompanyIdList(contactId);
+
+        // Retrieve company information for each ID
+        for (Long companyId : companyIds) {
+            HSCompany company = companyService.getByID(companyId);
+
+            if (company.getId() == 0) {
+                throw new HubSpotException("Company ID must be provided");
+            } else {
+                companies.add(company);
+            }
+        }
+
+        return companies;
     }
 
     /**
@@ -132,10 +158,10 @@ public class HSContactService {
      * @return the contact
      */
     public HSContact parseContactData(JSONObject jsonObject) {
-        HSContact HSContact = new HSContact();
-        HSContact.setId(jsonObject.getLong("id"));
+        HSContact hsContact = new HSContact();
+        hsContact.setId(jsonObject.getLong("id"));
 
-        hsService.parseJSONData(jsonObject, HSContact);
-        return HSContact;
+        hsService.parseJSONData(jsonObject, hsContact);
+        return hsContact;
     }
 }
