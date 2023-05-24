@@ -23,7 +23,7 @@ public class HSContactService {
     private final HttpService httpService;
     private final HSService hsService;
     private final HSAssociationService associationService;
-    private final HSCompanyService companyService;
+    private HSCompanyService companyService;
 
     /**
      * Constructor with HTTPService injected
@@ -34,7 +34,10 @@ public class HSContactService {
         this.httpService = httpService;
         hsService = new HSService(httpService);
         associationService = new HSAssociationService(httpService);
-        companyService = new HSCompanyService(httpService);
+    }
+
+    public void setCompanyService(HSCompanyService companyService) {
+        this.companyService = companyService;
     }
 
     /**

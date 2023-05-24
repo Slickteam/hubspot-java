@@ -14,13 +14,18 @@ public class HubSpot {
     }
 
     public HSCompanyService company() {
-        return new HSCompanyService(httpService);
+        HSContactService contactService = new HSContactService(httpService);
+        HSCompanyService companyService = new HSCompanyService(httpService);
+        companyService.setContactService(contactService);
+        return companyService;
     }
 
     public HSContactService contact() {
-        return new HSContactService(httpService);
+        HSCompanyService companyService = new HSCompanyService(httpService);
+        HSContactService contactService = new HSContactService(httpService);
+        contactService.setCompanyService(companyService);
+        return contactService;
     }
-
     public HSDealService deal() {
         return new HSDealService(httpService);
     }

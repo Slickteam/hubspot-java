@@ -62,7 +62,7 @@ public class HSAssociationService {
         String url =
                 BasePath.V4 + CONTACTS + contactId + "/" + ASSOCIATION + COMPANIES;
         try {
-            return parseJsonArrayToIdList((JSONArray) httpService.getRequest(url));
+            return parseJsonArrayToIdList((JSONObject) httpService.getRequest(url));
         } catch (HubSpotException e) {
             if (e.getMessage().equals("Not Found")) {
                 return new ArrayList<>();
@@ -82,7 +82,7 @@ public class HSAssociationService {
         String url =
                 BasePath.V4 + COMPANIES + companyId + "/" + ASSOCIATION + CONTACTS;
         try {
-            return parseJsonArrayToIdList((JSONArray) httpService.getRequest(url));
+            return parseJsonArrayToIdList((JSONObject) httpService.getRequest(url));
         } catch (HubSpotException e) {
             if (e.getMessage().equals("Not Found")) {
                 return new ArrayList<>();
@@ -95,7 +95,8 @@ public class HSAssociationService {
     /**
      * Parse a Json array to a list of long Ids
      **/
-    private List<Long> parseJsonArrayToIdList(JSONArray results) {
+    private List<Long> parseJsonArrayToIdList(JSONObject jsonObject) {
+        JSONArray results = (JSONArray) jsonObject.get("results");
         List<Long> idList = new ArrayList<>();
         for (Object result : results) {
             JSONObject resultObj = (JSONObject) result;
