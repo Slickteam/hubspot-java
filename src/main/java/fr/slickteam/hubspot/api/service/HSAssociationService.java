@@ -1,5 +1,6 @@
 package fr.slickteam.hubspot.api.service;
 
+import fr.slickteam.hubspot.api.domain.AssociatedCompany;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
 import kong.unirest.json.JSONArray;
 import kong.unirest.json.JSONObject;
@@ -22,14 +23,10 @@ public class HSAssociationService {
     private static final String COMPANIES = "companies/";
     private static final String DEAL = "deal/";
     private static final String LINE_ITEM = "line_item/";
-
     private static final String DEAL_TO_LINE_ITEM = "deal_to_line_item";
     private static final String DEAL_TO_CONTACT = "deal_to_contact";
     private static final String CONTACT_TO_COMPANY = "contact_to_company";
-
-
     private static final String ASSOCIATION = "associations/";
-
     private final HttpService httpService;
 
     /**
@@ -56,18 +53,14 @@ public class HSAssociationService {
     }
 
     /**
-     * Associate a contact and a company
+     * Get companies associated to a contact
      *
      * @param contactId - ID of the contact to link
      * @throws HubSpotException - if HTTP call fails
      */
-    public List<Long> contactToCompanyIdList(long contactId) throws HubSpotException {
+    public List<Long> getContactCompanyIdList(long contactId) throws HubSpotException {
         String url =
                 BasePath.V4 + CONTACTS + contactId + "/" + ASSOCIATION + COMPANIES;
-        return getCompanyIdList(url);
-    }
-
-    private List<Long> getCompanyIdList(String url) throws HubSpotException {
         try {
             return parseJsonArrayToIdList((JSONArray) httpService.getRequest(url));
         } catch (HubSpotException e) {
@@ -79,17 +72,47 @@ public class HSAssociationService {
         }
     }
 
+    //TODO: vérifier format object reçu
+    private List<Long> parseJsonArrayToIdList(JSONArray results) {
+        List<Long> idList = new ArrayList<>();
+        for (Object result : results) {
+            JSONObject resultObj = (JSONObject) result;
+            Long id = (Long) resultObj.get("toObjectId");
+            idList.add(id);
+        }
+        return idList;
+    }
+
+
     /**
-     * Parse json List from HubSpot API response to string id list
+     * Get all companies ids associated to a company
      *
-     * @param jsonArray - company array from HubSpot API response
-     * @return a list of companies id
+     * @param companyId - ID of the company
+     * @throws HubSpotException - if HTTP call fails
      */
-    public List<Long> parseJsonArrayToIdList(JSONArray jsonArray) {
-        List<Long> companyIdList = new ArrayList<>();
-        for (Object objectId : jsonArray) {
-            JSONObject jsonId = (JSONObject) objectId;
-            companyIdList.add(jsonId.getLong("id"));
+    public List<AssociatedCompany> getCompaniesToCompany(long companyId) throws HubSpotException {
+        String url =
+                BasePath.V4 + COMPANIES + companyId + "/" + ASSOCIATION + COMPANIES;
+        try {
+            return parseJsonToAssociatedCompanies((JSONArray) httpService.getRequest(url));
+        } catch (HubSpotException e) {
+            if (e.getMessage().equals("Not Found")) {
+                return new ArrayList<>();
+            } else {
+                throw e;
+            }
+        }
+    }
+    public List<AssociatedCompany> parseJsonToAssociatedCompanies(JSONArray results) {
+        List<AssociatedCompany> companyIdList = new ArrayList<>();
+        for (Object result : results) {
+            JSONObject resultObj = (JSONObject) result;
+            Long id = (Long) resultObj.get("toObjectId");
+            String type = (String) resultObj.get("associationTypes");
+            AssociatedCompany associatedCompany = new AssociatedCompany();
+            associatedCompany.getCompany().setId(id);
+            associatedCompany.setAssociationType(type.toUpperCase().replace(" ", "_"));
+            companyIdList.add(associatedCompany);
         }
         return companyIdList;
     }

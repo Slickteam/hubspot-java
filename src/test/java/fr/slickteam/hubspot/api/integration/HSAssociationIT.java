@@ -30,6 +30,8 @@ public class HSAssociationIT {
     private final String testCity = "city";
     private final String testCountry = "country";
 
+//    private final Long testParentID = 123456L;
+
     private final String testDealName = "Test deal";
     private final String testDealStage = "qualifiedtobuy";
     private final String testPipeline = "default";

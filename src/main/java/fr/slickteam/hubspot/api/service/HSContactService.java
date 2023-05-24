@@ -75,21 +75,13 @@ public class HSContactService {
 
     private List<HSCompany> getContactCompanies(Long contactId) throws HubSpotException {
         List<HSCompany> companies = new ArrayList<>();
-
         // Get the associated company IDs for the contact
-        List<Long> companyIds = associationService.contactToCompanyIdList(contactId);
-
+        List<Long> companyIds = associationService.getContactCompanyIdList(contactId);
         // Retrieve company information for each ID
         for (Long companyId : companyIds) {
             HSCompany company = companyService.getByID(companyId);
-
-            if (company.getId() == 0) {
-                throw new HubSpotException("Company ID must be provided");
-            } else {
-                companies.add(company);
+            companies.add(company);
             }
-        }
-
         return companies;
     }
 

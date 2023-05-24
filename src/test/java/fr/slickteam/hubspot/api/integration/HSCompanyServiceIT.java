@@ -27,6 +27,7 @@ public class HSCompanyServiceIT {
     private final String testZip = "zip";
     private final String testCity = "city";
     private final String testCountry = "country";
+//    private final Long testParentId = 123456L;
 
     private Long createdCompanyId;
 

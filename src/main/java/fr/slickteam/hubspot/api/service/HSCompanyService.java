@@ -1,5 +1,6 @@
 package fr.slickteam.hubspot.api.service;
 
+import fr.slickteam.hubspot.api.domain.AssociatedCompany;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
 import fr.slickteam.hubspot.api.domain.HSCompany;
 import kong.unirest.json.JSONArray;
@@ -15,9 +16,10 @@ import java.util.List;
  */
 public class HSCompanyService {
 
-    private final static String COMPANY_URL = "/crm/v3/objects/companies/";
     private final HttpService httpService;
     private final HSService hsService;
+    private final HSAssociationService associationService;
+    private final static String COMPANY_URL = "/crm/v3/objects/companies/";
 
     /**
      * Constructor with HTTPService injected
@@ -27,6 +29,7 @@ public class HSCompanyService {
     public HSCompanyService(HttpService httpService) {
         this.httpService = httpService;
         hsService = new HSService(httpService);
+        associationService = new HSAssociationService(httpService);
     }
 
     /**
@@ -91,6 +94,26 @@ public class HSCompanyService {
                 throw e;
             }
         }
+    }
+
+    /**
+     * Get HubSpot company by its ID.
+     *
+     * @param companyId - ID of company to get associated companies
+     * @return A list of associated companies with details
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public List<AssociatedCompany> getAssociatedCompanies(Long companyId) throws HubSpotException {
+        List<AssociatedCompany> companiesToComplete = associationService.getCompaniesToCompany(companyId);
+        List<AssociatedCompany> associatedCompanies = new ArrayList<>();
+
+        for (AssociatedCompany emptyAssociation : companiesToComplete) {
+            HSCompany company = getByID(emptyAssociation.getCompany().getId());
+            AssociatedCompany associatedCompany = new AssociatedCompany(emptyAssociation.getAssociationType(), company);
+            associatedCompanies.add(associatedCompany);
+        }
+
+        return associatedCompanies;
     }
 
     /**
