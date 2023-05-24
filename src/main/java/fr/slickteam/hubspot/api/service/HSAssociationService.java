@@ -72,7 +72,29 @@ public class HSAssociationService {
         }
     }
 
-    //TODO: vérifier format object reçu
+    /**
+     * Get contacts associated to a company
+     *
+     * @param companyId - ID of the company to link
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public List<Long> getCompanyContactIdList(long companyId) throws HubSpotException {
+        String url =
+                BasePath.V4 + COMPANIES + companyId + "/" + ASSOCIATION + CONTACTS;
+        try {
+            return parseJsonArrayToIdList((JSONArray) httpService.getRequest(url));
+        } catch (HubSpotException e) {
+            if (e.getMessage().equals("Not Found")) {
+                return new ArrayList<>();
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    /**
+     * Parse a Json array to a list of long Ids
+     **/
     private List<Long> parseJsonArrayToIdList(JSONArray results) {
         List<Long> idList = new ArrayList<>();
         for (Object result : results) {

@@ -1,6 +1,7 @@
 package fr.slickteam.hubspot.api.service;
 
 import fr.slickteam.hubspot.api.domain.AssociatedCompany;
+import fr.slickteam.hubspot.api.domain.HSContact;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
 import fr.slickteam.hubspot.api.domain.HSCompany;
 import kong.unirest.json.JSONArray;
@@ -16,10 +17,11 @@ import java.util.List;
  */
 public class HSCompanyService {
 
+    private final static String COMPANY_URL = "/crm/v3/objects/companies/";
     private final HttpService httpService;
     private final HSService hsService;
     private final HSAssociationService associationService;
-    private final static String COMPANY_URL = "/crm/v3/objects/companies/";
+    private final HSContactService contactService;
 
     /**
      * Constructor with HTTPService injected
@@ -30,6 +32,7 @@ public class HSCompanyService {
         this.httpService = httpService;
         hsService = new HSService(httpService);
         associationService = new HSAssociationService(httpService);
+        contactService = new HSContactService(httpService);
     }
 
     /**
@@ -114,6 +117,24 @@ public class HSCompanyService {
         }
 
         return associatedCompanies;
+    }
+
+    /**
+     * Get HubSpot contacts for one company.
+     *
+     * @param companyId - ID of company to get associated contacts
+     * @return A list of associated contacts
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public List<HSContact> getCompanyContacts(Long companyId) throws HubSpotException {
+        List<Long> contactIdList = associationService.getCompanyContactIdList(companyId);
+        List<HSContact> associatedContacts = new ArrayList<>();
+
+        for (Long contactId : contactIdList) {
+            HSContact contact = contactService.getByID(contactId);
+            associatedContacts.add(contact);
+        }
+        return associatedContacts;
     }
 
     /**
