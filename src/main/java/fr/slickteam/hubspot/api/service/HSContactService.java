@@ -76,7 +76,7 @@ public class HSContactService {
         }
     }
 
-    private List<HSCompany> getContactCompanies(Long contactId) throws HubSpotException {
+    public List<HSCompany> getContactCompanies(Long contactId) throws HubSpotException {
         List<HSCompany> companies = new ArrayList<>();
         // Get the associated company IDs for the contact
         List<Long> companyIds = associationService.getContactCompanyIdList(contactId);

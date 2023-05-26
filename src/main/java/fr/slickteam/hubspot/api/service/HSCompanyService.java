@@ -1,6 +1,7 @@
 package fr.slickteam.hubspot.api.service;
 
-import fr.slickteam.hubspot.api.domain.AssociatedCompany;
+import fr.slickteam.hubspot.api.domain.assocation.HSAssociatedCompany;
+import fr.slickteam.hubspot.api.domain.assocation.HSAssociationTypeInput;
 import fr.slickteam.hubspot.api.domain.HSContact;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
 import fr.slickteam.hubspot.api.domain.HSCompany;
@@ -16,12 +17,11 @@ import java.util.List;
  * Service for managing HubSpot companies
  */
 public class HSCompanyService {
-
+    private HSContactService contactService;
     private final static String COMPANY_URL = "/crm/v3/objects/companies/";
     private final HttpService httpService;
     private final HSService hsService;
     private final HSAssociationService associationService;
-    private HSContactService contactService;
 
     /**
      * Constructor with HTTPService injected
@@ -109,13 +109,20 @@ public class HSCompanyService {
      * @return A list of associated companies with details
      * @throws HubSpotException - if HTTP call fails
      */
-    public List<AssociatedCompany> getAssociatedCompanies(Long companyId) throws HubSpotException {
-        List<AssociatedCompany> companiesToComplete = associationService.getCompaniesToCompany(companyId);
-        List<AssociatedCompany> associatedCompanies = new ArrayList<>();
+    public List<HSAssociatedCompany> getAssociatedCompanies(Long companyId) throws HubSpotException {
+        List<JSONObject> associationList = associationService.getCompaniesToCompany(companyId);
+        List<HSAssociatedCompany> associatedCompanies = new ArrayList<>();
 
-        for (AssociatedCompany emptyAssociation : companiesToComplete) {
-            HSCompany company = getByID(emptyAssociation.getCompany().getId());
-            AssociatedCompany associatedCompany = new AssociatedCompany(emptyAssociation.getAssociationType(), company);
+        for (JSONObject JsonAssociation : associationList) {
+            // Initiate associated company parameters
+            HSCompany company = getByID((Long) JsonAssociation.get("toObjectId"));
+            HSAssociationTypeInput associationType = new HSAssociationTypeInput();
+            // Create association type from JSON Object
+            JSONObject jsonAssociationType = ((JSONArray) JsonAssociation.get("associationTypes")).getJSONObject(0);
+            associationType.setLabel((String) jsonAssociationType.get("label"));
+            associationType.setTypeId(String.valueOf(jsonAssociationType.get("typeId")));
+            // Create associated company and add it to a list
+            HSAssociatedCompany associatedCompany = new HSAssociatedCompany(associationType, company);
             associatedCompanies.add(associatedCompany);
         }
 

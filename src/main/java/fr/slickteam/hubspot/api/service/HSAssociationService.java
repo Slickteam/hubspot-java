@@ -1,6 +1,6 @@
 package fr.slickteam.hubspot.api.service;
 
-import fr.slickteam.hubspot.api.domain.AssociatedCompany;
+import fr.slickteam.hubspot.api.domain.assocation.HSAssociationTypeInput;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
 import kong.unirest.json.JSONArray;
 import kong.unirest.json.JSONObject;
@@ -15,7 +15,8 @@ import java.util.List;
 public class HSAssociationService {
     private static class BasePath {
         public static final String V3 = "/crm/v3/objects/";
-        public static final String V4 = "/crm/v4/objects/";
+        public static final String V4_OBJECT = "/crm/v4/objects/";
+        public static final String V4_ASSOCIATION = "/crm/v4/associations/";
     }
 
     private static final String CONTACT = "contact/";
@@ -27,6 +28,8 @@ public class HSAssociationService {
     private static final String DEAL_TO_CONTACT = "deal_to_contact";
     private static final String CONTACT_TO_COMPANY = "contact_to_company";
     private static final String ASSOCIATION = "associations/";
+    private static final String BATCH = "batch/";
+    private static final String CREATE = "create/";
     private final HttpService httpService;
 
     /**
@@ -53,6 +56,38 @@ public class HSAssociationService {
     }
 
     /**
+     * Associate a contact and a company
+     *
+     * @param compagnyId - ID of the compagny to link
+     * @param associatedCompanyId - ID of the Associated company to link
+     * @param associationType - Association type from company to associated company
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public void companyToCompany(long compagnyId, long associatedCompanyId, HSAssociationTypeInput associationType) throws HubSpotException {
+        String associationProperties = "{\n" +
+                "  \"inputs\": [\n" +
+                "    {\n" +
+                "      \"from\": {\n" +
+                "        \"id\": \""+compagnyId+"\"\n" +
+                "      },\n" +
+                "      \"to\": {\n" +
+                "        \"id\": \""+associatedCompanyId+"\"\n" +
+                "      },\n" +
+                "      \"types\": [\n" +
+                "        {\n" +
+                "          \"associationCategory\": \"HUBSPOT_DEFINED\",\n" +
+                "          \"associationTypeId\": "+associationType.getTypeId()+"\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}";
+        String url =
+                BasePath.V4_ASSOCIATION + COMPANIES + COMPANIES + BATCH + CREATE;
+        httpService.postRequest(url, associationProperties);
+    }
+
+    /**
      * Get companies associated to a contact
      *
      * @param contactId - ID of the contact to link
@@ -60,11 +95,11 @@ public class HSAssociationService {
      */
     public List<Long> getContactCompanyIdList(long contactId) throws HubSpotException {
         String url =
-                BasePath.V4 + CONTACTS + contactId + "/" + ASSOCIATION + COMPANIES;
+                BasePath.V4_OBJECT + CONTACTS + contactId + "/" + ASSOCIATION + COMPANIES;
         try {
             return parseJsonArrayToIdList((JSONObject) httpService.getRequest(url));
         } catch (HubSpotException e) {
-            if (e.getMessage().equals("Not Found")) {
+            if (e.getMessage().equals("No associated companies founded for this user")) {
                 return new ArrayList<>();
             } else {
                 throw e;
@@ -80,11 +115,11 @@ public class HSAssociationService {
      */
     public List<Long> getCompanyContactIdList(long companyId) throws HubSpotException {
         String url =
-                BasePath.V4 + COMPANIES + companyId + "/" + ASSOCIATION + CONTACTS;
+                BasePath.V4_OBJECT + COMPANIES + companyId + "/" + ASSOCIATION + CONTACTS;
         try {
             return parseJsonArrayToIdList((JSONObject) httpService.getRequest(url));
         } catch (HubSpotException e) {
-            if (e.getMessage().equals("Not Found")) {
+            if (e.getMessage().equals("No associated contact founded for this company")) {
                 return new ArrayList<>();
             } else {
                 throw e;
@@ -113,31 +148,27 @@ public class HSAssociationService {
      * @param companyId - ID of the company
      * @throws HubSpotException - if HTTP call fails
      */
-    public List<AssociatedCompany> getCompaniesToCompany(long companyId) throws HubSpotException {
+    public List<JSONObject> getCompaniesToCompany(long companyId) throws HubSpotException {
         String url =
-                BasePath.V4 + COMPANIES + companyId + "/" + ASSOCIATION + COMPANIES;
+                BasePath.V4_OBJECT + COMPANIES + companyId + "/" + ASSOCIATION + COMPANIES;
         try {
-            return parseJsonToAssociatedCompanies((JSONArray) httpService.getRequest(url));
+            return parseJsonResultToList((JSONObject) httpService.getRequest(url));
         } catch (HubSpotException e) {
-            if (e.getMessage().equals("Not Found")) {
+            if (e.getMessage().equals("No company associated founded for this company")) {
                 return new ArrayList<>();
             } else {
                 throw e;
             }
         }
     }
-    public List<AssociatedCompany> parseJsonToAssociatedCompanies(JSONArray results) {
-        List<AssociatedCompany> companyIdList = new ArrayList<>();
+    public List<JSONObject> parseJsonResultToList (JSONObject jsonObject) {
+        JSONArray results = (JSONArray) jsonObject.get("results");
+        List<JSONObject> jsonObjectList = new ArrayList<>();
         for (Object result : results) {
             JSONObject resultObj = (JSONObject) result;
-            Long id = (Long) resultObj.get("toObjectId");
-            String type = (String) resultObj.get("associationTypes");
-            AssociatedCompany associatedCompany = new AssociatedCompany();
-            associatedCompany.getCompany().setId(id);
-            associatedCompany.setAssociationType(type.toUpperCase().replace(" ", "_"));
-            companyIdList.add(associatedCompany);
+            jsonObjectList.add(resultObj);
         }
-        return companyIdList;
+        return jsonObjectList;
     }
 
     /**

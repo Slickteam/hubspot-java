@@ -1,5 +1,6 @@
 package fr.slickteam.hubspot.api.integration;
 
+import fr.slickteam.hubspot.api.domain.HSCompany;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
 import fr.slickteam.hubspot.api.domain.HSContact;
 import fr.slickteam.hubspot.api.service.HSContactService;
@@ -30,6 +31,10 @@ public class HSContactServiceIT {
     private final String testPhoneNumber = "TestPhoneNumber";
     private final String testLifeCycleStage = "customer";
     private List<Long> createdContactIds;
+    private final String testAddress = "address";
+    private final String testZip = "zip";
+    private final String testCity = "city";
+    private final String testCountry = "country";
 
     private HubSpot hubSpot;
 
@@ -139,6 +144,22 @@ public class HSContactServiceIT {
     public void getContact_Id_Not_Found_Test() throws Exception {
         long id = -777;
         assertNull(hubSpot.contact().getByID(id));
+    }
+
+    @Test
+    public void getContact_Companies_Test() throws Exception {
+        long contactId = hubSpot
+                .contact()
+                .create(new HSContact(testEmail1, testFirstname, testLastname, testPhoneNumber, testLifeCycleStage))
+                .getId();
+        createdContactIds.add(contactId);
+        HSCompany company = new HSCompany("TestCompany"+ Instant.now().getEpochSecond(), testPhoneNumber, testAddress, testZip, testCity, testCountry);
+        hubSpot.company().create(company);
+        hubSpot.association().contactToCompany(contactId, company.getId());
+        List<HSCompany> companies = hubSpot.contact().getContactCompanies(contactId);
+        assertNotNull(companies);
+        assertTrue(companies.size() > 0);
+        assertEquals(companies.get(0).getId(), company.getId());
     }
 
 

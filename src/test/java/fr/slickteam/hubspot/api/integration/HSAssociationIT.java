@@ -1,5 +1,6 @@
 package fr.slickteam.hubspot.api.integration;
 import fr.slickteam.hubspot.api.domain.*;
+import fr.slickteam.hubspot.api.domain.assocation.HSAssociationTypeInput;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
 import fr.slickteam.hubspot.api.service.HubSpot;
 import fr.slickteam.hubspot.api.utils.Helper;
@@ -16,6 +17,7 @@ import java.time.Instant;
 public class HSAssociationIT {
     private Long createdContactId;
     private Long createdCompanyId;
+    private Long createdAssociatedCompanyId;
     private Long createdDealId;
     private Long createdLineItemId;
 
@@ -24,7 +26,6 @@ public class HSAssociationIT {
     private final String testLastname = "Testlastname";
     private final String testPhoneNumber = "TestPhoneNumber";
     private final String testLifeCycleStage = "customer";
-
     private final String testAddress = "address";
     private final String testZip = "zip";
     private final String testCity = "city";
@@ -126,6 +127,51 @@ public class HSAssociationIT {
     }
 
     @Test
+    public void associate_company_to_company_success() throws HubSpotException {
+        HSCompany company = hubSpot.company().create(new HSCompany(testEmail1,
+                testPhoneNumber,
+                testAddress,
+                testZip,
+                testCity,
+                testCountry));
+        HSCompany associatedCompany = hubSpot.company().create(new HSCompany(testEmail1,
+                testPhoneNumber,
+                testAddress,
+                testZip,
+                testCity,
+                testCountry));
+
+        createdCompanyId = company.getId();
+        createdAssociatedCompanyId = associatedCompany.getId();
+        HSAssociationTypeInput associationType = new HSAssociationTypeInput().setType(HSAssociationTypeInput.TypeEnum.PARENT);
+
+        hubSpot.association().companyToCompany(createdCompanyId, createdAssociatedCompanyId, associationType);
+    }
+
+    @Test
+    public void associate_company_to_company_bad_company_id_exception() throws HubSpotException {
+        HSCompany company = hubSpot.company().create(new HSCompany(testEmail1,
+                testPhoneNumber,
+                testAddress,
+                testZip,
+                testCity,
+                testCountry));
+        HSCompany associatedCompany = hubSpot.company().create(new HSCompany(testEmail1,
+                testPhoneNumber,
+                testAddress,
+                testZip,
+                testCity,
+                testCountry));
+
+        createdCompanyId = company.getId();
+        createdAssociatedCompanyId = associatedCompany.getId();
+        HSAssociationTypeInput associationType = new HSAssociationTypeInput().setType(HSAssociationTypeInput.TypeEnum.PARENT);
+
+        exception.expect(HubSpotException.class);
+        hubSpot.association().companyToCompany(-777, createdAssociatedCompanyId, associationType);
+    }
+
+    @Test
     public void associate_get_contact_company_id_list_success() throws HubSpotException {
         HSCompany company = hubSpot.company().create(new HSCompany(testEmail1,
                 testPhoneNumber,
@@ -135,6 +181,18 @@ public class HSAssociationIT {
                 testCountry));
 
         hubSpot.association().getCompanyContactIdList(company.getId());
+    }
+
+    @Test
+    public void associate_get_companies_to_company_success() throws HubSpotException {
+        HSCompany company = hubSpot.company().create(new HSCompany(testEmail1,
+                testPhoneNumber,
+                testAddress,
+                testZip,
+                testCity,
+                testCountry));
+
+        hubSpot.association().getCompaniesToCompany(company.getId());
     }
 
     @Test
@@ -172,7 +230,6 @@ public class HSAssociationIT {
                                                                    testLifeCycleStage));
 
         createdContactId = contact.getId();
-
 
         exception.expect(HubSpotException.class);
         exception.expectMessage("Not Found");

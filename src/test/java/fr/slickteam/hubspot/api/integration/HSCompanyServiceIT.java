@@ -1,5 +1,7 @@
 package fr.slickteam.hubspot.api.integration;
 
+import fr.slickteam.hubspot.api.domain.assocation.HSAssociatedCompany;
+import fr.slickteam.hubspot.api.domain.assocation.HSAssociationTypeInput;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
 import fr.slickteam.hubspot.api.domain.HSCompany;
 import fr.slickteam.hubspot.api.domain.HSContact;
@@ -27,7 +29,6 @@ public class HSCompanyServiceIT {
     private final String testZip = "zip";
     private final String testCity = "city";
     private final String testCountry = "country";
-//    private final Long testParentId = 123456L;
 
     private Long createdCompanyId;
 
@@ -58,18 +59,33 @@ public class HSCompanyServiceIT {
     }
 
     @Test
-    @Ignore
+    @Ignore("Add comment to explain why this test is ignored")
     public void addContact_Test() throws Exception {
         HSCompany company = hubSpot.company().create(new HSCompany("TestCompany"+ Instant.now().getEpochSecond(), testPhoneNumber, testAddress, testZip, testCity, testCountry));
         HSContact contact = hubSpot.contact().create(new HSContact(testEmail1, testFirstname, testLastname, testPhoneNumber, testLifeCycleStage));
         hubSpot.company().addContact(contact.getId(), company.getId());
     }
 
+    @Ignore("Add comment to explain why this test is ignored")
     @Test
-    @Ignore
     public void getByDomain_Test() throws Exception {
         List<HSCompany> companies = hubSpot.company().getByDomain("Domain");
         assertTrue(companies.size() > 0);
+    }
+
+    @Ignore("Add comment to explain why this test is ignored")
+    @Test
+    public void get_Associated_Companies_Test() throws Exception {
+        HSCompany company = new HSCompany("TestCompany"+ Instant.now().getEpochSecond(), testPhoneNumber, testAddress, testZip, testCity, testCountry);
+        HSCompany associatedCompany = new HSCompany("TestCompany2"+ Instant.now().getEpochSecond(), testPhoneNumber, testAddress, testZip, testCity, testCountry);
+        HSAssociationTypeInput associationType = new HSAssociationTypeInput().setType(HSAssociationTypeInput.TypeEnum.PARENT);
+        hubSpot.company().create(company);
+        hubSpot.company().create(associatedCompany);
+        hubSpot.association().companyToCompany(company.getId(), associatedCompany.getId(), associationType);
+        List<HSAssociatedCompany> associatedCompanies = hubSpot.company().getAssociatedCompanies(company.getId());
+        assertNotNull(associatedCompanies);
+        assertTrue(associatedCompanies.size() > 0);
+        assertEquals(associatedCompanies.get(0).getCompany().getId(), associatedCompany.getId());
     }
 
     @Test
