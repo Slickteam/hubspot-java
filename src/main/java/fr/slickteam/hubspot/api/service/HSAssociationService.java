@@ -135,7 +135,7 @@ public class HSAssociationService {
         List<Long> idList = new ArrayList<>();
         for (Object result : results) {
             JSONObject resultObj = (JSONObject) result;
-            Long id = (Long) resultObj.get("toObjectId");
+            Long id = Long.valueOf((Integer) resultObj.get("toObjectId"));
             idList.add(id);
         }
         return idList;

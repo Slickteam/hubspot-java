@@ -19,7 +19,6 @@ import static org.junit.Assert.*;
 public class HSCompanyServiceIT {
 
     private String testEmail1;
-    private final String testBadEmail = "test@test.test";
     private final String testFirstname = "Testfristname";
     private final String testLastname = "Testlastname";
     private final String testPhoneNumber = "TestPhoneNumber";
@@ -73,7 +72,6 @@ public class HSCompanyServiceIT {
         assertTrue(companies.size() > 0);
     }
 
-    @Ignore("Add comment to explain why this test is ignored")
     @Test
     public void get_Associated_Companies_Test() throws Exception {
         HSCompany company = new HSCompany("TestCompany"+ Instant.now().getEpochSecond(), testPhoneNumber, testAddress, testZip, testCity, testCountry);
@@ -86,6 +84,20 @@ public class HSCompanyServiceIT {
         assertNotNull(associatedCompanies);
         assertTrue(associatedCompanies.size() > 0);
         assertEquals(associatedCompanies.get(0).getCompany().getId(), associatedCompany.getId());
+    }
+
+    @Test
+    public void get_company_contacts_Tests() throws Exception {
+        HSCompany company = new HSCompany("TestCompany"+ Instant.now().getEpochSecond(), testPhoneNumber, testAddress, testZip, testCity, testCountry);
+        HSContact contact = hubSpot.contact().create(new HSContact(testEmail1, testFirstname, testLastname, testPhoneNumber, testLifeCycleStage));
+        hubSpot.company().create(company);
+        hubSpot.association().contactToCompany(contact.getId(), company.getId());
+
+        List <HSContact> contacts = hubSpot.company().getCompanyContacts(company.getId());
+        assertNotNull(contacts);
+        assertTrue(contacts.size() > 0);
+        assertEquals(contacts.get(0).getId(), contact.getId());
+
     }
 
     @Test
