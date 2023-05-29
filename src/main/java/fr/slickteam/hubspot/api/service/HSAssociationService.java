@@ -1,6 +1,7 @@
 package fr.slickteam.hubspot.api.service;
 
-import fr.slickteam.hubspot.api.domain.assocation.HSAssociationTypeInput;
+import fr.slickteam.hubspot.api.domain.HSAssocationTypeInput;
+import fr.slickteam.hubspot.api.domain.HSAssociationTypeEnum;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
 import kong.unirest.json.JSONArray;
 import kong.unirest.json.JSONObject;
@@ -60,10 +61,11 @@ public class HSAssociationService {
      *
      * @param compagnyId - ID of the compagny to link
      * @param associatedCompanyId - ID of the Associated company to link
-     * @param associationType - Association type from company to associated company
+     * @param typeEnum - Association type from company to associated company
      * @throws HubSpotException - if HTTP call fails
      */
-    public void companyToCompany(long compagnyId, long associatedCompanyId, HSAssociationTypeInput associationType) throws HubSpotException {
+    public void companyToCompany(long compagnyId, long associatedCompanyId, HSAssociationTypeEnum typeEnum) throws HubSpotException {
+        HSAssocationTypeInput assocationTypeInput = new HSAssocationTypeInput().setType(typeEnum);
         String associationProperties = "{\n" +
                 "  \"inputs\": [\n" +
                 "    {\n" +
@@ -73,11 +75,7 @@ public class HSAssociationService {
                 "      \"to\": {\n" +
                 "        \"id\": \""+associatedCompanyId+"\"\n" +
                 "      },\n" +
-                "      \"types\": [\n" +
-                "        {\n" +
-                "          \"associationCategory\": \"HUBSPOT_DEFINED\",\n" +
-                "          \"associationTypeId\": "+associationType.getTypeId()+"\n" +
-                "        }\n" +
+                "      \"types\": [\n" + assocationTypeInput.getJsonAssociationType() +
                 "      ]\n" +
                 "    }\n" +
                 "  ]\n" +
@@ -135,7 +133,7 @@ public class HSAssociationService {
         List<Long> idList = new ArrayList<>();
         for (Object result : results) {
             JSONObject resultObj = (JSONObject) result;
-            Long id = Long.valueOf((Integer) resultObj.get("toObjectId"));
+            Long id = Long.valueOf(resultObj.get("toObjectId").toString());
             idList.add(id);
         }
         return idList;

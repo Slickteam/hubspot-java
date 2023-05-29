@@ -1,36 +1,36 @@
-package fr.slickteam.hubspot.api.domain.assocation;
-
-import fr.slickteam.hubspot.api.domain.HSObject;
+package fr.slickteam.hubspot.api.domain;
 
 import java.util.Map;
 
-public class HSAssociationTypeInput extends HSObject {
-
-    public enum TypeEnum {PARENT, ENFANT}
+public class HSAssociationTypeOutput extends HSObject {
     private static final String TYPE_ID = "typeId";
     private static final String LABEL = "label";
+    private static final String CATEGORY = "category";
+    private static final String HS_CATEGORY_OUTPUT = "HUBSPOT_DEFINED";
     private static final String PARENT_TYPE_ID = "14";
     private static final String PARENT_LABEL = "Child Company";
     private static final String CHILD_TYPE_ID = "13";
     private static final String CHILD_LABEL = "Parent Company";
 
-    public HSAssociationTypeInput() {
+    public HSAssociationTypeOutput() {
     }
 
-    public HSAssociationTypeInput(String typeId, String label, Map<String, String> properties) {
+    public HSAssociationTypeOutput(String typeId, String label, Map<String, String> properties) {
         super(properties);
         this.setTypeId(typeId);
         this.setLabel(label);
+        this.setCategory();
     }
 
-    public HSAssociationTypeInput setType(TypeEnum typeEnum) {
-        if (typeEnum == TypeEnum.PARENT) {
+    public HSAssociationTypeOutput setType(HSAssociationTypeEnum typeEnum) {
+        if (typeEnum == HSAssociationTypeEnum.PARENT) {
             setProperty(TYPE_ID, PARENT_TYPE_ID);
             setProperty(LABEL, PARENT_LABEL);
         } else {
             setProperty(TYPE_ID, CHILD_TYPE_ID);
             setProperty(LABEL, CHILD_LABEL);
         }
+        this.setCategory();
         return this;
     }
 
@@ -39,6 +39,9 @@ public class HSAssociationTypeInput extends HSObject {
     }
     public void setLabel(String label) {
         setProperty(LABEL, label);
+    }
+    public void setCategory() {
+        setProperty(CATEGORY, HS_CATEGORY_OUTPUT);
     }
     public Integer getTypeId() {
         return Integer.valueOf(getProperty(TYPE_ID));

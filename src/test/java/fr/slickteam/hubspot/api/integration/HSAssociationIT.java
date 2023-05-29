@@ -1,6 +1,5 @@
 package fr.slickteam.hubspot.api.integration;
 import fr.slickteam.hubspot.api.domain.*;
-import fr.slickteam.hubspot.api.domain.assocation.HSAssociationTypeInput;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
 import fr.slickteam.hubspot.api.service.HubSpot;
 import fr.slickteam.hubspot.api.utils.Helper;
@@ -143,9 +142,7 @@ public class HSAssociationIT {
 
         createdCompanyId = company.getId();
         createdAssociatedCompanyId = associatedCompany.getId();
-        HSAssociationTypeInput associationType = new HSAssociationTypeInput().setType(HSAssociationTypeInput.TypeEnum.PARENT);
-
-        hubSpot.association().companyToCompany(createdCompanyId, createdAssociatedCompanyId, associationType);
+        hubSpot.association().companyToCompany(createdCompanyId, createdAssociatedCompanyId, HSAssociationTypeEnum.PARENT);
     }
 
     @Test
@@ -165,10 +162,8 @@ public class HSAssociationIT {
 
         createdCompanyId = company.getId();
         createdAssociatedCompanyId = associatedCompany.getId();
-        HSAssociationTypeInput associationType = new HSAssociationTypeInput().setType(HSAssociationTypeInput.TypeEnum.PARENT);
-
         exception.expect(HubSpotException.class);
-        hubSpot.association().companyToCompany(-777, createdAssociatedCompanyId, associationType);
+        hubSpot.association().companyToCompany(-777, createdAssociatedCompanyId, HSAssociationTypeEnum.PARENT);
     }
 
     @Test

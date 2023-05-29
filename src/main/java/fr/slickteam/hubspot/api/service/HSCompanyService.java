@@ -1,7 +1,7 @@
 package fr.slickteam.hubspot.api.service;
 
-import fr.slickteam.hubspot.api.domain.assocation.HSAssociatedCompany;
-import fr.slickteam.hubspot.api.domain.assocation.HSAssociationTypeInput;
+import fr.slickteam.hubspot.api.domain.HSAssociatedCompany;
+import fr.slickteam.hubspot.api.domain.HSAssociationTypeOutput;
 import fr.slickteam.hubspot.api.domain.HSContact;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
 import fr.slickteam.hubspot.api.domain.HSCompany;
@@ -17,11 +17,11 @@ import java.util.List;
  * Service for managing HubSpot companies
  */
 public class HSCompanyService {
-    private HSContactService contactService;
     private final static String COMPANY_URL = "/crm/v3/objects/companies/";
     private final HttpService httpService;
     private final HSService hsService;
     private final HSAssociationService associationService;
+    private HSContactService contactService;
 
     /**
      * Constructor with HTTPService injected
@@ -116,7 +116,7 @@ public class HSCompanyService {
         for (JSONObject JsonAssociation : associationList) {
             // Initiate associated company parameters
             HSCompany company = getByID((Long) JsonAssociation.get("toObjectId"));
-            HSAssociationTypeInput associationType = new HSAssociationTypeInput();
+            HSAssociationTypeOutput associationType = new HSAssociationTypeOutput();
             // Create association type from JSON Object
             JSONObject jsonAssociationType = ((JSONArray) JsonAssociation.get("associationTypes")).getJSONObject(0);
             associationType.setLabel((String) jsonAssociationType.get("label"));

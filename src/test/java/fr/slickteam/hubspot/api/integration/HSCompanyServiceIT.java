@@ -1,7 +1,7 @@
 package fr.slickteam.hubspot.api.integration;
 
-import fr.slickteam.hubspot.api.domain.assocation.HSAssociatedCompany;
-import fr.slickteam.hubspot.api.domain.assocation.HSAssociationTypeInput;
+import fr.slickteam.hubspot.api.domain.HSAssociatedCompany;
+import fr.slickteam.hubspot.api.domain.HSAssociationTypeEnum;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
 import fr.slickteam.hubspot.api.domain.HSCompany;
 import fr.slickteam.hubspot.api.domain.HSContact;
@@ -76,10 +76,9 @@ public class HSCompanyServiceIT {
     public void get_Associated_Companies_Test() throws Exception {
         HSCompany company = new HSCompany("TestCompany"+ Instant.now().getEpochSecond(), testPhoneNumber, testAddress, testZip, testCity, testCountry);
         HSCompany associatedCompany = new HSCompany("TestCompany2"+ Instant.now().getEpochSecond(), testPhoneNumber, testAddress, testZip, testCity, testCountry);
-        HSAssociationTypeInput associationType = new HSAssociationTypeInput().setType(HSAssociationTypeInput.TypeEnum.PARENT);
         hubSpot.company().create(company);
         hubSpot.company().create(associatedCompany);
-        hubSpot.association().companyToCompany(company.getId(), associatedCompany.getId(), associationType);
+        hubSpot.association().companyToCompany(company.getId(), associatedCompany.getId(), HSAssociationTypeEnum.PARENT);
         List<HSAssociatedCompany> associatedCompanies = hubSpot.company().getAssociatedCompanies(company.getId());
         assertNotNull(associatedCompanies);
         assertTrue(associatedCompanies.size() > 0);

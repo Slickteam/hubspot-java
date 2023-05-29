@@ -1,34 +1,32 @@
-package fr.slickteam.hubspot.api.domain.assocation;
-
-import fr.slickteam.hubspot.api.domain.HSCompany;
+package fr.slickteam.hubspot.api.domain;
 
 /**
  * Model class for Associated Company
  */
 public class HSAssociatedCompany {
-    private HSAssociationTypeInput associationType;
+    private HSAssociationTypeOutput associationType;
     private HSCompany company;
 
 
     public HSAssociatedCompany() {
     }
 
-    public HSAssociatedCompany(HSAssociationTypeInput.TypeEnum typeEnum, HSCompany company) {
+    public HSAssociatedCompany(HSAssociationTypeEnum typeEnum, HSCompany company) {
         setAssociationType(typeEnum);
         this.company = company;
     }
 
-    public HSAssociatedCompany(HSAssociationTypeInput associationType, HSCompany company) {
+    public HSAssociatedCompany(HSAssociationTypeOutput associationType, HSCompany company) {
         this.associationType = associationType;
         this.company = company;
     }
 
-    public HSAssociationTypeInput getAssociationType() {
+    public HSAssociationTypeOutput getAssociationType() {
         return this.associationType;
     }
 
-    public void setAssociationType(HSAssociationTypeInput.TypeEnum typeEnum) {
-        HSAssociationTypeInput createdAssociationType =new HSAssociationTypeInput().setType(typeEnum);
+    public void setAssociationType(HSAssociationTypeEnum typeEnum) {
+        HSAssociationTypeOutput createdAssociationType =new HSAssociationTypeOutput().setType(typeEnum);
         this.associationType = createdAssociationType;
     }
 
