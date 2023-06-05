@@ -97,7 +97,7 @@ public class HSAssociationService {
         try {
             return parseJsonArrayToIdList((JSONObject) httpService.getRequest(url));
         } catch (HubSpotException e) {
-            if (e.getMessage().equals("No associated companies founded for this user")) {
+            if (e.getMessage().equals("No associated companies found for this user")) {
                 return new ArrayList<>();
             } else {
                 throw e;
@@ -117,7 +117,7 @@ public class HSAssociationService {
         try {
             return parseJsonArrayToIdList((JSONObject) httpService.getRequest(url));
         } catch (HubSpotException e) {
-            if (e.getMessage().equals("No associated contact founded for this company")) {
+            if (e.getMessage().equals("No associated contact found for this company")) {
                 return new ArrayList<>();
             } else {
                 throw e;
@@ -152,7 +152,7 @@ public class HSAssociationService {
         try {
             return parseJsonResultToList((JSONObject) httpService.getRequest(url));
         } catch (HubSpotException e) {
-            if (e.getMessage().equals("No company associated founded for this company")) {
+            if (e.getMessage().equals("No company associated found for this company")) {
                 return new ArrayList<>();
             } else {
                 throw e;
