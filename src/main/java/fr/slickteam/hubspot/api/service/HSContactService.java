@@ -5,10 +5,9 @@ import fr.slickteam.hubspot.api.domain.HSCompany;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
 import fr.slickteam.hubspot.api.domain.HSContact;
 import kong.unirest.json.JSONObject;
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * HubSpot Contact Service
@@ -76,16 +75,25 @@ public class HSContactService {
         }
     }
 
+    /**
+     * Get Contact Companies.
+     *
+     * @param contactId - ID of the contact
+     * @return the list of companies associated to the contact
+     * @throws HubSpotException - if HTTP call fails
+     */
     public List<HSCompany> getContactCompanies(Long contactId) throws HubSpotException {
-        List<HSCompany> companies = new ArrayList<>();
-        // Get the associated company IDs for the contact
         List<Long> companyIds = associationService.getContactCompanyIdList(contactId);
-        // Retrieve company information for each ID
-        for (Long companyId : companyIds) {
-            HSCompany company = companyService.getByID(companyId);
-            companies.add(company);
-            }
-        return companies;
+
+        return companyIds.stream()
+                .map(companyId -> {
+                    try {
+                        return companyService.getByID(companyId);
+                    } catch (HubSpotException e) {
+                        return null;
+                    }
+                })
+                .collect(Collectors.toList());
     }
 
     /**

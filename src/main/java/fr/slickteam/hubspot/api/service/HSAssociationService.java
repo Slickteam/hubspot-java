@@ -8,6 +8,8 @@ import kong.unirest.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * HSAssociationService - HubSpot association service
@@ -130,13 +132,11 @@ public class HSAssociationService {
      **/
     private List<Long> parseJsonArrayToIdList(JSONObject jsonObject) {
         JSONArray results = (JSONArray) jsonObject.get("results");
-        List<Long> idList = new ArrayList<>();
-        for (Object result : results) {
-            JSONObject resultObj = (JSONObject) result;
-            Long id = Long.valueOf(resultObj.get("toObjectId").toString());
-            idList.add(id);
-        }
-        return idList;
+
+        return IntStream.range(0, results.length())
+                .mapToObj(results::getJSONObject)
+                .map(resultObj -> Long.valueOf(resultObj.get("toObjectId").toString()))
+                .collect(Collectors.toList());
     }
 
 
@@ -161,12 +161,9 @@ public class HSAssociationService {
     }
     public List<JSONObject> parseJsonResultToList (JSONObject jsonObject) {
         JSONArray results = (JSONArray) jsonObject.get("results");
-        List<JSONObject> jsonObjectList = new ArrayList<>();
-        for (Object result : results) {
-            JSONObject resultObj = (JSONObject) result;
-            jsonObjectList.add(resultObj);
-        }
-        return jsonObjectList;
+        return IntStream.range(0, results.length())
+                .mapToObj(results::getJSONObject)
+                .collect(Collectors.toList());
     }
 
     /**
