@@ -6,6 +6,7 @@ import fr.slickteam.hubspot.api.utils.HubSpotException;
 import fr.slickteam.hubspot.api.domain.HSContact;
 import kong.unirest.json.JSONObject;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -86,14 +87,17 @@ public class HSContactService {
         List<Long> companyIds = associationService.getContactCompanyIdList(contactId);
 
         return companyIds.stream()
-                .map(companyId -> {
-                    try {
-                        return companyService.getByID(companyId);
-                    } catch (HubSpotException e) {
-                        return null;
-                    }
-                })
+                .map(this::getHsCompany)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
+    }
+
+    private HSCompany getHsCompany(Long companyId) {
+        try {
+            return companyService.getByID(companyId);
+        } catch (HubSpotException e) {
+            return null;
+        }
     }
 
     /**

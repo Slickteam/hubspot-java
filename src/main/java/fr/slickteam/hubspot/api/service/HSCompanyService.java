@@ -10,6 +10,7 @@ import kong.unirest.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -140,13 +141,18 @@ public class HSCompanyService {
      */
     public List<HSContact> getCompanyContacts(Long companyId) throws HubSpotException {
         List<Long> contactIdList = associationService.getCompanyContactIdList(companyId);
-        return contactIdList.stream().map(contactId -> {
-            try {
-                return contactService.getByID(contactId);
-            } catch (HubSpotException e) {
-                return null;
-            }
-        }).collect(Collectors.toList());
+        return contactIdList.stream()
+                .map(this::getContactById)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    private HSContact getContactById(Long contactId) {
+        try {
+            return contactService.getByID(contactId);
+        } catch (HubSpotException e) {
+            return null;
+        }
     }
 
     /**
