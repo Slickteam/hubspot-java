@@ -2,7 +2,6 @@ package fr.slickteam.hubspot.api.domain;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.Map;
 
 public class HSDeal extends HSObject {
 
@@ -12,6 +11,8 @@ public class HSDeal extends HSObject {
     private static final String PIPELINE = "pipeline";
     private static final String AMOUNT = "amount";
     private static final String CLOSE_DATE = "closedate";
+    private static final String CONTRACT_START_DATE = "date_debut_contrat";
+    private static final String CONTRACT_END_DATE = "date_fin_contrat";
 
     public HSDeal() {
     }
@@ -24,15 +25,16 @@ public class HSDeal extends HSObject {
         this.setCloseDate(closedate);
     }
 
-    public HSDeal(long id, String dealname, String dealstage, String pipeline, BigDecimal amount, Map<String, String> properties, Instant closedate) {
-        super(properties);
-        this.setId(id);
+    public HSDeal(String dealname, String dealstage, String pipeline, BigDecimal amount, Instant closedate, Instant contractStartDate, Instant contractEndDate) {
         this.setDealName(dealname);
         this.setDealStage(dealstage);
         this.setPipeline(pipeline);
         this.setAmount(amount);
         this.setCloseDate(closedate);
+        this.setContractStartDate(contractStartDate);
+        this.setContractEndDate(contractEndDate);
     }
+
 
     public long getId() {
         return getLongProperty(ID);
@@ -83,6 +85,20 @@ public class HSDeal extends HSObject {
 
     public HSDeal setCloseDate(Instant closedate) {
         setProperty(CLOSE_DATE, closedate.toString());
+        return this;
+    }
+
+    public Instant getContractStartDate() { return getDateProperty(CONTRACT_START_DATE); }
+
+    public HSDeal setContractStartDate(Instant contractStartDate) {
+        setProperty(CONTRACT_START_DATE, contractStartDate.toString());
+        return this;
+    }
+
+    public Instant getContractEndDate() { return getDateProperty(CONTRACT_END_DATE); }
+
+    public HSDeal setContractEndDate(Instant contractEndDate) {
+        setProperty(CONTRACT_END_DATE, contractEndDate.toString());
         return this;
     }
 }

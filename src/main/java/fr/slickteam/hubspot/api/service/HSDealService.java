@@ -48,6 +48,20 @@ public class HSDealService {
         return getDeal(url);
     }
 
+    /**
+     * Get HubSpot deal by its ID with list of properties.
+     *
+     * @param id - ID of the deal
+     * @param properties - List of string properties as deal name or deal stage
+     * @return the deal with the selected properties
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public HSDeal getByIdAndProperties(long id, List<String> properties) throws HubSpotException {
+        String propertiesUrl = String.join(",", properties);
+        String url = DEAL_URL + id + "?properties=" + propertiesUrl;
+        return getDeal(url);
+    }
+
     private HSDeal getDeal(String url) throws HubSpotException {
         try {
             return parseDealData((JSONObject) httpService.getRequest(url));

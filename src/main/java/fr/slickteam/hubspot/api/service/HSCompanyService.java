@@ -1,17 +1,16 @@
 package fr.slickteam.hubspot.api.service;
 
-import fr.slickteam.hubspot.api.domain.HSAssociatedCompany;
-import fr.slickteam.hubspot.api.domain.HSAssociationTypeOutput;
-import fr.slickteam.hubspot.api.domain.HSContact;
+import fr.slickteam.hubspot.api.domain.*;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
-import fr.slickteam.hubspot.api.domain.HSCompany;
 import kong.unirest.json.JSONArray;
 import kong.unirest.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * HubSpot Company Service
@@ -22,7 +21,10 @@ public class HSCompanyService {
     private final HttpService httpService;
     private final HSService hsService;
     private final HSAssociationService associationService;
-    private final static String COMPANY_URL = "/crm/v3/objects/companies/";
+    private final HSDealService dealService;
+    private final static List<String> DEAL_PROPERTIES = List.of("dealname", "dealstage", "pipeline", "date_debut_contrat", "date_fin_contrat", "amount");
+    private final static String COMPANY_URL_V3 = "/crm/v3/objects/companies/";
+    private final static String COMPANY_URL_V4 = "/crm/v4/objects/companies/";
     private HSContactService contactService;
 
 
@@ -35,8 +37,10 @@ public class HSCompanyService {
         this.httpService = httpService;
         hsService = new HSService(httpService);
         associationService = new HSAssociationService(httpService);
+        dealService = new HSDealService(httpService);
     }
-        public void setContactService(HSContactService contactService) {
+
+    public void setContactService(HSContactService contactService) {
         this.contactService = contactService;
     }
 
@@ -49,7 +53,7 @@ public class HSCompanyService {
      * @throws HubSpotException - if HTTP call fails
      */
     public HSCompany create(HSCompany hsCompany) throws HubSpotException {
-        JSONObject jsonObject = (JSONObject) httpService.postRequest(COMPANY_URL, hsCompany.toJsonString());
+        JSONObject jsonObject = (JSONObject) httpService.postRequest(COMPANY_URL_V3, hsCompany.toJsonString());
         hsCompany.setId(jsonObject.getLong("id"));
         return hsCompany;
     }
@@ -89,7 +93,7 @@ public class HSCompanyService {
      * @throws HubSpotException - if HTTP call fails
      */
     public HSCompany getByID(long id) throws HubSpotException {
-        String url = COMPANY_URL + id;
+        String url = COMPANY_URL_V3 + id;
         return getCompany(url);
     }
 
@@ -108,7 +112,7 @@ public class HSCompanyService {
     /**
      * Get HubSpot company by its ID.
      *
-     * @param companyId - ID of company to get associated companies
+     * @param companyId - ID of company
      * @return A list of associated companies with details
      * @throws HubSpotException - if HTTP call fails
      */
@@ -135,7 +139,7 @@ public class HSCompanyService {
     /**
      * Get HubSpot contacts for one company.
      *
-     * @param companyId - ID of company to get associated contacts
+     * @param companyId - ID of company
      * @return A list of associated contacts
      * @throws HubSpotException - if HTTP call fails
      */
@@ -164,7 +168,7 @@ public class HSCompanyService {
      */
     public List<HSCompany> getByDomain(String domain) throws HubSpotException {
         List<HSCompany> companies = new ArrayList<>();
-        String url = COMPANY_URL + domain;
+        String url = COMPANY_URL_V3 + domain;
         JSONArray jsonArray = (JSONArray) httpService.getRequest(url);
 
         for (int i = 0; i < jsonArray.length(); i++) {
@@ -181,7 +185,7 @@ public class HSCompanyService {
      * @throws HubSpotException - if HTTP call fails
      */
     public HSCompany patch(HSCompany company) throws HubSpotException {
-        String url = COMPANY_URL + company.getId();
+        String url = COMPANY_URL_V3 + company.getId();
         String properties = company.toJsonString();
 
         try {
@@ -212,8 +216,71 @@ public class HSCompanyService {
         if (id == 0) {
             throw new HubSpotException("Company ID must be provided");
         }
-        String url = COMPANY_URL + id;
+        String url = COMPANY_URL_V3 + id;
 
         httpService.deleteRequest(url);
     }
+
+    /**
+     * Get associated deals id.
+     *
+     * @param companyId - ID of company
+     * @return List of deals long id
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public List<Long> getDealIdList(Long companyId) throws HubSpotException {
+        List<Long> companyDealsId = new ArrayList<>();
+
+        // Get associated deals id
+        String getIdsUrl = COMPANY_URL_V4 + companyId + "/associations/deals";
+        try {
+            JSONArray jsonIdsArray = (JSONArray) httpService.getRequest(getIdsUrl);
+        // Map json result list to id list
+        IntStream.range(0, jsonIdsArray.length())
+                .mapToObj(jsonIdsArray::getJSONObject)
+                .map(json -> json.getLong("id"))
+                .forEach(companyDealsId::add);
+
+        return companyDealsId;
+        } catch (HubSpotException e) {
+            throw new HubSpotException("Cannot get company's deals. Company id : " + companyId + ". Reason: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Get associated deals.
+     *
+     * @param companyId - ID of company
+     * @return List of deals for the company
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public List<HSDeal> getDeals(Long companyId) throws HubSpotException {
+        List<HSDeal> companyDeals = new ArrayList<>();
+
+        // Get associated deals id
+        List<Long> dealIdList = getDealIdList(companyId);
+
+        // Get details for each deal id
+        for (Long dealId : dealIdList) {
+            companyDeals.add(dealService.getByIdAndProperties(dealId, DEAL_PROPERTIES));
+        }
+        return companyDeals;
+    }
+
+    /**
+     * Get last associated deal.
+     *
+     * @param companyId - ID of company
+     * @return The last company deal
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public HSDeal getLastDeal(Long companyId) throws HubSpotException {
+        // Get associated deals id
+        List<Long> dealIdList = getDealIdList(companyId);
+        Long maxId = Collections.max(dealIdList);
+
+        // Get details for each deal id
+        return dealService.getByIdAndProperties(maxId, DEAL_PROPERTIES);
+    }
+
 }
