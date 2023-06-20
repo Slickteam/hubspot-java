@@ -169,6 +169,27 @@ public class HSCompanyServiceIT {
         hubSpot.company().delete(company.getId());
     }
 
+    @Test
+    public void get_last_deals_Tests() throws Exception {
+        HSDeal deal1 = getNewTestDeal();
+        HSDeal deal2 = getNewTestDeal();
+
+        HSCompany company = getNewTestCompany();
+
+        hubSpot.association().dealToCompany(deal1.getId(), company.getId());
+        hubSpot.association().dealToCompany(deal2.getId(), company.getId());
+
+        HSDeal associatedDeal = hubSpot.company().getLastDeal(company.getId());
+
+        assertNotNull(associatedDeal);
+        assertEquals(associatedDeal.getId(), deal2.getId());
+
+        // clean data test in Hubspot
+        hubSpot.deal().delete(deal1.getId());
+        hubSpot.deal().delete(deal2.getId());
+        hubSpot.company().delete(company.getId());
+    }
+
     private HSCompany getNewTestCompany() throws HubSpotException {
         return hubSpot.company().create(new HSCompany("TestCompany"+ Instant.now().getEpochSecond(), testPhoneNumber, testAddress, testZip, testCity, testCountry));
     }

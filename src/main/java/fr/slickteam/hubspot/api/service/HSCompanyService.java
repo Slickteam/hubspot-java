@@ -269,7 +269,7 @@ public class HSCompanyService {
         List<Long> dealIdList = getDealIdList(companyId);
         Long maxId = Collections.max(dealIdList);
 
-        // Get details for each deal id
+        // Get deal details
         return dealService.getByIdAndProperties(maxId, DEAL_PROPERTIES);
     }
 
