@@ -25,15 +25,18 @@ public class HSAssociationService {
     private static final String CONTACT = "contact/";
     private static final String CONTACTS = "contacts/";
     private static final String COMPANIES = "companies/";
+    private static final String COMPANY = "company/";
     private static final String DEAL = "deal/";
     private static final String LINE_ITEM = "line_item/";
     private static final String DEAL_TO_LINE_ITEM = "deal_to_line_item";
     private static final String DEAL_TO_CONTACT = "deal_to_contact";
+    private static final String DEAL_TO_COMPANY = "deal_to_company";
     private static final String CONTACT_TO_COMPANY = "contact_to_company";
     private static final String ASSOCIATION = "associations/";
     private static final String BATCH = "batch/";
     private static final String CREATE = "create/";
     private final HttpService httpService;
+    private final HSService hsService;
 
     /**
      * Constructor with HTTPService injected
@@ -42,6 +45,7 @@ public class HSAssociationService {
      */
     public HSAssociationService(HttpService httpService) {
         this.httpService = httpService;
+        this.hsService = new HSService(httpService);
     }
 
     /**
@@ -97,7 +101,7 @@ public class HSAssociationService {
         String url =
                 BasePath.V4_OBJECT + CONTACTS + contactId + "/" + ASSOCIATION + COMPANIES;
         try {
-            return parseJsonArrayToIdList((JSONObject) httpService.getRequest(url));
+            return hsService.parseJsonArrayToIdList(url);
         } catch (HubSpotException e) {
             if (e.getMessage().equals("No associated companies found for this user")) {
                 return new ArrayList<>();
@@ -117,7 +121,7 @@ public class HSAssociationService {
         String url =
                 BasePath.V4_OBJECT + COMPANIES + companyId + "/" + ASSOCIATION + CONTACTS;
         try {
-            return parseJsonArrayToIdList((JSONObject) httpService.getRequest(url));
+            return hsService.parseJsonArrayToIdList(url);
         } catch (HubSpotException e) {
             if (e.getMessage().equals("No associated contact found for this company")) {
                 return new ArrayList<>();
@@ -126,19 +130,6 @@ public class HSAssociationService {
             }
         }
     }
-
-    /**
-     * Parse a Json array to a list of long Ids
-     **/
-    private List<Long> parseJsonArrayToIdList(JSONObject jsonObject) {
-        JSONArray results = (JSONArray) jsonObject.get("results");
-
-        return IntStream.range(0, results.length())
-                .mapToObj(results::getJSONObject)
-                .map(resultObj -> Long.valueOf(resultObj.get("toObjectId").toString()))
-                .collect(Collectors.toList());
-    }
-
 
     /**
      * Get all companies ids associated to a company
@@ -176,6 +167,21 @@ public class HSAssociationService {
     public void dealToContact(long dealId, long contactId) throws HubSpotException {
         String url =
                 BasePath.V3 + DEAL + dealId + "/" + ASSOCIATION + CONTACT + contactId + "/" + DEAL_TO_CONTACT;
+
+        httpService.putRequest(url);
+    }
+
+
+    /**
+     * Associate a deal and a company
+     *
+     * @param dealId - ID of the deal to link
+     * @param companyId - ID of the company to link
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public void dealToCompany(long dealId, long companyId) throws HubSpotException {
+        String url =
+                BasePath.V3 + DEAL + dealId + "/" + ASSOCIATION + COMPANY + companyId + "/" + DEAL_TO_COMPANY;
 
         httpService.putRequest(url);
     }

@@ -2,6 +2,8 @@ package fr.slickteam.hubspot.api.domain;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 public class HSDeal extends HSObject {
 
@@ -25,12 +27,11 @@ public class HSDeal extends HSObject {
         this.setCloseDate(closedate);
     }
 
-    public HSDeal(String dealname, String dealstage, String pipeline, BigDecimal amount, Instant closedate, Instant contractStartDate, Instant contractEndDate) {
+    public HSDeal(String dealname, String dealstage, String pipeline, BigDecimal amount, LocalDate contractStartDate, LocalDate contractEndDate) {
         this.setDealName(dealname);
         this.setDealStage(dealstage);
         this.setPipeline(pipeline);
         this.setAmount(amount);
-        this.setCloseDate(closedate);
         this.setContractStartDate(contractStartDate);
         this.setContractEndDate(contractEndDate);
     }
@@ -90,15 +91,19 @@ public class HSDeal extends HSObject {
 
     public Instant getContractStartDate() { return getDateProperty(CONTRACT_START_DATE); }
 
-    public HSDeal setContractStartDate(Instant contractStartDate) {
-        setProperty(CONTRACT_START_DATE, contractStartDate.toString());
+    public HSDeal setContractStartDate(LocalDate contractStartDate) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        String dateString = contractStartDate.format(formatter);
+        setProperty(CONTRACT_START_DATE, dateString);
         return this;
     }
 
     public Instant getContractEndDate() { return getDateProperty(CONTRACT_END_DATE); }
 
-    public HSDeal setContractEndDate(Instant contractEndDate) {
-        setProperty(CONTRACT_END_DATE, contractEndDate.toString());
+    public HSDeal setContractEndDate(LocalDate contractEndDate) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        String dateString = contractEndDate.format(formatter);
+        setProperty(CONTRACT_END_DATE, dateString);
         return this;
     }
 }

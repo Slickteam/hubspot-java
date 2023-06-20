@@ -1,17 +1,16 @@
 package fr.slickteam.hubspot.api.integration;
 
-import fr.slickteam.hubspot.api.domain.HSAssociatedCompany;
-import fr.slickteam.hubspot.api.domain.HSAssociationTypeEnum;
+import fr.slickteam.hubspot.api.domain.*;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
-import fr.slickteam.hubspot.api.domain.HSCompany;
-import fr.slickteam.hubspot.api.domain.HSContact;
 import fr.slickteam.hubspot.api.service.HubSpot;
 import fr.slickteam.hubspot.api.utils.Helper;
 import org.hamcrest.core.StringContains;
 import org.junit.*;
 import org.junit.rules.ExpectedException;
 
+import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -28,6 +27,11 @@ public class HSCompanyServiceIT {
     private final String testZip = "zip";
     private final String testCity = "city";
     private final String testCountry = "country";
+    private final String testDealStage = "4245948";
+    private final String testDealPipeline = "4245946";
+    private final BigDecimal testDealAmount = BigDecimal.valueOf(120);
+    private final LocalDate testDealContractStart = LocalDate.now();
+    private final LocalDate testDealContratEnd = LocalDate.now();
 
     private Long createdCompanyId;
 
@@ -82,26 +86,25 @@ public class HSCompanyServiceIT {
         List<HSAssociatedCompany> associatedCompanies = hubSpot.company().getAssociatedCompanies(company.getId());
         assertNotNull(associatedCompanies);
         assertTrue(associatedCompanies.size() > 0);
-        assertEquals(associatedCompanies.get(0).getCompany().getId(), associatedCompany.getId());
+        assertTrue(associatedCompanies.stream().anyMatch(ac -> ac.getCompany().getId() == associatedCompany.getId()));
     }
 
     @Test
     public void get_company_contacts_Tests() throws Exception {
-        HSCompany company = new HSCompany("TestCompany"+ Instant.now().getEpochSecond(), testPhoneNumber, testAddress, testZip, testCity, testCountry);
+        HSCompany company = getNewTestCompany();
         HSContact contact = hubSpot.contact().create(new HSContact(testEmail1, testFirstname, testLastname, testPhoneNumber, testLifeCycleStage));
-        hubSpot.company().create(company);
         hubSpot.association().contactToCompany(contact.getId(), company.getId());
 
         List <HSContact> contacts = hubSpot.company().getCompanyContacts(company.getId());
         assertNotNull(contacts);
         assertTrue(contacts.size() > 0);
-        assertEquals(contacts.get(0).getId(), contact.getId());
+        assertTrue(contacts.stream().anyMatch(c -> c.getId() == contact.getId()));
 
     }
 
     @Test
     public void patchCompany_Test() throws Exception {
-        HSCompany company = hubSpot.company().create(new HSCompany("TestCompany"+ Instant.now().getEpochSecond(), testPhoneNumber, testAddress, testZip, testCity, testCountry));
+        HSCompany company = getNewTestCompany();
         createdCompanyId = company.getId();
 
         HSCompany editCompany = new HSCompany();
@@ -114,8 +117,7 @@ public class HSCompanyServiceIT {
 
     @Test
     public void deleteCompany_Test() throws Exception {
-        HSCompany company = new HSCompany("TestCompany"+ Instant.now().getEpochSecond(), testPhoneNumber, testAddress, testZip, testCity, testCountry);
-        company = hubSpot.company().create(company);
+        HSCompany company = getNewTestCompany();
         createdCompanyId = company.getId();
 
         hubSpot.company().delete(company);
@@ -126,8 +128,7 @@ public class HSCompanyServiceIT {
 
     @Test
     public void deleteCompany_by_id_Test() throws Exception {
-        HSCompany company = new HSCompany("TestCompany"+ Instant.now().getEpochSecond(), testPhoneNumber, testAddress, testZip, testCity, testCountry);
-        company = hubSpot.company().create(company);
+        HSCompany company = getNewTestCompany();
         createdCompanyId = company.getId();
 
         hubSpot.company().delete(company.getId());
@@ -143,5 +144,35 @@ public class HSCompanyServiceIT {
         exception.expect(HubSpotException.class);
         exception.expectMessage(StringContains.containsString("Company ID must be provided"));
         hubSpot.company().delete(company);
+    }
+
+    @Test
+    public void get_deals_Tests() throws Exception {
+        HSDeal deal1 = getNewTestDeal();
+        HSDeal deal2 = getNewTestDeal();
+
+        HSCompany company = getNewTestCompany();
+
+        hubSpot.association().dealToCompany(deal1.getId(), company.getId());
+        hubSpot.association().dealToCompany(deal2.getId(), company.getId());
+
+        List<HSDeal> associatedDeals = hubSpot.company().getDeals(company.getId());
+
+        assertNotNull(associatedDeals);
+        assertTrue(associatedDeals.size() > 0);
+        assertTrue(associatedDeals.stream().anyMatch(deal -> deal.getId() == deal1.getId()));
+        assertTrue(associatedDeals.stream().anyMatch(deal -> deal.getId() == deal2.getId()));
+
+        // clean data test in Hubspot
+        hubSpot.deal().delete(deal1.getId());
+        hubSpot.deal().delete(deal2.getId());
+        hubSpot.company().delete(company.getId());
+    }
+
+    private HSCompany getNewTestCompany() throws HubSpotException {
+        return hubSpot.company().create(new HSCompany("TestCompany"+ Instant.now().getEpochSecond(), testPhoneNumber, testAddress, testZip, testCity, testCountry));
+    }
+    private HSDeal getNewTestDeal() throws HubSpotException {
+        return hubSpot.deal().create(new HSDeal("TestDeal"+ Instant.now().getEpochSecond(), testDealStage, testDealPipeline, testDealAmount, testDealContractStart, testDealContratEnd));
     }
 }

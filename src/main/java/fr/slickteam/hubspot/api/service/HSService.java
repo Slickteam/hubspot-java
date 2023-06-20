@@ -2,10 +2,14 @@ package fr.slickteam.hubspot.api.service;
 
 import fr.slickteam.hubspot.api.domain.HSObject;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
+import kong.unirest.json.JSONArray;
 import kong.unirest.json.JSONObject;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class HSService {
 
@@ -31,6 +35,19 @@ public class HSService {
                 )
         );
         return hsObject;
+    }
+
+    /**
+     * Parse a Json array to a list of long Ids
+     **/
+    public List<Long> parseJsonArrayToIdList(String url) throws HubSpotException {
+        JSONObject requestResponse = (JSONObject) httpService.getRequest(url);
+        JSONArray results = (JSONArray) requestResponse.get("results");
+
+        return IntStream.range(0, results.length())
+                .mapToObj(results::getJSONObject)
+                .map(resultObj -> Long.valueOf(resultObj.get("toObjectId").toString()))
+                .collect(Collectors.toList());
     }
 
     public HSObject getHSObject(String url) throws HubSpotException {

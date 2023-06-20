@@ -10,7 +10,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * HubSpot Company Service
@@ -22,9 +21,10 @@ public class HSCompanyService {
     private final HSService hsService;
     private final HSAssociationService associationService;
     private final HSDealService dealService;
-    private final static List<String> DEAL_PROPERTIES = List.of("dealname", "dealstage", "pipeline", "date_debut_contrat", "date_fin_contrat", "amount");
-    private final static String COMPANY_URL_V3 = "/crm/v3/objects/companies/";
-    private final static String COMPANY_URL_V4 = "/crm/v4/objects/companies/";
+    private static final List<String> DEAL_PROPERTIES = List.of("dealname", "dealstage", "pipeline", "date_debut_contrat", "date_fin_contrat", "amount");
+    private static final String COMPANY_URL_V3 = "/crm/v3/objects/companies/";
+    private static final String COMPANY_URL_V4 = "/crm/v4/objects/companies/";
+
     private HSContactService contactService;
 
 
@@ -229,19 +229,9 @@ public class HSCompanyService {
      * @throws HubSpotException - if HTTP call fails
      */
     public List<Long> getDealIdList(Long companyId) throws HubSpotException {
-        List<Long> companyDealsId = new ArrayList<>();
-
-        // Get associated deals id
-        String getIdsUrl = COMPANY_URL_V4 + companyId + "/associations/deals";
+        String url = COMPANY_URL_V4 + companyId + "/associations/deals";
         try {
-            JSONArray jsonIdsArray = (JSONArray) httpService.getRequest(getIdsUrl);
-        // Map json result list to id list
-        IntStream.range(0, jsonIdsArray.length())
-                .mapToObj(jsonIdsArray::getJSONObject)
-                .map(json -> json.getLong("id"))
-                .forEach(companyDealsId::add);
-
-        return companyDealsId;
+            return hsService.parseJsonArrayToIdList(url);
         } catch (HubSpotException e) {
             throw new HubSpotException("Cannot get company's deals. Company id : " + companyId + ". Reason: " + e.getMessage(), e);
         }
