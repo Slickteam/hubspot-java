@@ -38,9 +38,9 @@ public class HSService {
     }
 
     /**
-     * Parse a Json array to a list of long Ids
+     * Parse a Json object to a list of long Ids
      **/
-    public List<Long> parseJsonArrayToIdList(String url) throws HubSpotException {
+    public List<Long> parseJsonObjectToIdList(String url) throws HubSpotException {
         JSONObject requestResponse = (JSONObject) httpService.getRequest(url);
         JSONArray results = (JSONArray) requestResponse.get("results");
 

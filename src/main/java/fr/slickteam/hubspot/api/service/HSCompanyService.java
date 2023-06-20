@@ -19,13 +19,12 @@ import java.util.stream.Collectors;
 public class HSCompanyService {
     private final HttpService httpService;
     private final HSService hsService;
+    private HSContactService contactService;
     private final HSAssociationService associationService;
     private final HSDealService dealService;
     private static final List<String> DEAL_PROPERTIES = List.of("dealname", "dealstage", "pipeline", "date_debut_contrat", "date_fin_contrat", "amount");
     private static final String COMPANY_URL_V3 = "/crm/v3/objects/companies/";
     private static final String COMPANY_URL_V4 = "/crm/v4/objects/companies/";
-
-    private HSContactService contactService;
 
 
     /**
@@ -110,7 +109,7 @@ public class HSCompanyService {
     }
 
     /**
-     * Get HubSpot company by its ID.
+     * Get HubSpot associated companies by company ID.
      *
      * @param companyId - ID of company
      * @return A list of associated companies with details
@@ -231,7 +230,7 @@ public class HSCompanyService {
     public List<Long> getDealIdList(Long companyId) throws HubSpotException {
         String url = COMPANY_URL_V4 + companyId + "/associations/deals";
         try {
-            return hsService.parseJsonArrayToIdList(url);
+            return hsService.parseJsonObjectToIdList(url);
         } catch (HubSpotException e) {
             throw new HubSpotException("Cannot get company's deals. Company id : " + companyId + ". Reason: " + e.getMessage(), e);
         }

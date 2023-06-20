@@ -30,6 +30,8 @@ public class HubSpot {
         return new HSDealService(httpService);
     }
 
+    public HSPipelineService pipeline() {return new HSPipelineService(httpService);}
+
     public HSLineItemService lineItem() {
         return new HSLineItemService(httpService);
     }

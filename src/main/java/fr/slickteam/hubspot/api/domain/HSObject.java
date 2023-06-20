@@ -54,6 +54,18 @@ public class HSObject {
         return Strings.isNullOrEmpty(getProperty(property)) ? BigDecimal.valueOf(0) : new BigDecimal(getProperty(property));
     }
 
+    public int getIntProperty(String property) {
+        return Strings.isNullOrEmpty(getProperty(property)) ? 0 : Integer.parseInt(getProperty(property));
+    }
+
+    public double getDoubleProperty(String property) {
+        return Strings.isNullOrEmpty(getProperty(property)) ? 0.0 : Double.parseDouble(getProperty(property));
+    }
+
+    public boolean getBooleanProperty(String property) {
+        return !Strings.isNullOrEmpty(getProperty(property)) && Boolean.parseBoolean(getProperty(property));
+    }
+
     public Instant getDateProperty(String property) {
         if (Strings.isNullOrEmpty(getProperty(property))) {
             return Instant.now();

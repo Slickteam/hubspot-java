@@ -101,7 +101,7 @@ public class HSAssociationService {
         String url =
                 BasePath.V4_OBJECT + CONTACTS + contactId + "/" + ASSOCIATION + COMPANIES;
         try {
-            return hsService.parseJsonArrayToIdList(url);
+            return hsService.parseJsonObjectToIdList(url);
         } catch (HubSpotException e) {
             if (e.getMessage().equals("No associated companies found for this user")) {
                 return new ArrayList<>();
@@ -121,7 +121,7 @@ public class HSAssociationService {
         String url =
                 BasePath.V4_OBJECT + COMPANIES + companyId + "/" + ASSOCIATION + CONTACTS;
         try {
-            return hsService.parseJsonArrayToIdList(url);
+            return hsService.parseJsonObjectToIdList(url);
         } catch (HubSpotException e) {
             if (e.getMessage().equals("No associated contact found for this company")) {
                 return new ArrayList<>();
