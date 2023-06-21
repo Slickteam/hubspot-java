@@ -2,8 +2,7 @@ package fr.slickteam.hubspot.api.domain;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import java.util.Map;
 
 public class HSDeal extends HSObject {
 
@@ -13,8 +12,6 @@ public class HSDeal extends HSObject {
     private static final String PIPELINE = "pipeline";
     private static final String AMOUNT = "amount";
     private static final String CLOSE_DATE = "closedate";
-    private static final String CONTRACT_START_DATE = "date_debut_contrat";
-    private static final String CONTRACT_END_DATE = "date_fin_contrat";
 
     public HSDeal() {
     }
@@ -27,15 +24,15 @@ public class HSDeal extends HSObject {
         this.setCloseDate(closedate);
     }
 
-    public HSDeal(String dealname, String dealstage, String pipeline, BigDecimal amount, LocalDate contractStartDate, LocalDate contractEndDate) {
+
+
+    public HSDeal(String dealname, String dealstage, String pipeline, BigDecimal amount, Map<String, String> properties) {
+        super(properties);
         this.setDealName(dealname);
         this.setDealStage(dealstage);
         this.setPipeline(pipeline);
         this.setAmount(amount);
-        this.setContractStartDate(contractStartDate);
-        this.setContractEndDate(contractEndDate);
     }
-
 
     public long getId() {
         return getLongProperty(ID);
@@ -86,24 +83,6 @@ public class HSDeal extends HSObject {
 
     public HSDeal setCloseDate(Instant closedate) {
         setProperty(CLOSE_DATE, closedate.toString());
-        return this;
-    }
-
-    public Instant getContractStartDate() { return getDateProperty(CONTRACT_START_DATE); }
-
-    public HSDeal setContractStartDate(LocalDate contractStartDate) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        String dateString = contractStartDate.format(formatter);
-        setProperty(CONTRACT_START_DATE, dateString);
-        return this;
-    }
-
-    public Instant getContractEndDate() { return getDateProperty(CONTRACT_END_DATE); }
-
-    public HSDeal setContractEndDate(LocalDate contractEndDate) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        String dateString = contractEndDate.format(formatter);
-        setProperty(CONTRACT_END_DATE, dateString);
         return this;
     }
 }

@@ -15,6 +15,11 @@ import org.mockito.Mockito;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
@@ -90,6 +95,26 @@ public class HSDealServiceIT {
         createdDealId = dealId;
 
         HSDeal deal = hubSpot.deal().getByID(dealId);
+
+        assertEquals(dealId, deal.getId());
+        assertEquals(testDealName, deal.getDealName());
+    }
+
+    @Test
+    public void getDeal_Id_And_Properties_Test() throws Exception {
+        LocalDate testDealContractStart = LocalDate.now();
+        LocalDate testDealContractEnd = LocalDate.now();
+        Map<String, String> contractDates = new HashMap<>();
+        contractDates.put("date_debut_contrat", testDealContractStart.toString());
+        contractDates.put("date_fin_contrat", testDealContractEnd.toString());
+        List<String> properties = Arrays.asList("dealname","dealstage","pipeline","date_debut_contrat","date_fin_contrat","amount");
+        long dealId = hubSpot
+                .deal()
+                .create(new HSDeal(testDealName, testDealStage, testPipeline, testAmount, contractDates))
+                .getId();
+        createdDealId = dealId;
+
+        HSDeal deal = hubSpot.deal().getByIdAndProperties(dealId, properties);
 
         assertEquals(dealId, deal.getId());
         assertEquals(testDealName, deal.getDealName());

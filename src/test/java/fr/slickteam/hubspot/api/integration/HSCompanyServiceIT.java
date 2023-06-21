@@ -11,7 +11,9 @@ import org.junit.rules.ExpectedException;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -160,7 +162,7 @@ public class HSCompanyServiceIT {
     }
 
     @Test
-    public void get_last_deals_Tests() throws Exception {
+    public void get_last_deal_Tests() throws Exception {
         HSDeal deal1 = getNewTestDeal();
         HSDeal deal2 = getNewTestDeal();
 
@@ -187,6 +189,9 @@ public class HSCompanyServiceIT {
         BigDecimal testDealAmount = BigDecimal.valueOf(120);
         LocalDate testDealContractStart = LocalDate.now();
         LocalDate testDealContractEnd = LocalDate.now();
-        return hubSpot.deal().create(new HSDeal("TestDeal"+ Instant.now().getEpochSecond(), "4245948", "4245946", testDealAmount, testDealContractStart, testDealContractEnd));
+        Map<String, String> contractDates = new HashMap<>();
+        contractDates.put("date_debut_contrat", testDealContractStart.toString());
+        contractDates.put("date_fin_contrat", testDealContractEnd.toString());
+        return hubSpot.deal().create(new HSDeal("TestDeal"+ Instant.now().getEpochSecond(), "4245948", "4245946", testDealAmount, contractDates));
     }
 }
