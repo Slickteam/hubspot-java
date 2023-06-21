@@ -50,6 +50,24 @@ public class HSService {
                 .collect(Collectors.toList());
     }
 
+    public List<JSONObject> parseJsonResultToList (String url) throws HubSpotException {
+        JSONObject requestResponse = (JSONObject) httpService.getRequest(url);
+        JSONArray results = (JSONArray) requestResponse.get("results");
+        return IntStream.range(0, results.length())
+                .mapToObj(results::getJSONObject)
+                .collect(Collectors.toList());
+    }
+
+    public List<HSObject> parseJsonResultToHsList (String url) throws HubSpotException {
+        JSONObject requestResponse = (JSONObject) httpService.getRequest(url);
+        JSONArray results = (JSONArray) requestResponse.get("results");
+        HSObject object = new HSObject();
+        return IntStream.range(0, results.length())
+                .mapToObj(results::getJSONObject)
+                .map(resultObj -> parseJSONData(resultObj, object))
+                .collect(Collectors.toList());
+    }
+
     public HSObject getHSObject(String url) throws HubSpotException {
         try {
             HSObject object = new HSObject();

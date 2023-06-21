@@ -23,16 +23,6 @@ public class HSCompanyServiceIT {
     private final String testPhoneNumber = "TestPhoneNumber";
     private final String testLifeCycleStage = "other";
 
-    private final String testAddress = "address";
-    private final String testZip = "zip";
-    private final String testCity = "city";
-    private final String testCountry = "country";
-    private final String testDealStage = "4245948";
-    private final String testDealPipeline = "4245946";
-    private final BigDecimal testDealAmount = BigDecimal.valueOf(120);
-    private final LocalDate testDealContractStart = LocalDate.now();
-    private final LocalDate testDealContratEnd = LocalDate.now();
-
     private Long createdCompanyId;
 
     private HubSpot hubSpot;
@@ -54,7 +44,7 @@ public class HSCompanyServiceIT {
     }
     @Test
     public void createCompany_Test() throws Exception {
-        HSCompany company = new HSCompany("TestCompany"+ Instant.now().getEpochSecond(), testPhoneNumber, testAddress, testZip, testCity, testCountry);
+        HSCompany company = getNewTestCompany();
         company = hubSpot.company().create(company);
         createdCompanyId = company.getId();
 
@@ -64,7 +54,7 @@ public class HSCompanyServiceIT {
     @Test
     @Ignore("Add comment to explain why this test is ignored")
     public void addContact_Test() throws Exception {
-        HSCompany company = hubSpot.company().create(new HSCompany("TestCompany"+ Instant.now().getEpochSecond(), testPhoneNumber, testAddress, testZip, testCity, testCountry));
+        HSCompany company = getNewTestCompany();
         HSContact contact = hubSpot.contact().create(new HSContact(testEmail1, testFirstname, testLastname, testPhoneNumber, testLifeCycleStage));
         hubSpot.company().addContact(contact.getId(), company.getId());
     }
@@ -78,8 +68,8 @@ public class HSCompanyServiceIT {
 
     @Test
     public void get_Associated_Companies_Test() throws Exception {
-        HSCompany company = new HSCompany("TestCompany"+ Instant.now().getEpochSecond(), testPhoneNumber, testAddress, testZip, testCity, testCountry);
-        HSCompany associatedCompany = new HSCompany("TestCompany2"+ Instant.now().getEpochSecond(), testPhoneNumber, testAddress, testZip, testCity, testCountry);
+        HSCompany company = getNewTestCompany();
+        HSCompany associatedCompany = getNewTestCompany();
         hubSpot.company().create(company);
         hubSpot.company().create(associatedCompany);
         hubSpot.association().companyToCompany(company.getId(), associatedCompany.getId(), HSAssociationTypeEnum.PARENT);
@@ -191,9 +181,12 @@ public class HSCompanyServiceIT {
     }
 
     private HSCompany getNewTestCompany() throws HubSpotException {
-        return hubSpot.company().create(new HSCompany("TestCompany"+ Instant.now().getEpochSecond(), testPhoneNumber, testAddress, testZip, testCity, testCountry));
+        return hubSpot.company().create(new HSCompany("TestCompany"+ Instant.now().getEpochSecond(), testPhoneNumber, "address", "zip", "city", "country"));
     }
     private HSDeal getNewTestDeal() throws HubSpotException {
-        return hubSpot.deal().create(new HSDeal("TestDeal"+ Instant.now().getEpochSecond(), testDealStage, testDealPipeline, testDealAmount, testDealContractStart, testDealContratEnd));
+        BigDecimal testDealAmount = BigDecimal.valueOf(120);
+        LocalDate testDealContractStart = LocalDate.now();
+        LocalDate testDealContractEnd = LocalDate.now();
+        return hubSpot.deal().create(new HSDeal("TestDeal"+ Instant.now().getEpochSecond(), "4245948", "4245946", testDealAmount, testDealContractStart, testDealContractEnd));
     }
 }

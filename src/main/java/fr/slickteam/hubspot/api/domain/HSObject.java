@@ -58,10 +58,6 @@ public class HSObject {
         return Strings.isNullOrEmpty(getProperty(property)) ? 0 : Integer.parseInt(getProperty(property));
     }
 
-    public double getDoubleProperty(String property) {
-        return Strings.isNullOrEmpty(getProperty(property)) ? 0.0 : Double.parseDouble(getProperty(property));
-    }
-
     public boolean getBooleanProperty(String property) {
         return !Strings.isNullOrEmpty(getProperty(property)) && Boolean.parseBoolean(getProperty(property));
     }

@@ -141,7 +141,7 @@ public class HSAssociationService {
         String url =
                 BasePath.V4_OBJECT + COMPANIES + companyId + "/" + ASSOCIATION + COMPANIES;
         try {
-            return parseJsonResultToList((JSONObject) httpService.getRequest(url));
+            return hsService.parseJsonResultToList(url);
         } catch (HubSpotException e) {
             if (e.getMessage().equals("No company associated found for this company")) {
                 return new ArrayList<>();
@@ -149,12 +149,6 @@ public class HSAssociationService {
                 throw e;
             }
         }
-    }
-    public List<JSONObject> parseJsonResultToList (JSONObject jsonObject) {
-        JSONArray results = (JSONArray) jsonObject.get("results");
-        return IntStream.range(0, results.length())
-                .mapToObj(results::getJSONObject)
-                .collect(Collectors.toList());
     }
 
     /**

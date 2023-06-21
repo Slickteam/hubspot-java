@@ -6,6 +6,7 @@ import java.util.Map;
 public class HSStage extends HSObject{
 
     private static final String ID = "id";
+    private static final String LABEL = "label";
     private static final String DISPLAY_ORDER = "displayOrder";
     private static final String METADATA = "metadata";
     private static final String CREATED_AT = "createdAt";
@@ -15,8 +16,24 @@ public class HSStage extends HSObject{
     public HSStage() {
     }
 
-    public HSStage(Map<String, String> properties) {
+    public HSStage(String label, int displayOrder, String metadata, Instant createdAt, Instant updatedAt, Boolean archived) {
+        this.setLabel(label);
+        this.setDisplayOrder(displayOrder);
+        this.setMetadata(metadata);
+        this.setCreatedAt(createdAt);
+        this.setUpdateAt(updatedAt);
+        this.setArchived(archived);
+    }
+
+    public HSStage(long id, String label, int displayOrder, String metadata, Instant createdAt, Instant updatedAt, Boolean archived, Map<String, String> properties) {
         super(properties);
+        this.setId(id);
+        this.setLabel(label);
+        this.setDisplayOrder(displayOrder);
+        this.setMetadata(metadata);
+        this.setCreatedAt(createdAt);
+        this.setUpdateAt(updatedAt);
+        this.setArchived(archived);
     }
 
     public long getId() {
@@ -25,6 +42,15 @@ public class HSStage extends HSObject{
 
     public HSStage setId(long id) {
         setProperty(ID, Long.toString(id));
+        return this;
+    }
+
+    public String getLabel() {
+        return getProperty(LABEL);
+    }
+
+    public HSStage setLabel(String label) {
+        setProperty(LABEL, label);
         return this;
     }
 
@@ -72,4 +98,6 @@ public class HSStage extends HSObject{
         setProperty(ARCHIVED, Boolean.toString(archived));
         return this;
     }
+
+
 }
