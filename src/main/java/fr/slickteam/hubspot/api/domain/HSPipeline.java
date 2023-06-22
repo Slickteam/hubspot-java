@@ -68,14 +68,22 @@ public class HSPipeline extends HSObject{
     }
 
     public List<HSStage> getStages() {
-        List<HSStage> stages = new ArrayList<>();
         JSONArray jsonArray = new JSONArray(getProperty(STAGES));
+        return getStagesProperties(jsonArray);
+    }
 
+    private List<HSStage> getStagesProperties(JSONArray jsonArray) {
+        List<HSStage> stages = new ArrayList<>();
         for (int i = 0; i < jsonArray.length(); i++) {
             HSStage stage = new HSStage();
             JSONObject jsonStage = jsonArray.getJSONObject(i);
-            stage.setId(Long.parseLong((String) jsonStage.get("id")));
-
+            stage.setId(Long.parseLong((String) jsonStage.get(ID)));
+            stage.setLabel((String) jsonStage.get(LABEL));
+            stage.setDisplayOrder(((int) jsonStage.get(DISPLAY_ORDER)));
+            stage.setMetadata(String.valueOf(jsonStage.get("metadata")));
+            stage.setCreatedAt(Instant.parse((String) jsonStage.get(CREATED_AT)));
+            stage.setUpdateAt(Instant.parse((String) jsonStage.get(UPDATED_AT)));
+            stage.setArchived((Boolean) jsonStage.get(ARCHIVED));
             stages.add(stage);
         }
         return stages;
