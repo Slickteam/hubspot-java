@@ -5,9 +5,8 @@ import fr.slickteam.hubspot.api.utils.HubSpotException;
 import kong.unirest.json.JSONArray;
 import kong.unirest.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.time.Instant;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -248,6 +247,10 @@ public class HSCompanyService {
         // Get associated deals id
         List<Long> dealIdList = getDealIdList(companyId);
 
+        if(dealIdList.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         // Get details for each deal id
         for (Long dealId : dealIdList) {
             companyDeals.add(dealService.getByIdAndProperties(dealId, DEAL_PROPERTIES));
@@ -263,17 +266,16 @@ public class HSCompanyService {
      * @throws HubSpotException - if HTTP call fails
      */
     public HSDeal getLastDeal(long companyId) throws HubSpotException {
-        // TODO : comparer les dates de création
-        // Get associated deals id
-        List<Long> dealIdList = getDealIdList(companyId);
-        long maxId = 0;
-        // iterating over array and updating maxId
-        for(long id : dealIdList){
-            maxId = Math.max(maxId, id);
+        // Get associated deals
+        List<HSDeal> dealList = getDeals(companyId);
+
+        if (dealList == null || dealList.isEmpty()) {
+            return null;
         }
 
-        // Get deal details
-        return dealService.getByIdAndProperties(maxId, DEAL_PROPERTIES);
+        return dealList.stream()
+                .max(Comparator.comparing(HSDeal::getCreatedDate))
+                .orElse(null);
     }
 
 }
