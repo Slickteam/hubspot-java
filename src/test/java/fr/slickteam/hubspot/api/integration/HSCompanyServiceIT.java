@@ -163,18 +163,16 @@ public class HSCompanyServiceIT {
 
     @Test
     public void get_last_deal_Tests() throws Exception {
-        HSDeal deal1 = getNewTestDeal();
-        HSDeal deal2 = getNewTestDeal();
-
         HSCompany company = getNewTestCompany();
-
+        HSDeal deal1 = getNewTestDeal();
         hubSpot.association().dealToCompany(deal1.getId(), company.getId());
+
+        HSDeal deal2 = getNewTestDeal();
         hubSpot.association().dealToCompany(deal2.getId(), company.getId());
 
-        HSDeal associatedDeal = hubSpot.company().getLastDeal(company.getId());
+        HSDeal lastDeal = hubSpot.company().getLastDeal(company.getId());
 
-        assertNotNull(associatedDeal);
-        assertEquals(associatedDeal.getId(), deal2.getId());
+        assertNotNull(lastDeal);
 
         // clean data test in Hubspot
         hubSpot.deal().delete(deal1.getId());

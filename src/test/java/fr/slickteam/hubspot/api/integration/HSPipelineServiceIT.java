@@ -9,8 +9,6 @@ import org.junit.rules.ExpectedException;
 
 import java.util.List;
 
-import static org.junit.Assert.*;
-
 public class HSPipelineServiceIT {
 
     private HubSpot hubSpot;

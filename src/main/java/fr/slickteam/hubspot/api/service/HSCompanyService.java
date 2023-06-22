@@ -6,7 +6,6 @@ import kong.unirest.json.JSONArray;
 import kong.unirest.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -263,10 +262,15 @@ public class HSCompanyService {
      * @return The last company deal
      * @throws HubSpotException - if HTTP call fails
      */
-    public HSDeal getLastDeal(Long companyId) throws HubSpotException {
+    public HSDeal getLastDeal(long companyId) throws HubSpotException {
+        // TODO : comparer les dates de création
         // Get associated deals id
         List<Long> dealIdList = getDealIdList(companyId);
-        Long maxId = Collections.max(dealIdList);
+        long maxId = 0;
+        // iterating over array and updating maxId
+        for(long id : dealIdList){
+            maxId = Math.max(maxId, id);
+        }
 
         // Get deal details
         return dealService.getByIdAndProperties(maxId, DEAL_PROPERTIES);

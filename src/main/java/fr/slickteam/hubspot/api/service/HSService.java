@@ -20,13 +20,18 @@ public class HSService {
     }
 
     public HSObject parseJSONData(JSONObject jsonBody, HSObject hsObject) {
-        JSONObject jsonProperties = jsonBody.getJSONObject("properties");
+        JSONObject jsonProperties;
+        if(jsonBody.has("properties")) {
+            jsonProperties = jsonBody.getJSONObject("properties");
+        } else {
+            jsonProperties = jsonBody;
+        }
 
         Set<String> keys = jsonProperties.keySet();
 
         keys.forEach(key ->
                 hsObject.setProperty(key,
-                        jsonProperties.get(key) instanceof JSONObject ?
+                        jsonProperties.get(key) instanceof JSONObject && ((JSONObject) jsonProperties.get(key)).has("value")?
                                 ((JSONObject) jsonProperties.get(key)).getString(
                                         "value") :
                                 Optional.ofNullable(jsonProperties.get(key))
@@ -36,6 +41,7 @@ public class HSService {
         );
         return hsObject;
     }
+
 
     /**
      * Parse a Json object to a list of long Ids
@@ -55,16 +61,6 @@ public class HSService {
         JSONArray results = (JSONArray) requestResponse.get("results");
         return IntStream.range(0, results.length())
                 .mapToObj(results::getJSONObject)
-                .collect(Collectors.toList());
-    }
-
-    public List<HSObject> parseJsonResultToHsList (String url) throws HubSpotException {
-        JSONObject requestResponse = (JSONObject) httpService.getRequest(url);
-        JSONArray results = (JSONArray) requestResponse.get("results");
-        HSObject object = new HSObject();
-        return IntStream.range(0, results.length())
-                .mapToObj(results::getJSONObject)
-                .map(resultObj -> parseJSONData(resultObj, object))
                 .collect(Collectors.toList());
     }
 

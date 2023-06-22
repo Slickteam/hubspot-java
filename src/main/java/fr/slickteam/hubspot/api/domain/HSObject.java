@@ -55,7 +55,7 @@ public class HSObject {
     }
 
     public int getIntProperty(String property) {
-        return Strings.isNullOrEmpty(getProperty(property)) ? 0 : Integer.parseInt(getProperty(property));
+        return Integer.parseInt(getProperty(property));
     }
 
     public boolean getBooleanProperty(String property) {
