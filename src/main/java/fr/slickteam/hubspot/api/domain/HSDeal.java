@@ -12,6 +12,7 @@ public class HSDeal extends HSObject {
     private static final String PIPELINE = "pipeline";
     private static final String AMOUNT = "amount";
     private static final String CLOSE_DATE = "closedate";
+    private static final String CREATED_DATE = "createdate";
 
     public HSDeal() {
     }
@@ -83,6 +84,13 @@ public class HSDeal extends HSObject {
 
     public HSDeal setCloseDate(Instant closedate) {
         setProperty(CLOSE_DATE, closedate.toString());
+        return this;
+    }
+
+    public Instant getCreatedDate() { return getDateProperty(CREATED_DATE); }
+
+    public HSDeal setCreatedDate(Instant createdDate) {
+        setProperty(CREATED_DATE, createdDate.toString());
         return this;
     }
 }
