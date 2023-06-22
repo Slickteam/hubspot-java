@@ -1,14 +1,22 @@
 package fr.slickteam.hubspot.api.domain;
 
+import kong.unirest.json.JSONArray;
+import kong.unirest.json.JSONObject;
+
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 
 public class HSPipeline extends HSObject{
 
     private static final String ID = "id";
     private static final String LABEL = "label";
     private static final String DISPLAY_ORDER = "displayOrder";
-//    private static final String STAGES = "stages";
+
+    private static final String STAGES = "stages";
     private static final String CREATED_AT = "createdAt";
     private static final String UPDATED_AT = "updatedAt";
     private static final String ARCHIVED = "archived";
@@ -60,26 +68,24 @@ public class HSPipeline extends HSObject{
         return this;
     }
 
-//    public String getStages() {
-//        // TODO:
-////        List<HSStage> stages = new ArrayList<>();
-////        JSONArray jsonArray = new JSONArray(getProperty(STAGES));
-////
-////        ArrayList<String> arrayList = new ArrayList<>();
-////        for (int i = 0; i < jsonArray.length(); i++) {
-////            HSStage stage = new HSStage();
-////            JSONObject jsonProperties = this.getJSONObject(STAGES);
-////            String stageString = jsonArray.getString(i);
-////            stage.set
-////            arrayList.add(jsonArray.getString(i));
-////        }
-//        return getProperty(STAGES);
-//    }
+    public List<HSStage> getStages() {
+        List<HSStage> stages = new ArrayList<>();
+        JSONArray jsonArray = new JSONArray(getProperty(STAGES));
 
-//    public HSPipeline setStages(String stages) {
-//        setProperty(STAGES, String.valueOf(stages));
-//        return this;
-//    }
+        for (int i = 0; i < jsonArray.length(); i++) {
+            HSStage stage = new HSStage();
+            JSONObject jsonStage = jsonArray.getJSONObject(i);
+            stage.setId(Long.parseLong((String) jsonStage.get("id")));
+
+            stages.add(stage);
+        }
+        return stages;
+    }
+
+    public HSPipeline setStages(String stages) {
+        setProperty(STAGES, String.valueOf(stages));
+        return this;
+    }
 
     public Instant getCreatedAt() {
         return getDateProperty(CREATED_AT);

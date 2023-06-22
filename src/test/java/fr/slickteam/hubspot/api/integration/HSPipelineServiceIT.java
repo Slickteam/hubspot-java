@@ -32,6 +32,7 @@ public class HSPipelineServiceIT {
     public void getPipelineById_Test() throws HubSpotException {
         HSPipeline pipeline = hubSpot.pipeline().getPipelineById(3770417);
         Assert.assertNotNull(pipeline);
+        Assert.assertNotNull(pipeline.getStages());
     }
 
     @Test
