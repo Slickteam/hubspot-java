@@ -26,8 +26,7 @@ public class HSAssociatedCompany {
     }
 
     public void setAssociationType(HSAssociationTypeEnum typeEnum) {
-        HSAssociationTypeOutput createdAssociationType =new HSAssociationTypeOutput().setType(typeEnum);
-        this.associationType = createdAssociationType;
+        this.associationType = new HSAssociationTypeOutput().setType(typeEnum);
     }
 
     public HSCompany getCompany() {

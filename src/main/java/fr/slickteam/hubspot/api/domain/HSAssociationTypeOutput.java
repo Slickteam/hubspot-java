@@ -8,9 +8,9 @@ public class HSAssociationTypeOutput extends HSObject {
     private static final String CATEGORY = "category";
     private static final String HS_CATEGORY_OUTPUT = "HUBSPOT_DEFINED";
     private static final String PARENT_TYPE_ID = "14";
-    private static final String PARENT_LABEL = "Child Company";
+    private static final String PARENT_LABEL = "Parent Company";
     private static final String CHILD_TYPE_ID = "13";
-    private static final String CHILD_LABEL = "Parent Company";
+    private static final String CHILD_LABEL = "Child Company";
 
     public HSAssociationTypeOutput() {
     }
@@ -37,12 +37,15 @@ public class HSAssociationTypeOutput extends HSObject {
     public void setTypeId(String typeId) {
         setProperty(TYPE_ID, typeId);
     }
+
     public void setLabel(String label) {
         setProperty(LABEL, label);
     }
+
     public void setCategory() {
         setProperty(CATEGORY, HS_CATEGORY_OUTPUT);
     }
+
     public Integer getTypeId() {
         return Integer.valueOf(getProperty(TYPE_ID));
     }
