@@ -16,7 +16,7 @@ public class HSStage extends HSObject{
     public HSStage() {
     }
 
-    public HSStage(String label, int displayOrder, HSMetadata metadata, Instant createdAt, Instant updatedAt, Boolean archived) {
+    public HSStage(String label, int displayOrder, String metadata, Instant createdAt, Instant updatedAt, Boolean archived) {
         this.setLabel(label);
         this.setDisplayOrder(displayOrder);
         this.setMetadata(metadata);
@@ -25,7 +25,7 @@ public class HSStage extends HSObject{
         this.setArchived(archived);
     }
 
-    public HSStage(String label, int displayOrder,HSMetadata metadata, Instant createdAt, Instant updatedAt, Boolean archived, Map<String, String> properties) {
+    public HSStage(String label, int displayOrder,String metadata, Instant createdAt, Instant updatedAt, Boolean archived, Map<String, String> properties) {
         super(properties);
         this.setLabel(label);
         this.setDisplayOrder(displayOrder);
@@ -62,14 +62,12 @@ public class HSStage extends HSObject{
         return this;
     }
 
-    public HSMetadata getMetadata() {
-        HSMetadata hsMetadata = new HSMetadata();
-        // return getHSObjectProperty(METADATA, hsMetadata);
-        return null;
+    public String getMetadata() {
+        return getProperty(METADATA);
     }
 
-    public HSStage setMetadata(HSMetadata metadata) {
-        setProperty(METADATA, String.valueOf(metadata));
+    public HSStage setMetadata(String metadata) {
+        setProperty(METADATA, metadata);
         return this;
     }
 
