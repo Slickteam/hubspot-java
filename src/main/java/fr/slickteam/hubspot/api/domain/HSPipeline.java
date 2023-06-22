@@ -5,17 +5,14 @@ import kong.unirest.json.JSONObject;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.IntStream;
 
 public class HSPipeline extends HSObject{
 
     private static final String ID = "id";
     private static final String LABEL = "label";
     private static final String DISPLAY_ORDER = "displayOrder";
-
     private static final String STAGES = "stages";
     private static final String CREATED_AT = "createdAt";
     private static final String UPDATED_AT = "updatedAt";
@@ -24,18 +21,20 @@ public class HSPipeline extends HSObject{
     public HSPipeline() {
     }
 
-    public HSPipeline(String label, int displayOrder, Instant createdAt, Instant updatedAt, boolean archived) {
+    public HSPipeline(String label, int displayOrder, List<HSStage> stages, Instant createdAt, Instant updatedAt, boolean archived) {
         this.setLabel(label);
         this.setDisplayOrder(displayOrder);
+        this.setStages(stages);
         this.setCreatedAt(createdAt);
         this.setUpdateAt(updatedAt);
         this.setArchived(archived);
     }
 
-    public HSPipeline(String label, int displayOrder, Instant createdAt, Instant updatedAt, boolean archived, Map<String, String> properties) {
+    public HSPipeline(String label, int displayOrder, List<HSStage> stages, Instant createdAt, Instant updatedAt, boolean archived, Map<String, String> properties) {
         super(properties);
         this.setLabel(label);
         this.setDisplayOrder(displayOrder);
+        this.setStages(stages);
         this.setCreatedAt(createdAt);
         this.setUpdateAt(updatedAt);
         this.setArchived(archived);
@@ -82,7 +81,7 @@ public class HSPipeline extends HSObject{
         return stages;
     }
 
-    public HSPipeline setStages(String stages) {
+    public HSPipeline setStages(List<HSStage> stages) {
         setProperty(STAGES, String.valueOf(stages));
         return this;
     }

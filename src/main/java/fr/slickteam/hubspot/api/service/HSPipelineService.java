@@ -12,7 +12,6 @@ public class HSPipelineService {
     private final HSService hsService;
     private static final String PIPELINE_URL = "/crm/v3/pipelines/";
     private static final String DEALS = "deals/";
-    private static final String STAGES = "stages/";
 
     /**
      * Constructor with HTTPService injected
@@ -22,6 +21,44 @@ public class HSPipelineService {
     public HSPipelineService(HttpService httpService) {
         this.httpService = httpService;
         this.hsService = new HSService(httpService);
+    }
+
+    /**
+     * Create a new pipeline
+     *
+     * @param hsPipeline - pipeline to create
+     * @return created pipeline
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public HSPipeline create(HSPipeline hsPipeline) throws HubSpotException {
+        JSONObject jsonObject = (JSONObject) httpService.postRequest(PIPELINE_URL + DEALS, hsPipeline.toJsonString());
+        hsPipeline.setId(jsonObject.getLong("id"));
+        return hsPipeline;
+    }
+
+    /**
+     * Delete a pipeline.
+     *
+     * @param pipeline - pipeline to delete
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public void delete(HSPipeline pipeline) throws HubSpotException {
+        delete(pipeline.getId());
+    }
+
+    /**
+     * Delete a pipeline.
+     *
+     * @param id - ID of the pipeline to delete
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public void delete(Long id) throws HubSpotException {
+        if (id == 0) {
+            throw new HubSpotException("Pipeline ID must be provided");
+        }
+        String url = PIPELINE_URL + DEALS + id;
+
+        httpService.deleteRequest(url);
     }
 
     /**
@@ -53,31 +90,6 @@ public class HSPipelineService {
     }
 
     /**
-     * Get HubSpot pipeline stage by its ID.
-     *
-     * @param pipelineId - ID of pipeline
-     * @param stageId - ID of stage searched
-     * @return A pipeline stage
-     * @throws HubSpotException - if HTTP call fails
-     */
-    public HSStage getStageById(long pipelineId, long stageId) throws HubSpotException {
-        String url = PIPELINE_URL + DEALS + pipelineId + "/" + STAGES + stageId;
-        return getStage(url);
-    }
-
-    /**
-     * Parse stage data from HubSpot API response
-     *
-     * @param jsonBody - body from HubSpot API response
-     * @return a stage
-     */
-    public HSStage parseStageData(JSONObject jsonBody) {
-        HSStage stage = new HSStage();
-        hsService.parseJSONData(jsonBody, stage);
-        return stage;
-    }
-
-    /**
      * Parse pipeline data from HubSpot API response
      *
      * @param jsonObject - body from HubSpot API response
@@ -102,15 +114,4 @@ public class HSPipelineService {
         }
     }
 
-    private HSStage getStage(String url) throws HubSpotException {
-        try {
-            return parseStageData((JSONObject) httpService.getRequest(url));
-        } catch (HubSpotException e) {
-            if (e.getMessage().equals("Not Found")) {
-                return null;
-            } else {
-                throw e;
-            }
-        }
-    }
 }

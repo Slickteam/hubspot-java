@@ -1,7 +1,7 @@
 package fr.slickteam.hubspot.api.unit;
 
 import fr.slickteam.hubspot.api.domain.HSStage;
-import fr.slickteam.hubspot.api.service.HSPipelineService;
+import fr.slickteam.hubspot.api.service.HSStageService;
 import fr.slickteam.hubspot.api.service.HubSpot;
 import fr.slickteam.hubspot.api.utils.Helper;
 import kong.unirest.json.JSONObject;
@@ -14,11 +14,11 @@ import static org.junit.Assert.assertEquals;
 
 public class HSStageJSONTest {
 
-     HSPipelineService service;
+     HSStageService service;
 
     @Before
     public void setUp() throws IOException {
-        service = new HubSpot(Helper.provideHubspotProperties()).pipeline();
+        service = new HubSpot(Helper.provideHubspotProperties()).stage();
     }
 
     @Test

@@ -26,11 +26,14 @@ public class HubSpot {
         contactService.setCompanyService(companyService);
         return contactService;
     }
+
     public HSDealService deal() {
         return new HSDealService(httpService);
     }
 
-    public HSPipelineService pipeline() {return new HSPipelineService(httpService);}
+    public HSPipelineService pipeline() {
+        return new HSPipelineService(httpService);
+    }
 
     public HSLineItemService lineItem() {
         return new HSLineItemService(httpService);
@@ -48,4 +51,7 @@ public class HubSpot {
         return new HSProductService(httpService);
     }
 
+    public HSStageService stage() {
+        return new HSStageService(httpService);
+    }
 }
