@@ -5,7 +5,6 @@ import fr.slickteam.hubspot.api.utils.HubSpotException;
 import kong.unirest.json.JSONArray;
 import kong.unirest.json.JSONObject;
 
-import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -124,7 +123,7 @@ public class HSCompanyService {
             // Create association type from JSON Object
             JSONObject jsonAssociationType = ((JSONArray) JsonAssociation.get("associationTypes")).getJSONObject(0);
             associationType.setLabel((String) jsonAssociationType.get("label"));
-            associationType.setTypeId(String.valueOf(jsonAssociationType.get("typeId")));
+            associationType.setTypeId((Integer) jsonAssociationType.get("typeId"));
             // Create associated company and add it to a list
             HSAssociatedCompany associatedCompany = new HSAssociatedCompany(associationType, company);
             associatedCompanies.add(associatedCompany);
