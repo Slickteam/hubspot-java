@@ -106,6 +106,20 @@ public class HSCompanyService {
     }
 
     /**
+     * Get HubSpot company by its ID with list of properties.
+     *
+     * @param id - ID of the company
+     * @param properties - List of string properties as company name or deal description
+     * @return the company with the selected properties
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public HSCompany getByIdAndProperties(long id, List<String> properties) throws HubSpotException {
+        String propertiesUrl = String.join(",", properties);
+        String url = COMPANY_URL_V3 + id + "?properties=" + propertiesUrl;
+        return getCompany(url);
+    }
+
+    /**
      * Get HubSpot associated companies by company ID.
      *
      * @param companyId - ID of company

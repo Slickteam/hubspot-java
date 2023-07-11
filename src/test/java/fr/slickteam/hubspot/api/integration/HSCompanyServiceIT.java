@@ -11,6 +11,7 @@ import org.junit.rules.ExpectedException;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,10 +48,20 @@ public class HSCompanyServiceIT {
     @Test
     public void createCompany_Test() throws Exception {
         HSCompany company = getNewTestCompany();
-        company = hubSpot.company().create(company);
         createdCompanyId = company.getId();
 
         assertNotEquals(0, company.getId());
+    }
+
+    @Test
+    public void getCompany_By_Id_And_Properties_Test() throws Exception {
+        HSCompany company = getNewTestCompany();
+        List<String> properties = Arrays.asList("phone","address","postal_code","city","country","website","description"
+                ,"email_societe","hubspot_owner_id","hs_parent_company_id");
+        HSCompany companyWithDetails = hubSpot.company().getByIdAndProperties(company.getId(), properties);
+
+        assertEquals(company.getId(), companyWithDetails.getId());
+        assertEquals(company.getDescription(), companyWithDetails.getDescription());
     }
 
     @Test
@@ -181,7 +192,7 @@ public class HSCompanyServiceIT {
     }
 
     private HSCompany getNewTestCompany() throws HubSpotException {
-        return hubSpot.company().create(new HSCompany("TestCompany"+ Instant.now().getEpochSecond(), testPhoneNumber, "address", "zip", "city", "country"));
+        return hubSpot.company().create(new HSCompany("TestCompany"+ Instant.now().getEpochSecond(), testPhoneNumber, "address", "zip", "city", "country", "description", "www.website.com"));
     }
     private HSDeal getNewTestDeal() throws HubSpotException {
         BigDecimal testDealAmount = BigDecimal.valueOf(120);

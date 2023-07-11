@@ -17,6 +17,8 @@ public class HSCompany extends HSObject {
     private static final String POSTAL_CODE = "zip";
     private static final String CITY = "city";
     private static final String COUNTRY = "country";
+    private static final String DESCRIPTION = "description";
+    private static final String WEBSITE = "website";
 
     public HSCompany() {
     }
@@ -30,7 +32,18 @@ public class HSCompany extends HSObject {
         this.setCountry(country);
     }
 
-    public HSCompany(String name, String phoneNumber, String address, String postalCode, String city, String country, Map<String, String> properties) {
+    public HSCompany(String name, String phoneNumber, String address, String postalCode, String city, String country, String description, String website) {
+        this.setName(name);
+        this.setPhoneNumber(phoneNumber);
+        this.setAddress(address);
+        this.setPostalCode(postalCode);
+        this.setCity(city);
+        this.setCountry(country);
+        this.setDescription(description);
+        this.setWebsite(website);
+    }
+
+    public HSCompany(String name, String phoneNumber, String address, String postalCode, String city, String country, String description, String website, Map<String, String> properties) {
         super(properties);
         this.setName(name);
         this.setPhoneNumber(phoneNumber);
@@ -38,6 +51,8 @@ public class HSCompany extends HSObject {
         this.setPostalCode(postalCode);
         this.setCity(city);
         this.setCountry(country);
+        this.setDescription(description);
+        this.setWebsite(website);
     }
 
     public String getPhoneNumber() {
@@ -94,7 +109,22 @@ public class HSCompany extends HSObject {
 
     public HSCompany setId(long id) {
         setProperty(ID, Long.toString(id));
-        return this;
+        return this;    }
+
+    public String getWebsite() {
+        return getProperty(WEBSITE);
+    }
+
+    public void setWebsite(String website) {
+        setProperty(WEBSITE, website);
+    }
+
+    public String getDescription() {
+        return getProperty(DESCRIPTION);
+    }
+
+    public void setDescription(String description) {
+        setProperty(DESCRIPTION, description);
     }
 
 }
