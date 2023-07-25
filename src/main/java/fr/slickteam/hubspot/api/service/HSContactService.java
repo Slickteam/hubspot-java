@@ -53,6 +53,20 @@ public class HSContactService {
     }
 
     /**
+     * Get HubSpot contact by its ID with list of properties.
+     *
+     * @param id - ID of the company
+     * @param properties - List of string properties as contact name or email
+     * @return the contact with the selected properties
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public HSContact getByIdAndProperties(long id, List<String> properties) throws HubSpotException {
+        String propertiesUrl = String.join(",", properties);
+        String url = CONTACT_URL + id + "?properties=" + propertiesUrl;
+        return getContact(url);
+    }
+
+    /**
      * Get HubSpot contact by its email.
      *
      * @param email - Email of the contact

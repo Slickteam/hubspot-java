@@ -16,6 +16,7 @@ import org.mockito.Mockito;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -144,6 +145,20 @@ public class HSContactServiceIT {
     public void getContact_Id_Not_Found_Test() throws Exception {
         long id = -777;
         assertNull(hubSpot.contact().getByID(id));
+    }
+
+    @Test
+    public void getContact_By_Id_And_Properties_Test() throws Exception {
+        HSContact contact = hubSpot
+                .contact()
+                .create(new HSContact(testEmail1, testFirstname, testLastname, testPhoneNumber, testLifeCycleStage));
+        createdContactIds.add(contact.getId());
+
+        List<String> properties = Arrays.asList("email", "firstname", "lastname", "phone", "lifecyclestage");
+        HSContact contactWithDetails = hubSpot.contact().getByIdAndProperties(contact.getId(), properties);
+
+        assertEquals(contact.getId(), contactWithDetails.getId());
+        assertEquals(contact.getPhoneNumber(), contactWithDetails.getPhoneNumber());
     }
 
     @Test
