@@ -15,6 +15,7 @@ import java.util.List;
 public class HSAssociationService {
     private static class BasePath {
         public static final String V3 = "/crm/v3/objects/";
+        public static final String V3_ASSOCIATION = "/crm/v3/associations/";
         public static final String V4_OBJECT = "/crm/v4/objects/";
         public static final String V4_ASSOCIATION = "/crm/v4/associations/";
     }
@@ -111,8 +112,7 @@ public class HSAssociationService {
                 "    }\n" +
                 "  ]\n" +
                 "}";
-        String url =
-                "/crm/v3/associations/contacts/companies/batch/archive";
+        String url = BasePath.V3_ASSOCIATION + CONTACTS + COMPANIES + BATCH + ARCHIVE;
         httpService.postRequest(url, associationProperties);
     }
 
