@@ -89,8 +89,7 @@ public class HSAssociationIT {
 
         createdCompanyId = company.getId();
         createdContactId = contact.getId();
-
-        hubSpot.association().contactToCompany(contact.getId(), company.getId());
+        hubSpot.association().contactToCompany(createdContactId, createdCompanyId);
     }
 
     @Test
@@ -167,6 +166,28 @@ public class HSAssociationIT {
     }
 
     @Test
+    public void remove_association_company_to_company_success() throws HubSpotException {
+        HSContact contact = hubSpot.contact().create(new HSContact(testEmail1,
+                "testRemoveAssociation",
+                testLastname,
+                testPhoneNumber,
+                testLifeCycleStage));
+        HSCompany company = hubSpot.company().create(new HSCompany(testEmail1,
+                testPhoneNumber,
+                testAddress,
+                testZip,
+                testCity,
+                testCountry));
+
+        createdContactId = contact.getId();
+        createdCompanyId = company.getId();
+
+        hubSpot.association().contactToCompany(contact.getId(), company.getId());
+        hubSpot.association().removeContactToCompany(createdContactId, createdCompanyId);
+    }
+
+
+    @Test
     public void associate_get_contact_company_id_list_success() throws HubSpotException {
         HSCompany company = hubSpot.company().create(new HSCompany(testEmail1,
                 testPhoneNumber,
@@ -175,7 +196,9 @@ public class HSAssociationIT {
                 testCity,
                 testCountry));
 
-        hubSpot.association().getCompanyContactIdList(company.getId());
+        createdCompanyId = company.getId();
+
+        hubSpot.association().getCompanyContactIdList(createdCompanyId);
     }
 
     @Test
@@ -187,7 +210,9 @@ public class HSAssociationIT {
                 testCity,
                 testCountry));
 
-        hubSpot.association().getCompaniesToCompany(company.getId());
+        createdCompanyId = company.getId();
+
+        hubSpot.association().getCompaniesToCompany(createdCompanyId);
     }
 
     @Test
@@ -202,7 +227,7 @@ public class HSAssociationIT {
         createdDealId = deal.getId();
         createdContactId = contact.getId();
 
-        hubSpot.association().dealToContact(deal.getId(), contact.getId());
+        hubSpot.association().dealToContact(createdDealId, createdContactId);
     }
 
     @Test
@@ -213,7 +238,7 @@ public class HSAssociationIT {
 
         exception.expect(HubSpotException.class);
         exception.expectMessage("Not Found");
-        hubSpot.association().dealToContact(deal.getId(), -777);
+        hubSpot.association().dealToContact(createdDealId, -777);
     }
 
     @Test

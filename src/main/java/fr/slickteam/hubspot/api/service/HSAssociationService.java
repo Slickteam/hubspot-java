@@ -3,13 +3,10 @@ package fr.slickteam.hubspot.api.service;
 import fr.slickteam.hubspot.api.domain.HSAssocationTypeInput;
 import fr.slickteam.hubspot.api.domain.HSAssociationTypeEnum;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
-import kong.unirest.json.JSONArray;
 import kong.unirest.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * HSAssociationService - HubSpot association service
@@ -33,6 +30,8 @@ public class HSAssociationService {
     private static final String DEAL_TO_COMPANY = "deal_to_company";
     private static final String CONTACT_TO_COMPANY = "contact_to_company";
     private static final String ASSOCIATION = "associations/";
+
+    private static final String ARCHIVE = "archive/";
     private static final String BATCH = "batch/";
     private static final String CREATE = "create/";
     private final HttpService httpService;
@@ -63,20 +62,20 @@ public class HSAssociationService {
     }
 
     /**
-     * Associate a contact and a company
+     * Associate a company and a company
      *
-     * @param compagnyId - ID of the compagny to link
+     * @param companyId - ID of the compagny to link
      * @param associatedCompanyId - ID of the Associated company to link
      * @param typeEnum - Association type from company to associated company
      * @throws HubSpotException - if HTTP call fails
      */
-    public void companyToCompany(long compagnyId, long associatedCompanyId, HSAssociationTypeEnum typeEnum) throws HubSpotException {
+    public void companyToCompany(long companyId, long associatedCompanyId, HSAssociationTypeEnum typeEnum) throws HubSpotException {
         HSAssocationTypeInput assocationTypeInput = new HSAssocationTypeInput().setType(typeEnum);
         String associationProperties = "{\n" +
                 "  \"inputs\": [\n" +
                 "    {\n" +
                 "      \"from\": {\n" +
-                "        \"id\": \""+compagnyId+"\"\n" +
+                "        \"id\": \""+companyId+"\"\n" +
                 "      },\n" +
                 "      \"to\": {\n" +
                 "        \"id\": \""+associatedCompanyId+"\"\n" +
@@ -88,6 +87,32 @@ public class HSAssociationService {
                 "}";
         String url =
                 BasePath.V4_ASSOCIATION + COMPANIES + COMPANIES + BATCH + CREATE;
+        httpService.postRequest(url, associationProperties);
+    }
+
+    /**
+     * Remove associate between a contact and a company
+     *
+     * @param contactId - ID of the contact
+     * @param companyId - ID of the company
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public void removeContactToCompany(long contactId, long companyId) throws HubSpotException {
+        String associationProperties = "{\n" +
+                "  \"inputs\": [\n" +
+                "    {\n" +
+                "      \"from\": {\n" +
+                "        \"id\": \""+contactId+"\"\n" +
+                "      },\n" +
+                "      \"to\": {\n" +
+                "        \"id\": \""+companyId+"\"\n" +
+                "      },\n" +
+                "      \"type\": \"contact_to_company\"" +
+                "    }\n" +
+                "  ]\n" +
+                "}";
+        String url =
+                "/crm/v3/associations/contacts/companies/batch/archive";
         httpService.postRequest(url, associationProperties);
     }
 
