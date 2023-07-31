@@ -29,9 +29,7 @@ public class HSAssociationService {
     private static final String DEAL_TO_LINE_ITEM = "deal_to_line_item";
     private static final String DEAL_TO_CONTACT = "deal_to_contact";
     private static final String DEAL_TO_COMPANY = "deal_to_company";
-    private static final String CONTACT_TO_COMPANY = "contact_to_company";
     private static final String ASSOCIATION = "associations/";
-
     private static final String ARCHIVE = "archive/";
     private static final String BATCH = "batch/";
     private static final String CREATE = "create/";
@@ -56,18 +54,85 @@ public class HSAssociationService {
      * @throws HubSpotException - if HTTP call fails
      */
     public void contactToCompany(long contactId, long companyId) throws HubSpotException {
+        String associationProperties = "{\n" +
+                "  \"inputs\": [\n" +
+                "    {\n" +
+                "      \"from\": {\n" +
+                "        \"id\": \"" + contactId + "\"\n" +
+                "      },\n" +
+                "      \"to\": {\n" +
+                "        \"id\": \"" + companyId + "\"\n" +
+                "      },\n" +
+                "      \"types\": [\n" +
+                "         {\n" +
+                "            \"associationCategory\": \"HUBSPOT_DEFINED\",\n" +
+                "            \"associationTypeId\": 279\n" +
+                "         }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}";
         String url =
-                BasePath.V3 + CONTACTS + contactId + "/" + ASSOCIATION + COMPANIES + companyId + "/" + CONTACT_TO_COMPANY;
+                BasePath.V4_ASSOCIATION + CONTACTS + COMPANIES + BATCH + CREATE;
+        httpService.postRequest(url, associationProperties);
+    }
 
-        httpService.putRequest(url);
+    /**
+     * Associate a contact and a company list
+     *
+     * @param contactId     - ID of the contact to link
+     * @param companyIdList - ID of the company to link
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public void contactToCompanyList(long contactId, List<Long> companyIdList) throws HubSpotException {
+        String inputProperties = getContactToCompanyInputList(contactId, companyIdList);
+        String associationProperties = "{\n" +
+                "  \"inputs\": [\n" + inputProperties +
+                "  ]\n" +
+                "}";
+        String url =
+                BasePath.V4_ASSOCIATION + CONTACTS + COMPANIES + BATCH + CREATE;
+        httpService.postRequest(url, associationProperties);
+    }
+
+    private String getContactToCompanyInputList(long contactId, List<Long> companyIdList) {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        int lastIndex = companyIdList.size() - 1;
+        int index = 0;
+
+        for (long companyId : companyIdList) {
+            stringBuilder.append("    {\n")
+                    .append("      \"from\": {\n")
+                    .append("        \"id\": \"").append(contactId).append("\"\n")
+                    .append("      },\n")
+                    .append("      \"to\": {\n")
+                    .append("        \"id\": \"").append(companyId).append("\"\n")
+                    .append("      },\n")
+                    .append("      \"types\": [\n")
+                    .append("         {\n")
+                    .append("            \"associationCategory\": \"HUBSPOT_DEFINED\",\n")
+                    .append("            \"associationTypeId\": 279\n")
+                    .append("         }\n")
+                    .append("      ]\n")
+                    .append("    }");
+
+            if (index != lastIndex) {
+                stringBuilder.append(",\n");
+            } else {
+                stringBuilder.append("\n");
+            }
+            index++;
+        }
+        return stringBuilder.toString();
     }
 
     /**
      * Associate a company and a company
      *
-     * @param companyId - ID of the compagny to link
+     * @param companyId           - ID of the compagny to link
      * @param associatedCompanyId - ID of the Associated company to link
-     * @param typeEnum - Association type from company to associated company
+     * @param typeEnum            - Association type from company to associated company
      * @throws HubSpotException - if HTTP call fails
      */
     public void companyToCompany(long companyId, long associatedCompanyId, HSAssociationTypeEnum typeEnum) throws HubSpotException {
@@ -76,10 +141,10 @@ public class HSAssociationService {
                 "  \"inputs\": [\n" +
                 "    {\n" +
                 "      \"from\": {\n" +
-                "        \"id\": \""+companyId+"\"\n" +
+                "        \"id\": \"" + companyId + "\"\n" +
                 "      },\n" +
                 "      \"to\": {\n" +
-                "        \"id\": \""+associatedCompanyId+"\"\n" +
+                "        \"id\": \"" + associatedCompanyId + "\"\n" +
                 "      },\n" +
                 "      \"types\": [\n" + assocationTypeInput.getJsonAssociationType() +
                 "      ]\n" +
@@ -103,10 +168,10 @@ public class HSAssociationService {
                 "  \"inputs\": [\n" +
                 "    {\n" +
                 "      \"from\": {\n" +
-                "        \"id\": \""+contactId+"\"\n" +
+                "        \"id\": \"" + contactId + "\"\n" +
                 "      },\n" +
                 "      \"to\": {\n" +
-                "        \"id\": \""+companyId+"\"\n" +
+                "        \"id\": \"" + companyId + "\"\n" +
                 "      },\n" +
                 "      \"type\": \"contact_to_company\"" +
                 "    }\n" +
@@ -114,6 +179,51 @@ public class HSAssociationService {
                 "}";
         String url = BasePath.V3_ASSOCIATION + CONTACTS + COMPANIES + BATCH + ARCHIVE;
         httpService.postRequest(url, associationProperties);
+    }
+
+    /**
+     * Remove associate between a contact and a list of companies
+     *
+     * @param contactId     - ID of the contact
+     * @param companyIdList - ID list of the companies
+     * @throws HubSpotException - if HTTP call fails
+     */
+
+    public void removeContactToCompanyList(long contactId, List<Long> companyIdList) throws HubSpotException {
+        String inputProperties = getRemoveContactToCompanyInputList(contactId, companyIdList);
+        String associationProperties = "{\n" +
+                "  \"inputs\": [\n" + inputProperties +
+                "  ]\n" +
+                "}";
+        String url = BasePath.V3_ASSOCIATION + CONTACTS + COMPANIES + BATCH + ARCHIVE;
+        httpService.postRequest(url, associationProperties);
+    }
+
+    private String getRemoveContactToCompanyInputList(long contactId, List<Long> companyIdList) {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        int lastIndex = companyIdList.size() - 1;
+        int index = 0;
+
+        for (long companyId : companyIdList) {
+            stringBuilder.append("    {\n")
+                    .append("      \"from\": {\n")
+                    .append("        \"id\": \"").append(contactId).append("\"\n")
+                    .append("      },\n")
+                    .append("      \"to\": {\n")
+                    .append("        \"id\": \"").append(companyId).append("\"\n")
+                    .append("      },\n")
+                    .append("      \"type\": \"contact_to_company\"\n")
+                    .append("    }");
+
+            if (index != lastIndex) {
+                stringBuilder.append(",\n");
+            } else {
+                stringBuilder.append("\n");
+            }
+            index++;
+        }
+        return stringBuilder.toString();
     }
 
     /**
@@ -179,7 +289,7 @@ public class HSAssociationService {
     /**
      * Associate a deal and a contact
      *
-     * @param dealId - ID of the deal to link
+     * @param dealId    - ID of the deal to link
      * @param contactId - ID of the contact to link
      * @throws HubSpotException - if HTTP call fails
      */
@@ -194,7 +304,7 @@ public class HSAssociationService {
     /**
      * Associate a deal and a company
      *
-     * @param dealId - ID of the deal to link
+     * @param dealId    - ID of the deal to link
      * @param companyId - ID of the company to link
      * @throws HubSpotException - if HTTP call fails
      */
@@ -208,7 +318,7 @@ public class HSAssociationService {
     /**
      * Associate a deal and a lineItem
      *
-     * @param dealId - ID of the deal to link
+     * @param dealId     - ID of the deal to link
      * @param lineItemId - ID of the lineItem to link
      * @throws HubSpotException - if HTTP call fails
      */

@@ -11,15 +11,18 @@ import org.junit.rules.ExpectedException;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class HSAssociationIT {
     private Long createdContactId;
     private Long createdCompanyId;
+
+    private Long createdCompany2Id;
     private Long createdAssociatedCompanyId;
     private Long createdDealId;
     private Long createdLineItemId;
-
     private String testEmail1;
     private final String testFirstname = "Testfristname";
     private final String testLastname = "Testlastname";
@@ -61,6 +64,9 @@ public class HSAssociationIT {
         if (createdCompanyId != null) {
             hubSpot.company().delete(createdCompanyId);
         }
+        if (createdCompany2Id != null) {
+            hubSpot.company().delete(createdCompany2Id);
+        }
         if (createdDealId != null) {
             hubSpot.deal().delete(createdDealId);
         }
@@ -86,9 +92,9 @@ public class HSAssociationIT {
                                                                    testLastname,
                                                                    testPhoneNumber,
                                                                    testLifeCycleStage));
-
-        createdCompanyId = company.getId();
         createdContactId = contact.getId();
+        createdCompanyId = company.getId();
+
         hubSpot.association().contactToCompany(createdContactId, createdCompanyId);
     }
 
@@ -104,7 +110,7 @@ public class HSAssociationIT {
         createdCompanyId = company.getId();
 
         exception.expect(HubSpotException.class);
-        exception.expectMessage("Not Found");
+        exception.expectMessage("internal error");
         hubSpot.association().contactToCompany(-777, company.getId());
     }
 
@@ -120,8 +126,41 @@ public class HSAssociationIT {
 
 
         exception.expect(HubSpotException.class);
-        exception.expectMessage("Not Found");
+        exception.expectMessage("internal error");
         hubSpot.association().contactToCompany(contact.getId(), -777);
+    }
+
+    @Test
+    public void associate_contact_to_companyList_success() throws HubSpotException {
+        HSContact contact = hubSpot.contact().create(new HSContact(testEmail1,
+                testFirstname,
+                testLastname,
+                testPhoneNumber,
+                testLifeCycleStage));
+
+        HSCompany company = hubSpot.company().create(new HSCompany(testEmail1,
+                testPhoneNumber,
+                testAddress,
+                testZip,
+                testCity,
+                testCountry));
+
+        HSCompany company2 = hubSpot.company().create(new HSCompany(testEmail1,
+                testPhoneNumber,
+                testAddress,
+                testZip,
+                testCity,
+                testCountry));
+
+        createdContactId = contact.getId();
+        createdCompanyId = company.getId();
+        createdCompany2Id = company2.getId();
+
+        List<Long> companyIdList = new ArrayList<>();
+        companyIdList.add(createdCompanyId);
+        companyIdList.add(createdCompany2Id);
+
+        hubSpot.association().contactToCompanyList(createdContactId, companyIdList);
     }
 
     @Test
@@ -166,9 +205,9 @@ public class HSAssociationIT {
     }
 
     @Test
-    public void remove_association_company_to_company_success() throws HubSpotException {
+    public void remove_association_contact_to_company_success() throws HubSpotException {
         HSContact contact = hubSpot.contact().create(new HSContact(testEmail1,
-                "testRemoveAssociation",
+                testFirstname,
                 testLastname,
                 testPhoneNumber,
                 testLifeCycleStage));
@@ -184,6 +223,41 @@ public class HSAssociationIT {
 
         hubSpot.association().contactToCompany(contact.getId(), company.getId());
         hubSpot.association().removeContactToCompany(createdContactId, createdCompanyId);
+    }
+
+    @Test
+    public void remove_association_contact_to_company_list_success() throws HubSpotException {
+        HSContact contact = hubSpot.contact().create(new HSContact(testEmail1,
+                testFirstname,
+                testLastname,
+                testPhoneNumber,
+                testLifeCycleStage));
+
+        HSCompany company = hubSpot.company().create(new HSCompany(testEmail1,
+                testPhoneNumber,
+                testAddress,
+                testZip,
+                testCity,
+                testCountry));
+
+        HSCompany company2 = hubSpot.company().create(new HSCompany(testEmail1,
+                testPhoneNumber,
+                testAddress,
+                testZip,
+                testCity,
+                testCountry));
+
+        createdContactId = contact.getId();
+        createdCompanyId = company.getId();
+        createdCompany2Id = company2.getId();
+
+        List<Long> compagnyIdList = new ArrayList<>();
+        compagnyIdList.add(createdCompanyId);
+        compagnyIdList.add(createdCompany2Id);
+
+        hubSpot.association().contactToCompany(createdContactId, createdCompanyId);
+        hubSpot.association().contactToCompany(createdContactId, createdCompany2Id);
+        hubSpot.association().removeContactToCompanyList(createdContactId, compagnyIdList);
     }
 
 
