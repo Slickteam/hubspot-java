@@ -132,7 +132,7 @@ public class HSAssociationService {
      *
      * @param companyId           - ID of the compagny to link
      * @param associatedCompanyId - ID of the Associated company to link
-     * @param typeEnum            - Association type from company to associated company
+     * @param typeEnum            - Association type for the company associated
      * @throws HubSpotException - if HTTP call fails
      */
     public void companyToCompany(long companyId, long associatedCompanyId, HSAssociationTypeEnum typeEnum) throws HubSpotException {
@@ -154,6 +154,54 @@ public class HSAssociationService {
         String url =
                 BasePath.V4_ASSOCIATION + COMPANIES + COMPANIES + BATCH + CREATE;
         httpService.postRequest(url, associationProperties);
+    }
+
+    /**
+     * Associate a company and a company child list
+     *
+     * @param companyId           - ID of the compagny to link
+     * @param associatedCompanyIdList - ID List of the Associated companies to link
+     * @throws HubSpotException - if HTTP call fails
+     */
+
+    public void companyToChildCompanyList(long companyId, List<Long> associatedCompanyIdList) throws HubSpotException {
+        String inputProperties = getCompanyToChildCompanyInputList(companyId, associatedCompanyIdList);
+        String associationProperties = "{\n" +
+                "  \"inputs\": [\n" + inputProperties +
+                "  ]\n" +
+                "}";
+        String url =
+                BasePath.V4_ASSOCIATION + COMPANIES + COMPANIES + BATCH + CREATE;
+        httpService.postRequest(url, associationProperties);
+    }
+
+    private String getCompanyToChildCompanyInputList(long companyId, List<Long> companyIdList) {
+        HSAssocationTypeInput assocationTypeInput = new HSAssocationTypeInput().setType(HSAssociationTypeEnum.CHILD);
+        StringBuilder stringBuilder = new StringBuilder();
+
+        int lastIndex = companyIdList.size() - 1;
+        int index = 0;
+
+        for (long associatedCompanyId : companyIdList) {
+            stringBuilder.append("    {\n")
+                    .append("      \"from\": {\n")
+                    .append("        \"id\": \"").append(companyId).append("\"\n")
+                    .append("      },\n")
+                    .append("      \"to\": {\n")
+                    .append("        \"id\": \"").append(associatedCompanyId).append("\"\n")
+                    .append("      },\n")
+                    .append("      \"types\": [\n" + assocationTypeInput.getJsonAssociationType())
+                    .append("      ]\n")
+                    .append("    }");
+
+            if (index != lastIndex) {
+                stringBuilder.append(",\n");
+            } else {
+                stringBuilder.append("\n");
+            }
+            index++;
+        }
+        return stringBuilder.toString();
     }
 
     /**
@@ -181,6 +229,7 @@ public class HSAssociationService {
         httpService.postRequest(url, associationProperties);
     }
 
+
     /**
      * Remove associate between a contact and a list of companies
      *
@@ -190,7 +239,7 @@ public class HSAssociationService {
      */
 
     public void removeContactToCompanyList(long contactId, List<Long> companyIdList) throws HubSpotException {
-        String inputProperties = getRemoveContactToCompanyInputList(contactId, companyIdList);
+        String inputProperties = getRemoveInputList(contactId, companyIdList, "contact_to_company");
         String associationProperties = "{\n" +
                 "  \"inputs\": [\n" + inputProperties +
                 "  ]\n" +
@@ -199,7 +248,26 @@ public class HSAssociationService {
         httpService.postRequest(url, associationProperties);
     }
 
-    private String getRemoveContactToCompanyInputList(long contactId, List<Long> companyIdList) {
+
+    /**
+     * Remove associate between a company and a list of children companies
+     *
+     * @param companyId     - ID of the contact
+     * @param companyIdList - ID list of the companies
+     * @throws HubSpotException - if HTTP call fails
+     */
+
+    public void removeCompanyToChildCompanyList(long companyId, List<Long> companyIdList) throws HubSpotException {
+        String inputProperties = getRemoveInputList(companyId, companyIdList, "company_to_company");
+        String associationProperties = "{\n" +
+                "  \"inputs\": [\n" + inputProperties +
+                "  ]\n" +
+                "}";
+        String url = BasePath.V3_ASSOCIATION + COMPANIES + COMPANIES + BATCH + ARCHIVE;
+        httpService.postRequest(url, associationProperties);
+    }
+
+    private String getRemoveInputList(long contactId, List<Long> companyIdList, String associationType) {
         StringBuilder stringBuilder = new StringBuilder();
 
         int lastIndex = companyIdList.size() - 1;
@@ -213,7 +281,7 @@ public class HSAssociationService {
                     .append("      \"to\": {\n")
                     .append("        \"id\": \"").append(companyId).append("\"\n")
                     .append("      },\n")
-                    .append("      \"type\": \"contact_to_company\"\n")
+                    .append("      \"type\": \"").append(associationType).append("\"\n")
                     .append("    }");
 
             if (index != lastIndex) {

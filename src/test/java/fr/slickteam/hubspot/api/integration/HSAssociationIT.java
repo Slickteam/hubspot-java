@@ -18,8 +18,8 @@ import java.util.List;
 public class HSAssociationIT {
     private Long createdContactId;
     private Long createdCompanyId;
-
     private Long createdCompany2Id;
+    private Long createdCompany3Id;
     private Long createdAssociatedCompanyId;
     private Long createdDealId;
     private Long createdLineItemId;
@@ -65,6 +65,9 @@ public class HSAssociationIT {
             hubSpot.company().delete(createdCompanyId);
         }
         if (createdCompany2Id != null) {
+            hubSpot.company().delete(createdCompany2Id);
+        }
+        if (createdCompany3Id != null) {
             hubSpot.company().delete(createdCompany2Id);
         }
         if (createdDealId != null) {
@@ -203,6 +206,68 @@ public class HSAssociationIT {
         exception.expect(HubSpotException.class);
         hubSpot.association().companyToCompany(-777, createdAssociatedCompanyId, HSAssociationTypeEnum.PARENT);
     }
+
+    @Test
+    public void associate_company_to_childCompanyList_success() throws HubSpotException {
+        HSCompany company = hubSpot.company().create(new HSCompany(testEmail1,
+                testPhoneNumber,
+                testAddress,
+                testZip,
+                testCity,
+                testCountry));
+        HSCompany associatedCompany1 = hubSpot.company().create(new HSCompany(testEmail1,
+                testPhoneNumber,
+                testAddress,
+                testZip,
+                testCity,
+                testCountry));
+        HSCompany associatedCompany2 = hubSpot.company().create(new HSCompany(testEmail1,
+                testPhoneNumber,
+                testAddress,
+                testZip,
+                testCity,
+                testCountry));
+
+        createdCompanyId = company.getId();
+        createdCompany2Id = associatedCompany1.getId();
+        createdCompany3Id = associatedCompany2.getId();
+        List<Long> associatedCompanyIdList = new ArrayList<>();
+        associatedCompanyIdList.add(associatedCompany1.getId());
+        associatedCompanyIdList.add(associatedCompany2.getId());
+        hubSpot.association().companyToChildCompanyList(company.getId(), associatedCompanyIdList);
+    }
+
+    @Test
+    public void remove_association_company_to_childCompanyList_success() throws HubSpotException {
+        HSCompany company = hubSpot.company().create(new HSCompany(testEmail1,
+                testPhoneNumber,
+                testAddress,
+                testZip,
+                testCity,
+                testCountry));
+        HSCompany associatedCompany1 = hubSpot.company().create(new HSCompany(testEmail1,
+                testPhoneNumber,
+                testAddress,
+                testZip,
+                testCity,
+                testCountry));
+        HSCompany associatedCompany2 = hubSpot.company().create(new HSCompany(testEmail1,
+                testPhoneNumber,
+                testAddress,
+                testZip,
+                testCity,
+                testCountry));
+
+        createdCompanyId = company.getId();
+        createdCompany2Id = associatedCompany1.getId();
+        createdCompany3Id = associatedCompany2.getId();
+        List<Long> associatedCompanyIdList = new ArrayList<>();
+        associatedCompanyIdList.add(associatedCompany1.getId());
+        associatedCompanyIdList.add(associatedCompany2.getId());
+        hubSpot.association().companyToChildCompanyList(company.getId(), associatedCompanyIdList);
+        hubSpot.association().removeCompanyToChildCompanyList(company.getId(), associatedCompanyIdList);
+    }
+
 
     @Test
     public void remove_association_contact_to_company_success() throws HubSpotException {
