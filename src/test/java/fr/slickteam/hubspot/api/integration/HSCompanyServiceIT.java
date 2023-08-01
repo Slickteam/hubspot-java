@@ -27,7 +27,10 @@ public class HSCompanyServiceIT {
     private final String testLifeCycleStage = "other";
 
     private Long createdCompanyId;
-
+    private Long createdCompanyId2;
+    private Long createdContact;
+    private Long createdDealId;
+    private Long createdDealId2;
     private HubSpot hubSpot;
 
     @Rule
@@ -44,7 +47,20 @@ public class HSCompanyServiceIT {
         if (createdCompanyId != null) {
             hubSpot.company().delete(createdCompanyId);
         }
+        if (createdCompanyId2 != null) {
+            hubSpot.company().delete(createdCompanyId);
+        }
+        if (createdContact != null) {
+            hubSpot.contact().delete(createdContact);
+        }
+        if (createdDealId != null) {
+            hubSpot.deal().delete(createdDealId);
+        }
+        if (createdDealId2 != null) {
+            hubSpot.deal().delete(createdDealId2);
+        }
     }
+
     @Test
     public void createCompany_Test() throws Exception {
         HSCompany company = getNewTestCompany();
@@ -54,11 +70,27 @@ public class HSCompanyServiceIT {
     }
 
     @Test
-    public void getCompany_By_Id_And_Properties_Test() throws Exception {
+    public void getCompanyByIdAndProperties_Test() throws Exception {
         HSCompany company = getNewTestCompany();
-        List<String> properties = Arrays.asList("phone","address","postal_code","city","country","website","description"
-                ,"email_societe","hubspot_owner_id","hs_parent_company_id");
+        List<String> properties = Arrays.asList("phone", "address", "postal_code", "city", "country", "website", "description"
+                , "email_societe", "hubspot_owner_id", "hs_parent_company_id");
         HSCompany companyWithDetails = hubSpot.company().getByIdAndProperties(company.getId(), properties);
+
+        createdCompanyId = company.getId();
+        assertEquals(company.getId(), companyWithDetails.getId());
+        assertEquals(company.getDescription(), companyWithDetails.getDescription());
+    }
+
+    @Test
+    public void getCompanyListByIdAndProperties_Test() throws Exception {
+        HSCompany company = getNewTestCompany();
+        HSCompany company2 = getNewTestCompany();
+        List<String> properties = Arrays.asList("phone", "address", "postal_code", "city", "country", "website", "description"
+                , "email_societe", "hubspot_owner_id", "hs_parent_company_id");
+        HSCompany companyWithDetails = hubSpot.company().getByIdAndProperties(company.getId(), properties);
+
+        createdCompanyId = company.getId();
+        createdCompanyId2 = company2.getId();
 
         assertEquals(company.getId(), companyWithDetails.getId());
         assertEquals(company.getDescription(), companyWithDetails.getDescription());
@@ -69,6 +101,9 @@ public class HSCompanyServiceIT {
     public void addContact_Test() throws Exception {
         HSCompany company = getNewTestCompany();
         HSContact contact = hubSpot.contact().create(new HSContact(testEmail1, testFirstname, testLastname, testPhoneNumber, testLifeCycleStage));
+
+        createdCompanyId = company.getId();
+        createdContact = contact.getId();
         hubSpot.company().addContact(contact.getId(), company.getId());
     }
 
@@ -80,25 +115,33 @@ public class HSCompanyServiceIT {
     }
 
     @Test
-    public void get_Associated_Companies_Test() throws Exception {
+    public void getAssociatedCompanies_Test() throws Exception {
         HSCompany company = getNewTestCompany();
         HSCompany associatedCompany = getNewTestCompany();
         hubSpot.company().create(company);
         hubSpot.company().create(associatedCompany);
         hubSpot.association().companyToCompany(company.getId(), associatedCompany.getId(), HSAssociationTypeEnum.PARENT);
         List<HSAssociatedCompany> associatedCompanies = hubSpot.company().getAssociatedCompanies(company.getId());
+
+        createdCompanyId = company.getId();
+        createdCompanyId2 = associatedCompany.getId();
+
         assertNotNull(associatedCompanies);
         assertTrue(associatedCompanies.size() > 0);
         assertTrue(associatedCompanies.stream().anyMatch(ac -> ac.getCompany().getId() == associatedCompany.getId()));
     }
 
     @Test
-    public void get_company_contacts_Tests() throws Exception {
+    public void getCompanyContacts_Tests() throws Exception {
         HSCompany company = getNewTestCompany();
         HSContact contact = hubSpot.contact().create(new HSContact(testEmail1, testFirstname, testLastname, testPhoneNumber, testLifeCycleStage));
         hubSpot.association().contactToCompany(contact.getId(), company.getId());
 
-        List <HSContact> contacts = hubSpot.company().getCompanyContacts(company.getId());
+        List<HSContact> contacts = hubSpot.company().getCompanyContacts(company.getId());
+
+        createdCompanyId = company.getId();
+        createdContact = contact.getId();
+
         assertNotNull(contacts);
         assertTrue(contacts.size() > 0);
         assertTrue(contacts.stream().anyMatch(c -> c.getId() == contact.getId()));
@@ -150,11 +193,14 @@ public class HSCompanyServiceIT {
     }
 
     @Test
-    public void get_deals_Tests() throws Exception {
+    public void getDeals_Tests() throws Exception {
         HSDeal deal1 = getNewTestDeal();
         HSDeal deal2 = getNewTestDeal();
+        createdDealId = deal1.getId();
+        createdDealId2 = deal2.getId();
 
         HSCompany company = getNewTestCompany();
+        createdCompanyId = company.getId();
 
         hubSpot.association().dealToCompany(deal1.getId(), company.getId());
         hubSpot.association().dealToCompany(deal2.getId(), company.getId());
@@ -173,9 +219,11 @@ public class HSCompanyServiceIT {
     }
 
     @Test
-    public void get_last_deal_Tests() throws Exception {
+    public void getLastDeal_Tests() throws Exception {
         HSCompany company = getNewTestCompany();
+        createdCompanyId = company.getId();
         HSDeal deal1 = getNewTestDeal();
+        createdDealId = deal1.getId();
         hubSpot.association().dealToCompany(deal1.getId(), company.getId());
 
         HSDeal deal2 = getNewTestDeal();
@@ -192,8 +240,9 @@ public class HSCompanyServiceIT {
     }
 
     private HSCompany getNewTestCompany() throws HubSpotException {
-        return hubSpot.company().create(new HSCompany("TestCompany"+ Instant.now().getEpochSecond(), testPhoneNumber, "address", "zip", "city", "country", "description", "www.website.com"));
+        return hubSpot.company().create(new HSCompany("TestCompany" + Instant.now().getEpochSecond(), testPhoneNumber, "address", "zip", "city", "country", "description", "www.website.com"));
     }
+
     private HSDeal getNewTestDeal() throws HubSpotException {
         BigDecimal testDealAmount = BigDecimal.valueOf(120);
         LocalDate testDealContractStart = LocalDate.now();
@@ -201,6 +250,6 @@ public class HSCompanyServiceIT {
         Map<String, String> contractDates = new HashMap<>();
         contractDates.put("date_debut_contrat", testDealContractStart.toString());
         contractDates.put("date_fin_contrat", testDealContractEnd.toString());
-        return hubSpot.deal().create(new HSDeal("TestDeal"+ Instant.now().getEpochSecond(), "4245948", "4245946", testDealAmount, contractDates));
+        return hubSpot.deal().create(new HSDeal("TestDeal" + Instant.now().getEpochSecond(), "4245948", "4245946", testDealAmount, contractDates));
     }
 }
