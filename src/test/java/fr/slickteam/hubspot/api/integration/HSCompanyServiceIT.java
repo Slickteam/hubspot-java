@@ -11,10 +11,7 @@ import org.junit.rules.ExpectedException;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -85,15 +82,20 @@ public class HSCompanyServiceIT {
     public void getCompanyListByIdAndProperties_Test() throws Exception {
         HSCompany company = getNewTestCompany();
         HSCompany company2 = getNewTestCompany();
-        List<String> properties = Arrays.asList("phone", "address", "postal_code", "city", "country", "website", "description"
-                , "email_societe", "hubspot_owner_id", "hs_parent_company_id");
-        HSCompany companyWithDetails = hubSpot.company().getByIdAndProperties(company.getId(), properties);
-
         createdCompanyId = company.getId();
         createdCompanyId2 = company2.getId();
 
-        assertEquals(company.getId(), companyWithDetails.getId());
-        assertEquals(company.getDescription(), companyWithDetails.getDescription());
+        List<String> properties = Arrays.asList("phone", "address", "postal_code", "city", "country", "website", "description"
+                , "email_societe", "hubspot_owner_id", "hs_parent_company_id");
+
+        List<Long> companyIdList = new ArrayList<>();
+        companyIdList.add(company.getId());
+        companyIdList.add(company2.getId());
+        List<HSCompany> companies = hubSpot.company().getCompanyListByIdAndProperties(companyIdList, properties);
+
+        assertNotNull(companies);
+        assertNotNull(companies.get(0).getPhoneNumber());
+        assertEquals(2, companies.size());
     }
 
     @Test

@@ -22,6 +22,8 @@ public class HSCompanyService {
     private static final List<String> DEAL_PROPERTIES = List.of("dealname", "dealstage", "pipeline", "date_debut_contrat", "date_fin_contrat", "amount");
     private static final String COMPANY_URL_V3 = "/crm/v3/objects/companies/";
     private static final String COMPANY_URL_V4 = "/crm/v4/objects/companies/";
+    private static final String BATCH = "batch/";
+    private static final String READ = "read/";
 
 
     /**
@@ -106,9 +108,71 @@ public class HSCompanyService {
     }
 
     /**
+     * Get HubSpot a list of companies by id with properties.
+     *
+     * @param idList     - ID list of companies
+     * @param properties - List of string properties as company name or deal description
+     * @return a company list with properties
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public List<HSCompany> getCompanyListByIdAndProperties(List<Long> idList, List<String> properties) throws HubSpotException {
+        String formatProperties = getJsonProperties(properties);
+        String formatIdList = getJsonInputList(idList);
+        String associationProperties = "{\n" +
+                "  \"properties\": [\n" + formatProperties +
+                "   ],\n" +
+                "  \"propertiesWithHistory\": [],\n" +
+                "   \"inputs\": [\n" + formatIdList +
+                "   ]\n" +
+                "}";
+        String url = COMPANY_URL_V3 + BATCH + READ;
+        try {
+            JSONObject response = (JSONObject) httpService.postRequest(url, associationProperties);
+            JSONArray jsonList = response.optJSONArray("results");
+            List<HSCompany> companies = new ArrayList<>(jsonList.length());
+            for (int i = 0; i < jsonList.length(); i++) {
+                companies.add(parseCompanyData(jsonList.optJSONObject(i)));
+            }
+            return companies;
+        } catch (HubSpotException e) {
+            if (e.getMessage().equals("Not Found")) {
+                return new ArrayList<>();
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    private String getJsonProperties(List<String> properties) {
+        StringJoiner stringJoiner = new StringJoiner(",\n", "", "\n");
+        for (String property : properties) {
+            stringJoiner.add("\"" + property + "\"");
+        }
+        return stringJoiner.toString();
+    }
+
+    private String getJsonInputList(List<Long> idList) {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        int lastIndex = idList.size() - 1;
+        int index = 0;
+
+        for (long companyId : idList) {
+            stringBuilder.append(" { \"id\": \"").append(companyId).append("\" }");
+            if (index != lastIndex) {
+                stringBuilder.append(",\n");
+            } else {
+                stringBuilder.append("\n");
+            }
+            index++;
+        }
+        return stringBuilder.toString();
+    }
+
+    /**
      * Get HubSpot company by its ID with list of properties.
      *
-     * @param id - ID of the company
+     * @param id         - ID of the company
      * @param properties - List of string properties as company name or deal description
      * @return the company with the selected properties
      * @throws HubSpotException - if HTTP call fails
@@ -260,7 +324,7 @@ public class HSCompanyService {
         // Get associated deals id
         List<Long> dealIdList = getDealIdList(companyId);
 
-        if(dealIdList.isEmpty()) {
+        if (dealIdList.isEmpty()) {
             return Collections.emptyList();
         }
 
