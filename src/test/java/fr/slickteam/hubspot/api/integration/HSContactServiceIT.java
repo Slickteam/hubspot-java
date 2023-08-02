@@ -148,7 +148,7 @@ public class HSContactServiceIT {
     }
 
     @Test
-    public void getContact_By_Id_And_Properties_Test() throws Exception {
+    public void getContactByIdAndProperties_Test() throws Exception {
         HSContact contact = hubSpot
                 .contact()
                 .create(new HSContact(testEmail1, testFirstname, testLastname, testPhoneNumber, testLifeCycleStage));
@@ -162,7 +162,28 @@ public class HSContactServiceIT {
     }
 
     @Test
-    public void getContact_Companies_Test() throws Exception {
+    public void getContactListByIdAndProperties_Test() throws Exception {
+        HSContact contact = hubSpot
+                .contact()
+                .create(new HSContact(testEmail1, testFirstname, testLastname, testPhoneNumber, testLifeCycleStage));
+        HSContact contact2 = hubSpot
+                .contact()
+                .create(new HSContact("test2@email.com", "testFirstname2", "testLastname2", testPhoneNumber, testLifeCycleStage));
+
+        createdContactIds.add(contact.getId());
+        createdContactIds.add(contact2.getId());
+
+        List<String> properties = Arrays.asList("email", "firstname", "lastname", "phone", "lifecyclestage");
+
+        List<HSContact> contacts = hubSpot.contact().getContactListByIdAndProperties(createdContactIds, properties);
+
+        assertNotNull(contacts);
+        assertNotNull(contacts.get(0).getPhoneNumber());
+        assertEquals(2, contacts.size());
+    }
+
+    @Test
+    public void getContactCompanies_Test() throws Exception {
         long contactId = hubSpot
                 .contact()
                 .create(new HSContact(testEmail1, testFirstname, testLastname, testPhoneNumber, testLifeCycleStage))
