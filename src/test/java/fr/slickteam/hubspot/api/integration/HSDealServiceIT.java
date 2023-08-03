@@ -209,7 +209,6 @@ public class HSDealServiceIT {
     public void patchDeal_Not_Found_Test() throws Exception {
         HSDeal deal = new HSDeal(testDealName, testDealStage, testPipeline, testAmount, testCloseDate).setId(-777);
 
-
         HSDeal editDeal = new HSDeal();
         editDeal.setId(deal.getId());
         editDeal.setDealName(deal.getDealName());

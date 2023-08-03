@@ -17,9 +17,7 @@ import java.util.List;
 
 public class HSAssociationIT {
     private Long createdContactId;
-    private Long createdCompanyId;
-    private Long createdCompany2Id;
-    private Long createdCompany3Id;
+    private List<Long> createdCompanyIds = new ArrayList<>();
     private Long createdAssociatedCompanyId;
     private Long createdDealId;
     private Long createdLineItemId;
@@ -61,14 +59,8 @@ public class HSAssociationIT {
         if (createdContactId != null) {
             hubSpot.contact().delete(createdContactId);
         }
-        if (createdCompanyId != null) {
+        for (long createdCompanyId : createdCompanyIds) {
             hubSpot.company().delete(createdCompanyId);
-        }
-        if (createdCompany2Id != null) {
-            hubSpot.company().delete(createdCompany2Id);
-        }
-        if (createdCompany3Id != null) {
-            hubSpot.company().delete(createdCompany2Id);
         }
         if (createdDealId != null) {
             hubSpot.deal().delete(createdDealId);
@@ -96,9 +88,9 @@ public class HSAssociationIT {
                                                                    testPhoneNumber,
                                                                    testLifeCycleStage));
         createdContactId = contact.getId();
-        createdCompanyId = company.getId();
+        createdCompanyIds.add(company.getId());
 
-        hubSpot.association().contactToCompany(createdContactId, createdCompanyId);
+        hubSpot.association().contactToCompany(createdContactId, company.getId());
     }
 
     @Test
@@ -110,7 +102,7 @@ public class HSAssociationIT {
                                                                    testCity,
                                                                    testCountry));
 
-        createdCompanyId = company.getId();
+        createdCompanyIds.add(company.getId());
 
         exception.expect(HubSpotException.class);
         exception.expectMessage("internal error");
@@ -156,14 +148,10 @@ public class HSAssociationIT {
                 testCountry));
 
         createdContactId = contact.getId();
-        createdCompanyId = company.getId();
-        createdCompany2Id = company2.getId();
+        createdCompanyIds.add(company.getId());
+        createdCompanyIds.add(company2.getId());
 
-        List<Long> companyIdList = new ArrayList<>();
-        companyIdList.add(createdCompanyId);
-        companyIdList.add(createdCompany2Id);
-
-        hubSpot.association().contactToCompanyList(createdContactId, companyIdList);
+        hubSpot.association().contactToCompanyList(createdContactId, createdCompanyIds);
     }
 
     @Test
@@ -181,9 +169,9 @@ public class HSAssociationIT {
                 testCity,
                 testCountry));
 
-        createdCompanyId = company.getId();
+        createdCompanyIds.add(company.getId());
         createdAssociatedCompanyId = associatedCompany.getId();
-        hubSpot.association().companyToCompany(createdCompanyId, createdAssociatedCompanyId, HSAssociationTypeEnum.PARENT);
+        hubSpot.association().companyToCompany(company.getId(), createdAssociatedCompanyId, HSAssociationTypeEnum.PARENT);
     }
 
     @Test
@@ -201,7 +189,7 @@ public class HSAssociationIT {
                 testCity,
                 testCountry));
 
-        createdCompanyId = company.getId();
+        createdCompanyIds.add(company.getId());
         createdAssociatedCompanyId = associatedCompany.getId();
         exception.expect(HubSpotException.class);
         hubSpot.association().companyToCompany(-777, createdAssociatedCompanyId, HSAssociationTypeEnum.PARENT);
@@ -228,9 +216,10 @@ public class HSAssociationIT {
                 testCity,
                 testCountry));
 
-        createdCompanyId = company.getId();
-        createdCompany2Id = associatedCompany1.getId();
-        createdCompany3Id = associatedCompany2.getId();
+        createdCompanyIds.add(company.getId());
+        createdCompanyIds.add(associatedCompany1.getId());
+        createdCompanyIds.add(associatedCompany2.getId());
+
         List<Long> associatedCompanyIdList = new ArrayList<>();
         associatedCompanyIdList.add(associatedCompany1.getId());
         associatedCompanyIdList.add(associatedCompany2.getId());
@@ -258,9 +247,9 @@ public class HSAssociationIT {
                 testCity,
                 testCountry));
 
-        createdCompanyId = company.getId();
-        createdCompany2Id = associatedCompany1.getId();
-        createdCompany3Id = associatedCompany2.getId();
+        createdCompanyIds.add(company.getId());
+        createdCompanyIds.add(associatedCompany1.getId());
+        createdCompanyIds.add(associatedCompany2.getId());
         List<Long> associatedCompanyIdList = new ArrayList<>();
         associatedCompanyIdList.add(associatedCompany1.getId());
         associatedCompanyIdList.add(associatedCompany2.getId());
@@ -284,10 +273,10 @@ public class HSAssociationIT {
                 testCountry));
 
         createdContactId = contact.getId();
-        createdCompanyId = company.getId();
+        createdCompanyIds.add(company.getId());
 
         hubSpot.association().contactToCompany(contact.getId(), company.getId());
-        hubSpot.association().removeContactToCompany(createdContactId, createdCompanyId);
+        hubSpot.association().removeContactToCompany(createdContactId, company.getId());
     }
 
     @Test
@@ -313,16 +302,12 @@ public class HSAssociationIT {
                 testCountry));
 
         createdContactId = contact.getId();
-        createdCompanyId = company.getId();
-        createdCompany2Id = company2.getId();
+        createdCompanyIds.add(company.getId());
+        createdCompanyIds.add(company2.getId());
 
-        List<Long> compagnyIdList = new ArrayList<>();
-        compagnyIdList.add(createdCompanyId);
-        compagnyIdList.add(createdCompany2Id);
-
-        hubSpot.association().contactToCompany(createdContactId, createdCompanyId);
-        hubSpot.association().contactToCompany(createdContactId, createdCompany2Id);
-        hubSpot.association().removeContactToCompanyList(createdContactId, compagnyIdList);
+        hubSpot.association().contactToCompany(createdContactId, company.getId());
+        hubSpot.association().contactToCompany(createdContactId, company2.getId());
+        hubSpot.association().removeContactToCompanyList(createdContactId, createdCompanyIds);
     }
 
 
@@ -335,9 +320,9 @@ public class HSAssociationIT {
                 testCity,
                 testCountry));
 
-        createdCompanyId = company.getId();
+        createdCompanyIds.add(company.getId());
 
-        hubSpot.association().getCompanyContactIdList(createdCompanyId);
+        hubSpot.association().getCompanyContactIdList(company.getId());
     }
 
     @Test
@@ -349,9 +334,9 @@ public class HSAssociationIT {
                 testCity,
                 testCountry));
 
-        createdCompanyId = company.getId();
+        createdCompanyIds.add(company.getId());
 
-        hubSpot.association().getCompaniesToCompany(createdCompanyId);
+        hubSpot.association().getCompaniesToCompany(company.getId());
     }
 
     @Test
