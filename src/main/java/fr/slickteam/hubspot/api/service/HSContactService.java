@@ -69,7 +69,7 @@ public class HSContactService {
     }
 
     /**
-     * Get HubSpot a list of companies by id with properties.
+     * Get HubSpot a list of contact by id with properties.
      *
      * @param idList     - ID list of companies
      * @param properties - List of string properties as company name or deal description
@@ -164,18 +164,7 @@ public class HSContactService {
     public List<HSCompany> getContactCompanies(Long contactId) throws HubSpotException {
         List<Long> companyIds = associationService.getContactCompanyIdList(contactId);
 
-        return companyIds.stream()
-                .map(this::getHsCompany)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-    }
-
-    private HSCompany getHsCompany(Long companyId) {
-        try {
-            return companyService.getByID(companyId);
-        } catch (HubSpotException e) {
-            return null;
-        }
+        return companyService.getCompanyListByIdAndProperties(companyIds, Collections.emptyList());
     }
 
     /**
