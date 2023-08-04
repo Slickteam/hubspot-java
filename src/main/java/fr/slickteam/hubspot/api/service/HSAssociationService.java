@@ -33,6 +33,7 @@ public class HSAssociationService {
     private static final String ARCHIVE = "archive/";
     private static final String BATCH = "batch/";
     private static final String CREATE = "create/";
+    private static final String READ = "read";
     private final HttpService httpService;
     private final HSService hsService;
 
@@ -347,6 +348,32 @@ public class HSAssociationService {
             return hsService.parseJsonResultToList(url);
         } catch (HubSpotException e) {
             if (e.getMessage().equals("No company associated found for this company")) {
+                return new ArrayList<>();
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    /**
+     * Get business to contact associations for a list of businesses
+     *
+     * @param companyIds           - ID of the compagny to link
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public List<JSONObject> companiesToContacts(List<Long> companyIds) throws HubSpotException {
+        StringBuilder companyIdList = new StringBuilder("{\n" +
+                "  \"inputs\": [\n");
+        companyIds.forEach(id -> companyIdList.append("    {\n")
+                .append("      \"id\": \"").append(id).append("\"\n")
+                .append("    },\n"));
+        String postBody = companyIdList.substring(0, companyIdList.length()-2) + "]\n" + "}";
+        String url =
+                BasePath.V4_ASSOCIATION + COMPANY + CONTACT + BATCH + READ;
+        try {
+            return hsService.parsePostJsonResultToList(url, postBody);
+        } catch (HubSpotException e) {
+            if (e.getMessage().equals("No contact associated found for these companies")) {
                 return new ArrayList<>();
             } else {
                 throw e;
