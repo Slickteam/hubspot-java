@@ -1,8 +1,10 @@
 package fr.slickteam.hubspot.api.service;
 
-import fr.slickteam.hubspot.api.utils.HubSpotException;
 import fr.slickteam.hubspot.api.domain.HSProduct;
+import fr.slickteam.hubspot.api.utils.HubSpotException;
 import kong.unirest.json.JSONObject;
+
+import static java.lang.System.Logger.Level.DEBUG;
 
 /**
  * HubSpot Product Service
@@ -10,6 +12,8 @@ import kong.unirest.json.JSONObject;
  * Service for managing HubSpot products
  */
 public class HSProductService {
+
+    private static final System.Logger log = System.getLogger(HSProductService.class.getName());
 
     private final static String PRODUCT_URL = "/crm/v3/objects/products/";
 
@@ -34,6 +38,7 @@ public class HSProductService {
      * @throws HubSpotException - if HTTP call fails
      */
     public HSProduct getByID(long id) throws HubSpotException {
+        log.log(DEBUG, "getByID - id : " + id);
         String url = PRODUCT_URL + id;
         return getProduct(url);
     }
@@ -46,6 +51,7 @@ public class HSProductService {
      * @throws HubSpotException - if HTTP call fails
      */
     public HSProduct create(HSProduct product) throws HubSpotException {
+        log.log(DEBUG, "create - product : " + product);
         JSONObject jsonObject = (JSONObject) httpService.postRequest(PRODUCT_URL, product.toJsonString());
 
         return parseProductData(jsonObject);
@@ -59,6 +65,7 @@ public class HSProductService {
      * @throws HubSpotException - if HTTP call fails
      */
     public HSProduct patch(HSProduct product) throws HubSpotException {
+        log.log(DEBUG, "patch - product : " + product);
         String url = PRODUCT_URL + product.getId();
 
         String properties = product.toJsonString();
@@ -78,6 +85,7 @@ public class HSProductService {
      * @throws HubSpotException - if HTTP call fails
      */
     public void delete(HSProduct product) throws HubSpotException {
+        log.log(DEBUG, "delete - product : " + product);
         delete(product.getId());
     }
 
@@ -88,6 +96,7 @@ public class HSProductService {
      * @throws HubSpotException - if HTTP call fails
      */
     public void delete(Long id) throws HubSpotException {
+        log.log(DEBUG, "delete - id : " + id);
         if (id == 0) {
             throw new HubSpotException("Product ID must be provided");
         }

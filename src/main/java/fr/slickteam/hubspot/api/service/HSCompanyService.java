@@ -8,12 +8,16 @@ import kong.unirest.json.JSONObject;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.lang.System.Logger.Level.DEBUG;
+
 /**
  * HubSpot Company Service
  * <p>
  * Service for managing HubSpot companies
  */
 public class HSCompanyService {
+
+    private static final System.Logger log = System.getLogger(HSCompanyService.class.getName());
     private final HttpService httpService;
     private final HSService hsService;
     private HSContactService contactService;
@@ -51,6 +55,7 @@ public class HSCompanyService {
      * @throws HubSpotException - if HTTP call fails
      */
     public HSCompany create(HSCompany hsCompany) throws HubSpotException {
+        log.log(DEBUG, "create - hsCompany : " + hsCompany);
         JSONObject jsonObject = (JSONObject) httpService.postRequest(COMPANY_URL_V3, hsCompany.toJsonString());
         hsCompany.setId(jsonObject.getLong("id"));
         return hsCompany;
@@ -64,6 +69,7 @@ public class HSCompanyService {
      * @throws HubSpotException - if HTTP call fails
      */
     public void addContact(long contactId, long companyId) throws HubSpotException {
+        log.log(DEBUG, "addContact - contactId : " + contactId + " | companyId : " + companyId);
         String url = "/companies/v2/companies/" + companyId + "/contacts/" + contactId;
         httpService.putRequest(url, "");
     }
@@ -91,6 +97,7 @@ public class HSCompanyService {
      * @throws HubSpotException - if HTTP call fails
      */
     public HSCompany getByID(long id) throws HubSpotException {
+        log.log(DEBUG, "getByID - id : " + id);
         String url = COMPANY_URL_V3 + id;
         return getCompany(url);
     }
@@ -116,6 +123,7 @@ public class HSCompanyService {
      * @throws HubSpotException - if HTTP call fails
      */
     public List<HSCompany> getCompanyListByIdAndProperties(List<Long> idList, List<String> properties) throws HubSpotException {
+        log.log(DEBUG, "getCompanyListByIdAndProperties - idList : " + idList + " | properties : " + properties);
         String formatProperties = getJsonProperties(properties);
         String formatIdList = getJsonInputList(idList);
         String associationProperties = "{\n" +
@@ -178,6 +186,7 @@ public class HSCompanyService {
      * @throws HubSpotException - if HTTP call fails
      */
     public HSCompany getByIdAndProperties(long id, List<String> properties) throws HubSpotException {
+        log.log(DEBUG, "getByIdAndProperties - id : " + id + " | properties : " + properties);
         String propertiesUrl = String.join(",", properties);
         String url = COMPANY_URL_V3 + id + "?properties=" + propertiesUrl;
         return getCompany(url);
@@ -191,6 +200,7 @@ public class HSCompanyService {
      * @throws HubSpotException - if HTTP call fails
      */
     public List<HSAssociatedCompany> getAssociatedCompanies(Long companyId) throws HubSpotException {
+        log.log(DEBUG, "getAssociatedCompanies - companyId : " + companyId);
         List<JSONObject> associationList = associationService.getCompaniesToCompany(companyId);
         List<HSAssociatedCompany> associatedCompanies = new ArrayList<>();
 
@@ -218,6 +228,7 @@ public class HSCompanyService {
      * @throws HubSpotException - if HTTP call fails
      */
     public Map<Long, List<Long>> getAssociatedContacts(List<Long> companyIds) throws HubSpotException {
+        log.log(DEBUG, "getAssociatedContacts - companyIds : " + companyIds);
         List<JSONObject> associationList = associationService.companiesToContacts(companyIds);
         Map<Long, List<Long>> associatedContacts = new HashMap<>();
 
@@ -228,7 +239,7 @@ public class HSCompanyService {
 
             List<Long> contactIds = new ArrayList<>();
 
-            for (int i=0, max=contacts.length(); i<max; i++) {
+            for (int i = 0, max = contacts.length(); i < max; i++) {
                 contactIds.add(Long.parseLong(contacts.getJSONObject(i).get("toObjectId").toString()));
             }
 
@@ -246,6 +257,7 @@ public class HSCompanyService {
      * @throws HubSpotException - if HTTP call fails
      */
     public List<HSContact> getCompanyContacts(Long companyId) throws HubSpotException {
+        log.log(DEBUG, "getCompanyContacts - companyId : " + companyId);
         List<Long> contactIdList = associationService.getCompanyContactIdList(companyId);
         return contactIdList.stream()
                 .map(this::getContactById)
@@ -269,6 +281,7 @@ public class HSCompanyService {
      * @throws HubSpotException - if HTTP call fails
      */
     public List<HSCompany> getByDomain(String domain) throws HubSpotException {
+        log.log(DEBUG, "getByDomain - domain : " + domain);
         List<HSCompany> companies = new ArrayList<>();
         String url = COMPANY_URL_V3 + domain;
         JSONArray jsonArray = (JSONArray) httpService.getRequest(url);
@@ -287,6 +300,7 @@ public class HSCompanyService {
      * @throws HubSpotException - if HTTP call fails
      */
     public HSCompany patch(HSCompany company) throws HubSpotException {
+        log.log(DEBUG, "patch - company : " + company);
         String url = COMPANY_URL_V3 + company.getId();
         String properties = company.toJsonString();
 
@@ -305,6 +319,7 @@ public class HSCompanyService {
      * @throws HubSpotException - if HTTP call fails
      */
     public void delete(HSCompany company) throws HubSpotException {
+        log.log(DEBUG, "delete - company : " + company);
         delete(company.getId());
     }
 
@@ -315,6 +330,7 @@ public class HSCompanyService {
      * @throws HubSpotException - if HTTP call fails
      */
     public void delete(Long id) throws HubSpotException {
+        log.log(DEBUG, "delete - id : " + id);
         if (id == 0) {
             throw new HubSpotException("Company ID must be provided");
         }
@@ -331,6 +347,7 @@ public class HSCompanyService {
      * @throws HubSpotException - if HTTP call fails
      */
     public List<Long> getDealIdList(Long companyId) throws HubSpotException {
+        log.log(DEBUG, "getDealIdList - companyId : " + companyId);
         String url = COMPANY_URL_V4 + companyId + "/associations/deals";
         try {
             return hsService.parseJsonObjectToIdList(url);
@@ -347,6 +364,7 @@ public class HSCompanyService {
      * @throws HubSpotException - if HTTP call fails
      */
     public List<HSDeal> getDeals(Long companyId) throws HubSpotException {
+        log.log(DEBUG, "getDeals - companyId : " + companyId);
         List<HSDeal> companyDeals = new ArrayList<>();
 
         // Get associated deals id
@@ -371,6 +389,7 @@ public class HSCompanyService {
      * @throws HubSpotException - if HTTP call fails
      */
     public HSDeal getLastDeal(long companyId) throws HubSpotException {
+        log.log(DEBUG, "getLastDeal - companyId : " + companyId);
         // Get associated deals
         List<HSDeal> dealList = getDeals(companyId);
 

@@ -7,7 +7,11 @@ import kong.unirest.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.lang.System.Logger.Level.DEBUG;
+
 public class HSPipelineService {
+
+    private static final System.Logger log = System.getLogger(HSPipelineService.class.getName());
     private final HttpService httpService;
     private final HSService hsService;
     private static final String PIPELINE_URL = "/crm/v3/pipelines/";
@@ -31,6 +35,7 @@ public class HSPipelineService {
      * @throws HubSpotException - if HTTP call fails
      */
     public HSPipeline create(HSPipeline hsPipeline) throws HubSpotException {
+        log.log(DEBUG, "create - hsPipeline : " + hsPipeline);
         JSONObject jsonObject = (JSONObject) httpService.postRequest(PIPELINE_URL + DEALS, hsPipeline.toJsonString());
         hsPipeline.setId(jsonObject.getLong("id"));
         return hsPipeline;
@@ -43,6 +48,7 @@ public class HSPipelineService {
      * @throws HubSpotException - if HTTP call fails
      */
     public void delete(HSPipeline pipeline) throws HubSpotException {
+        log.log(DEBUG, "delete - pipeline : " + pipeline);
         delete(pipeline.getId());
     }
 
@@ -53,6 +59,7 @@ public class HSPipelineService {
      * @throws HubSpotException - if HTTP call fails
      */
     public void delete(Long id) throws HubSpotException {
+        log.log(DEBUG, "delete - id : " + id);
         if (id == 0) {
             throw new HubSpotException("Pipeline ID must be provided");
         }
@@ -68,6 +75,7 @@ public class HSPipelineService {
      * @throws HubSpotException - if HTTP call fails
      */
     public List<HSPipeline> getPipelines() throws HubSpotException {
+        log.log(DEBUG, "getPipelines");
         List<HSPipeline> pipelines = new ArrayList<>();
         String url = PIPELINE_URL + DEALS;
         List<JSONObject> response = hsService.parseJsonResultToList(url);
@@ -85,6 +93,7 @@ public class HSPipelineService {
      * @throws HubSpotException - if HTTP call fails
      */
     public HSPipeline getPipelineById(long pipelineId) throws HubSpotException {
+        log.log(DEBUG, "getPipelineById - pipelineId : " + pipelineId);
         String url = PIPELINE_URL + DEALS + pipelineId;
         return getPipeline(url);
     }

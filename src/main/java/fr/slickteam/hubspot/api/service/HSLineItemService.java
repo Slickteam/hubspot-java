@@ -1,8 +1,10 @@
 package fr.slickteam.hubspot.api.service;
 
-import fr.slickteam.hubspot.api.utils.HubSpotException;
 import fr.slickteam.hubspot.api.domain.HSLineItem;
+import fr.slickteam.hubspot.api.utils.HubSpotException;
 import kong.unirest.json.JSONObject;
+
+import static java.lang.System.Logger.Level.DEBUG;
 
 /**
  * HubSpot LineItem Service
@@ -10,6 +12,8 @@ import kong.unirest.json.JSONObject;
  * Service for managing HubSpot line items
  */
 public class HSLineItemService {
+
+    private static final System.Logger log = System.getLogger(HSLineItemService.class.getName());
 
     private final static String LINE_ITEM_URL = "/crm/v3/objects/line_items/";
     private final HttpService httpService;
@@ -33,6 +37,7 @@ public class HSLineItemService {
      * @throws HubSpotException - if HTTP call fails
      */
     public HSLineItem getByID(long id) throws HubSpotException {
+        log.log(DEBUG, "getByID - id : " + id);
         String url = LINE_ITEM_URL + id;
         return getLineItem(url);
     }
@@ -57,6 +62,7 @@ public class HSLineItemService {
      * @throws HubSpotException - if HTTP call fails
      */
     public HSLineItem create(HSLineItem hsLineItem) throws HubSpotException {
+        log.log(DEBUG, "create - hsLineItem : " + hsLineItem);
         JSONObject jsonObject = (JSONObject) httpService.postRequest(LINE_ITEM_URL, hsLineItem.toJsonString());
 
         return parseLineItemData(jsonObject);
@@ -85,6 +91,7 @@ public class HSLineItemService {
      * @throws HubSpotException - if HTTP call fails
      */
     public HSLineItem patch(HSLineItem lineItem) throws HubSpotException {
+        log.log(DEBUG, "patch - lineItem : " + lineItem);
 
         String url = LINE_ITEM_URL + lineItem.getId();
 
@@ -105,6 +112,7 @@ public class HSLineItemService {
      * @throws HubSpotException - if HTTP call fails
      */
     public void delete(HSLineItem lineItem) throws HubSpotException {
+        log.log(DEBUG, "delete - lineItem : " + lineItem);
         delete(lineItem.getId());
     }
 
@@ -115,6 +123,7 @@ public class HSLineItemService {
      * @throws HubSpotException - if HTTP call fails
      */
     public void delete(Long id) throws HubSpotException {
+        log.log(DEBUG, "delete - id : " + id);
         if (id == 0) {
             throw new HubSpotException("Line item ID must be provided");
         }

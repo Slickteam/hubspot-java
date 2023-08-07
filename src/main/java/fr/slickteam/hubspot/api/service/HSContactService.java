@@ -2,13 +2,14 @@ package fr.slickteam.hubspot.api.service;
 
 import com.google.common.base.Strings;
 import fr.slickteam.hubspot.api.domain.HSCompany;
-import fr.slickteam.hubspot.api.utils.HubSpotException;
 import fr.slickteam.hubspot.api.domain.HSContact;
+import fr.slickteam.hubspot.api.utils.HubSpotException;
 import kong.unirest.json.JSONArray;
 import kong.unirest.json.JSONObject;
 
 import java.util.*;
-import java.util.stream.Collectors;
+
+import static java.lang.System.Logger.Level.DEBUG;
 
 /**
  * HubSpot Contact Service
@@ -16,6 +17,8 @@ import java.util.stream.Collectors;
  * Service for managing HubSpot contacts
  */
 public class HSContactService {
+
+    private static final System.Logger log = System.getLogger(HSContactService.class.getName());
 
     private static final String CONTACT_URL = "/crm/v3/objects/contacts/";
     public static final String ID_PROPERTY_EMAIL = "idProperty=email";
@@ -30,7 +33,7 @@ public class HSContactService {
     /**
      * Constructor with HTTPService injected
      *
-     * @param httpService        - HTTP service for HubSpot API
+     * @param httpService - HTTP service for HubSpot API
      */
     public HSContactService(HttpService httpService) {
         this.httpService = httpService;
@@ -50,6 +53,7 @@ public class HSContactService {
      * @throws HubSpotException - if HTTP call fails
      */
     public HSContact getByID(long id) throws HubSpotException {
+        log.log(DEBUG, "getByID - id : " + id);
         String url = CONTACT_URL + id;
         return getContact(url);
     }
@@ -57,12 +61,13 @@ public class HSContactService {
     /**
      * Get HubSpot contact by its ID with list of properties.
      *
-     * @param id - ID of the company
+     * @param id         - ID of the company
      * @param properties - List of string properties as contact name or email
      * @return the contact with the selected properties
      * @throws HubSpotException - if HTTP call fails
      */
     public HSContact getByIdAndProperties(long id, List<String> properties) throws HubSpotException {
+        log.log(DEBUG, "getByIdAndProperties - id : " + id + " | properties : " + properties);
         String propertiesUrl = String.join(",", properties);
         String url = CONTACT_URL + id + "?properties=" + propertiesUrl;
         return getContact(url);
@@ -77,6 +82,7 @@ public class HSContactService {
      * @throws HubSpotException - if HTTP call fails
      */
     public List<HSContact> getContactListByIdAndProperties(List<Long> idList, List<String> properties) throws HubSpotException {
+        log.log(DEBUG, "getContactListByIdAndProperties - idList : " + idList + " | properties : " + properties);
         String formatProperties = getJsonProperties(properties);
         String formatIdList = getJsonInputList(idList);
         String associationProperties = "{\n" +
@@ -138,6 +144,7 @@ public class HSContactService {
      * @throws HubSpotException - if HTTP call fails
      */
     public Optional<HSContact> getByEmail(String email) throws HubSpotException {
+        log.log(DEBUG, "getByEmail - email : " + email);
         String url = CONTACT_URL + email + PARAMETER_OPERATOR + ID_PROPERTY_EMAIL;
         return Optional.ofNullable(getContact(url));
     }
@@ -162,6 +169,7 @@ public class HSContactService {
      * @throws HubSpotException - if HTTP call fails
      */
     public List<HSCompany> getContactCompanies(Long contactId) throws HubSpotException {
+        log.log(DEBUG, "getContactCompanies - contactId : " + contactId);
         List<Long> companyIds = associationService.getContactCompanyIdList(contactId);
 
         return companyService.getCompanyListByIdAndProperties(companyIds, Collections.emptyList());
@@ -175,6 +183,7 @@ public class HSContactService {
      * @throws HubSpotException - if HTTP call fails
      */
     public HSContact create(HSContact hsContact) throws HubSpotException {
+        log.log(DEBUG, "create - hsContact : " + hsContact);
         if (Strings.isNullOrEmpty(hsContact.getEmail())) {
             throw new HubSpotException("User email must be provided");
         }
@@ -191,6 +200,7 @@ public class HSContactService {
      * @throws HubSpotException - if HTTP call fails
      */
     public HSContact patch(HSContact contact) throws HubSpotException {
+        log.log(DEBUG, "patch - contact : " + contact);
         if (contact.getId() == 0) {
             throw new HubSpotException("User ID must be provided");
         }
@@ -207,6 +217,7 @@ public class HSContactService {
      * @throws HubSpotException - if HTTP call fails
      */
     public void delete(HSContact contact) throws HubSpotException {
+        log.log(DEBUG, "delete - contact : " + contact);
         delete(contact.getId());
     }
 
@@ -217,6 +228,7 @@ public class HSContactService {
      * @throws HubSpotException - if HTTP call fails
      */
     public void delete(Long id) throws HubSpotException {
+        log.log(DEBUG, "delete - id : " + id);
         if (id == 0) {
             throw new HubSpotException("Contact ID must be provided");
         }
