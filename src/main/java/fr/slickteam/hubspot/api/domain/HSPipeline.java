@@ -72,25 +72,10 @@ public class HSPipeline extends HSObject{
         return getStagesProperties(jsonArray);
     }
 
-    private List<HSStage> getStagesProperties(JSONArray jsonArray) {
-        List<HSStage> stages = new ArrayList<>();
-        for (int i = 0; i < jsonArray.length(); i++) {
-            HSStage stage = new HSStage();
-            JSONObject jsonStage = jsonArray.getJSONObject(i);
-            stage.setId(Long.parseLong((String) jsonStage.get(ID)));
-            stage.setLabel((String) jsonStage.get(LABEL));
-            stage.setDisplayOrder(((int) jsonStage.get(DISPLAY_ORDER)));
-            stage.setMetadata(String.valueOf(jsonStage.get("metadata")));
-            stage.setCreatedAt(Instant.parse((String) jsonStage.get(CREATED_AT)));
-            stage.setUpdateAt(Instant.parse((String) jsonStage.get(UPDATED_AT)));
-            stage.setArchived((Boolean) jsonStage.get(ARCHIVED));
-            stages.add(stage);
-        }
-        return stages;
-    }
-
     public HSPipeline setStages(List<HSStage> stages) {
-        setProperty(STAGES, String.valueOf(stages));
+        JSONArray jsonArray = new JSONArray();
+        stages.forEach(stage -> jsonArray.put(stageToJson(stage)));
+        setProperty(STAGES, jsonArray.toString());
         return this;
     }
 
@@ -119,5 +104,34 @@ public class HSPipeline extends HSObject{
     public HSPipeline setArchived(boolean archived) {
         setProperty(ARCHIVED, Boolean.toString(archived));
         return this;
+    }
+
+    private List<HSStage> getStagesProperties(JSONArray jsonArray) {
+        List<HSStage> stages = new ArrayList<>();
+        for (int i = 0; i < jsonArray.length(); i++) {
+            HSStage stage = new HSStage();
+            JSONObject jsonStage = jsonArray.getJSONObject(i);
+            stage.setId(Long.parseLong((String) jsonStage.get(ID)));
+            stage.setLabel((String) jsonStage.get(LABEL));
+            stage.setDisplayOrder(((int) jsonStage.get(DISPLAY_ORDER)));
+            stage.setMetadata(String.valueOf(jsonStage.get("metadata")));
+            stage.setCreatedAt(Instant.parse((String) jsonStage.get(CREATED_AT)));
+            stage.setUpdateAt(Instant.parse((String) jsonStage.get(UPDATED_AT)));
+            stage.setArchived((Boolean) jsonStage.get(ARCHIVED));
+            stages.add(stage);
+        }
+        return stages;
+    }
+
+    private JSONObject stageToJson(HSStage stage) {
+        JSONObject jsonStage = new JSONObject();
+        jsonStage.put(ID, stage.getId()+"");
+        jsonStage.put(LABEL, stage.getLabel());
+        jsonStage.put(DISPLAY_ORDER, stage.getDisplayOrder());
+        jsonStage.put("metadata", stage.getMetadata());
+        jsonStage.put(CREATED_AT, stage.getCreatedAt()+"");
+        jsonStage.put(UPDATED_AT, stage.getUpdateAt()+"");
+        jsonStage.put(ARCHIVED, stage.getArchived());
+        return jsonStage;
     }
 }
