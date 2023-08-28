@@ -4,13 +4,14 @@ import com.google.common.base.Strings;
 import fr.slickteam.hubspot.api.utils.HubSpotHelper;
 import kong.unirest.json.JSONObject;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class HSObject {
+public class HSObject implements Serializable {
     protected Map<String, String> properties = new HashMap<>();
 
     public HSObject() {
