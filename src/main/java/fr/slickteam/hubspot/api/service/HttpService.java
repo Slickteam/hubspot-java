@@ -211,13 +211,13 @@ public class HttpService {
             }
         } else {
             if (resp.getBody() != null) {
-                log.log(WARNING, "checkResponse : HTTP status : " + resp.getStatus() +
+                log.log(TRACE, "checkResponse : HTTP status : " + resp.getStatus() +
                                " (" + resp.getStatusText() +
                                ") | message = " + resp.getBody().toString());
                 return resp.getBody().isArray() ? resp.getBody().getArray() : resp.getBody().getObject();
             } else {
-                log.log(WARNING, "checkResponse : HTTP status : " + resp.getStatus() +
-                               " (" + resp.getStatusText());
+                log.log(TRACE, "checkResponse : HTTP status : " + resp.getStatus() +
+                               " (" + resp.getStatusText() + ")");
                 return null;
             }
         }
