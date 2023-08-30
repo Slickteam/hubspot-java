@@ -10,13 +10,17 @@ import kong.unirest.UnirestException;
 import kong.unirest.json.JSONObject;
 
 import java.util.Set;
+import java.util.logging.Level;
 
+import static java.lang.System.Logger.Level.*;
 import static kong.unirest.Unirest.*;
 
 /**
  * Service for handling requests to HubSpot API.
  */
 public class HttpService {
+
+    private static final System.Logger log = System.getLogger(HttpService.class.getName());
 
     private final String apiBase;
     private final OAuthConfig oAuthConfig;
@@ -191,17 +195,29 @@ public class HttpService {
                         .getObject()
                         .getString("message");
             } catch (Exception e) {
+                log.log(ERROR, "checkResponse : HTTP status : " + resp.getStatus() +
+                               " (" + resp.getStatusText() +
+                               ") | message = " + resp.getBody().toString(), e);
             }
 
             if (!Strings.isNullOrEmpty(message)) {
+                log.log(ERROR, "checkResponse : HTTP status : " + resp.getStatus() +
+                               " (" + resp.getStatusText() +
+                               ") | message = " + resp.getBody().toString());
                 throw new HubSpotException(message, resp.getStatus());
             } else {
+                log.log(ERROR, "checkResponse : message is empty");
                 throw new HubSpotException(resp.getStatusText(), resp.getStatus());
             }
         } else {
             if (resp.getBody() != null) {
+                log.log(WARNING, "checkResponse : HTTP status : " + resp.getStatus() +
+                               " (" + resp.getStatusText() +
+                               ") | message = " + resp.getBody().toString());
                 return resp.getBody().isArray() ? resp.getBody().getArray() : resp.getBody().getObject();
             } else {
+                log.log(WARNING, "checkResponse : HTTP status : " + resp.getStatus() +
+                               " (" + resp.getStatusText());
                 return null;
             }
         }
