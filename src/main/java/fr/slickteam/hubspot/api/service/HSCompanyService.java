@@ -221,6 +221,34 @@ public class HSCompanyService {
     }
 
     /**
+     * Get HubSpot associated companies by company ID.
+     *
+     * @param companyId - ID of company
+     * @return A list of associated companies with details
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public List<HSAssociatedCompany> getAssociatedCompanies(Long companyId, List<String> properties) throws HubSpotException {
+        log.log(DEBUG, "getAssociatedCompanies - companyId : " + companyId);
+        List<JSONObject> associationList = associationService.getCompaniesToCompany(companyId);
+        List<HSAssociatedCompany> associatedCompanies = new ArrayList<>();
+
+        for (JSONObject JsonAssociation : associationList) {
+            // Initiate associated company parameters
+            HSCompany company = getByIdAndProperties((Long) JsonAssociation.get("toObjectId"), properties);
+            HSAssociationTypeOutput associationType = new HSAssociationTypeOutput();
+            // Create association type from JSON Object
+            JSONObject jsonAssociationType = ((JSONArray) JsonAssociation.get("associationTypes")).getJSONObject(0);
+            associationType.setLabel((String) jsonAssociationType.get("label"));
+            associationType.setTypeId((Integer) jsonAssociationType.get("typeId"));
+            // Create associated company and add it to a list
+            HSAssociatedCompany associatedCompany = new HSAssociatedCompany(associationType, company);
+            associatedCompanies.add(associatedCompany);
+        }
+
+        return associatedCompanies;
+    }
+
+    /**
      * Get HubSpot associated contacts for a list of company ID.
      *
      * @param companyIds - IDs of companies

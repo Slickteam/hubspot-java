@@ -176,6 +176,34 @@ public class HSCompanyServiceIT {
     }
 
     @Test
+    public void getAssociatedCompanies_withProperties_Test() throws Exception {
+        HSCompany company = new HSCompany();
+        HSCompany associatedCompany = new HSCompany();
+        try {
+            company = getNewTestCompany();
+            associatedCompany = getNewTestCompany();
+            hubSpot.company().create(company);
+            hubSpot.company().create(associatedCompany);
+            hubSpot.association().companyToCompany(company.getId(), associatedCompany.getId(), HSAssociationTypeEnum.PARENT);
+            List<HSAssociatedCompany> associatedCompanies = hubSpot.company().getAssociatedCompanies(company.getId(), List.of("address"));
+
+            createdCompanyId = company.getId();
+            createdCompanyId2 = associatedCompany.getId();
+
+            assertNotNull(associatedCompanies);
+            assertFalse(associatedCompanies.isEmpty());
+            HSCompany finalAssociatedCompany = associatedCompany;
+            assertTrue(associatedCompanies.stream().anyMatch(ac -> ac.getCompany().getId() == finalAssociatedCompany.getId()));
+            assertTrue(associatedCompanies.stream().anyMatch(ac -> ac.getCompany().getProperty("address").equals(finalAssociatedCompany.getAddress())));
+        } catch (HubSpotException e) {
+            throw e;
+        } finally {
+            hubSpot.company().delete(company.getId());
+            hubSpot.company().delete(associatedCompany.getId());
+        }
+    }
+
+    @Test
     public void getCompanyContacts_Tests() throws Exception {
         HSCompany company = new HSCompany();
         HSContact contact = new HSContact();
