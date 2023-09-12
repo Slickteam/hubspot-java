@@ -1,18 +1,21 @@
 package fr.slickteam.hubspot.api.service;
 
 import com.google.common.base.Strings;
+import fr.slickteam.hubspot.api.domain.HSObject;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
 import fr.slickteam.hubspot.api.utils.HubSpotProperties;
-import fr.slickteam.hubspot.api.domain.HSObject;
 import kong.unirest.HttpResponse;
 import kong.unirest.JsonNode;
 import kong.unirest.UnirestException;
+import kong.unirest.json.JSONArray;
 import kong.unirest.json.JSONObject;
 
+import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
+import java.util.stream.Collectors;
 
-import static java.lang.System.Logger.Level.*;
+import static java.lang.System.Logger.Level.ERROR;
+import static java.lang.System.Logger.Level.TRACE;
 import static kong.unirest.Unirest.*;
 
 /**
@@ -168,7 +171,7 @@ public class HttpService {
 
     private boolean oauthTokenHasExpired(HttpResponse<JsonNode> resp) {
         return resp.getStatus() == 401
-                && "EXPIRED_AUTHENTICATION".equals(resp.getBody()
+               && "EXPIRED_AUTHENTICATION".equals(resp.getBody()
                 .getObject()
                 .getString("category"));
     }
@@ -190,20 +193,25 @@ public class HttpService {
         if (204 != resp.getStatus() && 200 != resp.getStatus() && 201 != resp.getStatus() && 202 != resp.getStatus()) {
             String message = null;
             try {
-                message = (resp.getStatus() == 404) ? resp.getStatusText() : resp
-                        .getBody()
-                        .getObject()
-                        .getString("message");
+                switch (resp.getStatus()) {
+                    case 404:
+                        message = resp.getStatusText();
+                        break;
+                    case 207:
+                        message = ((List<JSONObject>) ((JSONArray) resp.getBody().getObject().get("errors")).toList()).stream()
+                                .map(error -> error.get("message"))
+                                .collect(Collectors.toList())
+                                .toString();
+                        break;
+                    default:
+                        resp.getBody().getObject().getString("message");
+                }
             } catch (Exception e) {
-                log.log(ERROR, "checkResponse : HTTP status : " + resp.getStatus() +
-                               " (" + resp.getStatusText() +
-                               ") | message = " + resp.getBody().toString(), e);
+                log.log(ERROR, getHttpErrorMessageAndStatus(resp), e);
             }
 
             if (!Strings.isNullOrEmpty(message)) {
-                log.log(ERROR, "checkResponse : HTTP status : " + resp.getStatus() +
-                               " (" + resp.getStatusText() +
-                               ") | message = " + resp.getBody().toString());
+                log.log(ERROR, getHttpErrorMessageAndStatus(resp));
                 throw new HubSpotException(message, resp.getStatus());
             } else {
                 log.log(ERROR, "checkResponse : message is empty");
@@ -211,9 +219,7 @@ public class HttpService {
             }
         } else {
             if (resp.getBody() != null) {
-                log.log(TRACE, "checkResponse : HTTP status : " + resp.getStatus() +
-                               " (" + resp.getStatusText() +
-                               ") | message = " + resp.getBody().toString());
+                log.log(TRACE, getHttpErrorMessageAndStatus(resp));
                 return resp.getBody().isArray() ? resp.getBody().getArray() : resp.getBody().getObject();
             } else {
                 log.log(TRACE, "checkResponse : HTTP status : " + resp.getStatus() +
@@ -221,5 +227,11 @@ public class HttpService {
                 return null;
             }
         }
+    }
+
+    private static String getHttpErrorMessageAndStatus(HttpResponse<JsonNode> resp) {
+        return "checkResponse : HTTP status : " + resp.getStatus() +
+               " (" + resp.getStatusText() +
+               ") | message = " + resp.getBody().toString();
     }
 }

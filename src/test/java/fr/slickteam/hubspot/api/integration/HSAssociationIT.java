@@ -105,7 +105,7 @@ public class HSAssociationIT {
         createdCompanyIds.add(company.getId());
 
         exception.expect(HubSpotException.class);
-        exception.expectMessage("internal error");
+        exception.expectMessage("[-777 is not a valid ID]");
         hubSpot.association().contactToCompany(-777, company.getId());
     }
 
@@ -121,7 +121,7 @@ public class HSAssociationIT {
 
 
         exception.expect(HubSpotException.class);
-        exception.expectMessage("internal error");
+        exception.expectMessage("[-777 is not a valid ID]");
         hubSpot.association().contactToCompany(contact.getId(), -777);
     }
 
