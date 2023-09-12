@@ -176,6 +176,21 @@ public class HSContactService {
     }
 
     /**
+     * Get Contact Companies with properties.
+     *
+     * @param contactId - ID of the contact
+     * @param properties - List of string properties as company name or deal description
+     * @return the list of companies associated to the contact
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public List<HSCompany> getContactCompanies(Long contactId, List<String> properties) throws HubSpotException {
+        log.log(DEBUG, "getContactCompanies - contactId : " + contactId + " ; properties : " + properties);
+        List<Long> companyIds = associationService.getContactCompanyIdList(contactId);
+
+        return companyService.getCompanyListByIdAndProperties(companyIds, properties);
+    }
+
+    /**
      * Create a new contact
      *
      * @param hsContact - contact to create

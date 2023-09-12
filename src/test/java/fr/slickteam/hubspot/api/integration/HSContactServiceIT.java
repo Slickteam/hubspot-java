@@ -15,10 +15,7 @@ import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -188,14 +185,37 @@ public class HSContactServiceIT {
                 .contact()
                 .create(new HSContact(testEmail1, testFirstname, testLastname, testPhoneNumber, testLifeCycleStage))
                 .getId();
-        createdContactIds.add(contactId);
         HSCompany company = new HSCompany("TestCompany"+ Instant.now().getEpochSecond(), testPhoneNumber, testAddress, testZip, testCity, testCountry);
         hubSpot.company().create(company);
         hubSpot.association().contactToCompany(contactId, company.getId());
         List<HSCompany> companies = hubSpot.contact().getContactCompanies(contactId);
         assertNotNull(companies);
-        assertTrue(companies.size() > 0);
+        assertFalse(companies.isEmpty());
         assertEquals(companies.get(0).getId(), company.getId());
+
+        hubSpot.association().removeContactToCompany(contactId, company.getId());
+        hubSpot.contact().delete(contactId);
+        hubSpot.company().delete(company.getId());
+    }
+
+    @Test
+    public void getContactCompanies_withProperties_Test() throws Exception {
+        Map<String, String> properties = new HashMap<>();
+        HSContact contact = hubSpot
+                .contact()
+                .create(new HSContact(testEmail1, testFirstname, testLastname, testPhoneNumber, testLifeCycleStage));
+        HSCompany company = new HSCompany("TestCompany"+ Instant.now().getEpochSecond(), testPhoneNumber, testAddress, testZip, testCity, testCountry);
+        hubSpot.company().create(company);
+        hubSpot.association().contactToCompany(contact.getId(), company.getId());
+        List<HSCompany> companies = hubSpot.contact().getContactCompanies(contact.getId(), List.of("address"));
+        assertNotNull(companies);
+        assertFalse(companies.isEmpty());
+        assertEquals(companies.get(0).getId(), company.getId());
+        assertEquals(companies.get(0).getProperty("address"), company.getProperty("address"));
+
+        hubSpot.association().removeContactToCompany(contact.getId(), company.getId());
+        hubSpot.contact().delete(contact.getId());
+        hubSpot.company().delete(company.getId());
     }
 
 
