@@ -122,6 +122,42 @@ public class HSCompanyServiceIT {
     }
 
     @Test
+    public void getCompanies_Test() throws Exception {
+        HSCompany company = new HSCompany();
+        HSCompany company2 = new HSCompany();
+        HSCompany company3 = new HSCompany();
+        HSCompany company4 = new HSCompany();
+        HSCompany company5 = new HSCompany();
+        try {
+            company = getNewTestCompany();
+            company2 = getNewTestCompany();
+            company3 = getNewTestCompany();
+            company4 = getNewTestCompany();
+            company5 = getNewTestCompany();
+
+            List<String> properties = Arrays.asList("phone", "address", "postal_code", "city", "country", "website", "description"
+                    , "email_societe", "hubspot_owner_id", "hs_parent_company_id");
+
+            List<HSCompany> companies = hubSpot.company().getCompanies(0, 10, properties);
+
+            assertNotNull(companies);
+            assertEquals(10, companies.size());
+
+            companies = hubSpot.company().getCompanies(2, 2, properties);
+
+            assertEquals(2, companies.size());
+        } catch (HubSpotException e) {
+            throw e;
+        } finally {
+            hubSpot.company().delete(company.getId());
+            hubSpot.company().delete(company2.getId());
+            hubSpot.company().delete(company3.getId());
+            hubSpot.company().delete(company4.getId());
+            hubSpot.company().delete(company5.getId());
+        }
+    }
+
+    @Test
     @Ignore("Add comment to explain why this test is ignored")
     public void addContact_Test() throws Exception {
         HSCompany company = new HSCompany();

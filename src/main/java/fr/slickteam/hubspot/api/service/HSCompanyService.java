@@ -321,6 +321,37 @@ public class HSCompanyService {
     }
 
     /**
+     * Get HubSpot companies with pagination and a list of properties.
+     *
+     * @param offset     - index of page beginning
+     * @param limit      - size of the page
+     * @param properties - List of string properties as company name or deal description
+     * @return the company with the selected properties
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public List<HSCompany> getCompanies(int offset, int limit, List<String> properties) throws HubSpotException {
+        log.log(DEBUG, "getCompanies - offset : " + offset + " | limit : " + limit + " | properties : " + properties);
+        String propertiesUrl = String.join(",", properties);
+        String url = COMPANY_URL_V3 + "?limit=" + limit + "&after=" + offset + "&properties=" + propertiesUrl;
+
+        try {
+            JSONObject response = (JSONObject) httpService.getRequest(url);
+            JSONArray jsonList = response.optJSONArray("results");
+            List<HSCompany> companies = new ArrayList<>(jsonList.length());
+            for (int i = 0; i < jsonList.length(); i++) {
+                companies.add(parseCompanyData(jsonList.optJSONObject(i)));
+            }
+            return companies;
+        } catch (HubSpotException e) {
+            if (e.getMessage().equals("Not Found")) {
+                return new ArrayList<>();
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    /**
      * Patch a company.
      *
      * @param company - company to update
