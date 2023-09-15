@@ -158,6 +158,32 @@ public class HSCompanyServiceIT {
     }
 
     @Test
+    public void getTotalNumberOfCompanies_Test() throws Exception {
+        HSCompany company = new HSCompany();
+        HSCompany company2 = new HSCompany();
+        HSCompany company3 = new HSCompany();
+        HSCompany company4 = new HSCompany();
+        HSCompany company5 = new HSCompany();
+        try {
+            company = getNewTestCompany();
+            company2 = getNewTestCompany();
+            company3 = getNewTestCompany();
+            company4 = getNewTestCompany();
+            company5 = getNewTestCompany();
+
+            assertTrue(hubSpot.company().getTotalNumberOfCompanies() > 0);
+        } catch (HubSpotException e) {
+            throw e;
+        } finally {
+            hubSpot.company().delete(company.getId());
+            hubSpot.company().delete(company2.getId());
+            hubSpot.company().delete(company3.getId());
+            hubSpot.company().delete(company4.getId());
+            hubSpot.company().delete(company5.getId());
+        }
+    }
+
+    @Test
     @Ignore("Add comment to explain why this test is ignored")
     public void addContact_Test() throws Exception {
         HSCompany company = new HSCompany();

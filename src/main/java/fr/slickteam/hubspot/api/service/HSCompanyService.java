@@ -352,6 +352,40 @@ public class HSCompanyService {
     }
 
     /**
+     * Get HubSpot total number of companies (ie for pagination)
+     *
+     * @return the number of companies in HubSpot
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public Long getTotalNumberOfCompanies() throws HubSpotException {
+        log.log(DEBUG, "getTotalNumberOfCompanies");
+        String url = COMPANY_URL_V3 + "search";
+        String searchProperties = "{\n" +
+                                  "  \"filterGroups\": [\n" +
+                                  "    {\n" +
+                                  "      \"filters\": [\n" +
+                                  "        {\n" +
+                                  "          \"propertyName\": \"hs_object_id\",\n" +
+                                  "          \"operator\": \"HAS_PROPERTY\"\n" +
+                                  "        }\n" +
+                                  "      ]\n" +
+                                  "    }\n" +
+                                  "  ],\n" +
+                                  "  \"sorts\": [\n" +
+                                  "    \"name\"\n" +
+                                  "  ],\n" +
+                                  "  \"properties\": [\n" +
+                                  "    \"name\"\n" +
+                                  "  ],\n" +
+                                  "  \"limit\": 0,\n" +
+                                  "  \"after\": 0\n" +
+                                  "}";
+
+        JSONObject response = (JSONObject) httpService.postRequest(url, searchProperties);
+        return Long.parseLong(response.get("total")+"");
+    }
+
+    /**
      * Patch a company.
      *
      * @param company - company to update
