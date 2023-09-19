@@ -2,7 +2,7 @@ plugins {
     `java-library`
     `maven-publish`
     signing
-    id("org.sonarqube") version "4.0.0.2929"
+    id("org.sonarqube") version "4.3.1.3277"
     id("jacoco")
 }
 
@@ -21,7 +21,7 @@ repositories {
 }
 
 group = "fr.slickteam.hubspot.api"
-version = "2.0.4-SNAPSHOT"
+version = "2.0.5-SNAPSHOT"
 description = "Java Wrapper for HubSpot API"
 
 java {
