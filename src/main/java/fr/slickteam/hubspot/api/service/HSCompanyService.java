@@ -323,16 +323,16 @@ public class HSCompanyService {
     /**
      * Get HubSpot companies with pagination and a list of properties.
      *
-     * @param offset     - index of page beginning
+     * @param after      - paging cursor token of the last successfully read resource in HubSpot
      * @param limit      - size of the page
      * @param properties - List of string properties as company name or deal description
-     * @return the company with the selected properties
+     * @return the page with the list of companies and the token for next page
      * @throws HubSpotException - if HTTP call fails
      */
-    public List<HSCompany> getCompanies(int offset, int limit, List<String> properties) throws HubSpotException {
-        log.log(DEBUG, "getCompanies - offset : " + offset + " | limit : " + limit + " | properties : " + properties);
+    public PagedHSCompanyList getCompanies(String after, int limit, List<String> properties) throws HubSpotException {
+        log.log(DEBUG, "getCompanies - after : " + after + " | limit : " + limit + " | properties : " + properties);
         String propertiesUrl = String.join(",", properties);
-        String url = COMPANY_URL_V3 + "?limit=" + limit + "&after=" + offset + "&properties=" + propertiesUrl;
+        String url = COMPANY_URL_V3 + "?limit=" + limit + "&after=" + after + "&properties=" + propertiesUrl;
 
         try {
             JSONObject response = (JSONObject) httpService.getRequest(url);
@@ -341,10 +341,11 @@ public class HSCompanyService {
             for (int i = 0; i < jsonList.length(); i++) {
                 companies.add(parseCompanyData(jsonList.optJSONObject(i)));
             }
-            return companies;
+            String nextPageToken = ((JSONObject)((JSONObject) response.get("paging")).get("next")).getString("after");
+            return new PagedHSCompanyList(companies, nextPageToken);
         } catch (HubSpotException e) {
             if (e.getMessage().equals("Not Found")) {
-                return new ArrayList<>();
+                return new PagedHSCompanyList(Collections.emptyList(), "0");
             } else {
                 throw e;
             }

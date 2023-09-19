@@ -138,14 +138,23 @@ public class HSCompanyServiceIT {
             List<String> properties = Arrays.asList("phone", "address", "postal_code", "city", "country", "website", "description"
                     , "email_societe", "hubspot_owner_id", "hs_parent_company_id");
 
-            List<HSCompany> companies = hubSpot.company().getCompanies(0, 10, properties);
+            PagedHSCompanyList companies = hubSpot.company().getCompanies("0", 10, properties);
 
             assertNotNull(companies);
-            assertEquals(10, companies.size());
+            assertEquals(10, companies.getCompanies().size());
 
-            companies = hubSpot.company().getCompanies(2, 2, properties);
+            companies = hubSpot.company().getCompanies("0", 2, properties);
 
-            assertEquals(2, companies.size());
+            assertEquals(2, companies.getCompanies().size());
+            PagedHSCompanyList companiesNextPage = hubSpot.company().getCompanies(companies.getAfter(), 2, properties);
+            PagedHSCompanyList companiesBigPage = hubSpot.company().getCompanies("0", 4, properties);
+
+            assertEquals(2, companiesNextPage.getCompanies().size());
+            assertEquals(4, companiesBigPage.getCompanies().size());
+            assertEquals(companies.getCompanies().get(0).getId(), companiesBigPage.getCompanies().get(0).getId());
+            assertEquals(companies.getCompanies().get(1).getId(), companiesBigPage.getCompanies().get(1).getId());
+            assertEquals(companiesNextPage.getCompanies().get(0).getId(), companiesBigPage.getCompanies().get(2).getId());
+            assertEquals(companiesNextPage.getCompanies().get(1).getId(), companiesBigPage.getCompanies().get(3).getId());
         } catch (HubSpotException e) {
             throw e;
         } finally {
