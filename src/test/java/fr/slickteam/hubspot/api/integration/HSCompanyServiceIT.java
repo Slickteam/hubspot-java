@@ -66,8 +66,6 @@ public class HSCompanyServiceIT {
             createdCompanyId = company.getId();
 
             assertNotEquals(0, company.getId());
-        } catch (HubSpotException e) {
-            throw e;
         } finally {
             hubSpot.company().delete(company.getId());
         }
@@ -85,8 +83,6 @@ public class HSCompanyServiceIT {
             createdCompanyId = company.getId();
             assertEquals(company.getId(), companyWithDetails.getId());
             assertEquals(company.getDescription(), companyWithDetails.getDescription());
-        } catch (HubSpotException e) {
-            throw e;
         } finally {
             hubSpot.company().delete(company.getId());
         }
@@ -113,8 +109,6 @@ public class HSCompanyServiceIT {
             assertNotNull(companies);
             assertNotNull(companies.get(0).getPhoneNumber());
             assertEquals(2, companies.size());
-        } catch (HubSpotException e) {
-            throw e;
         } finally {
             hubSpot.company().delete(company.getId());
             hubSpot.company().delete(company2.getId());
@@ -155,8 +149,6 @@ public class HSCompanyServiceIT {
             assertEquals(companies.getCompanies().get(1).getId(), companiesBigPage.getCompanies().get(1).getId());
             assertEquals(companiesNextPage.getCompanies().get(0).getId(), companiesBigPage.getCompanies().get(2).getId());
             assertEquals(companiesNextPage.getCompanies().get(1).getId(), companiesBigPage.getCompanies().get(3).getId());
-        } catch (HubSpotException e) {
-            throw e;
         } finally {
             hubSpot.company().delete(company.getId());
             hubSpot.company().delete(company2.getId());
@@ -181,8 +173,6 @@ public class HSCompanyServiceIT {
             company5 = getNewTestCompany();
 
             assertTrue(hubSpot.company().getTotalNumberOfCompanies() > 0);
-        } catch (HubSpotException e) {
-            throw e;
         } finally {
             hubSpot.company().delete(company.getId());
             hubSpot.company().delete(company2.getId());
@@ -204,8 +194,6 @@ public class HSCompanyServiceIT {
             createdCompanyId = company.getId();
             createdContact = contact.getId();
             hubSpot.company().addContact(contact.getId(), company.getId());
-        } catch (HubSpotException e) {
-            throw e;
         } finally {
             hubSpot.company().delete(company.getId());
             hubSpot.contact().delete(contact.getId());
@@ -238,8 +226,6 @@ public class HSCompanyServiceIT {
             assertFalse(associatedCompanies.isEmpty());
             HSCompany finalAssociatedCompany = associatedCompany;
             assertTrue(associatedCompanies.stream().anyMatch(ac -> ac.getCompany().getId() == finalAssociatedCompany.getId()));
-        } catch (HubSpotException e) {
-            throw e;
         } finally {
             hubSpot.company().delete(company.getId());
             hubSpot.company().delete(associatedCompany.getId());
@@ -266,8 +252,6 @@ public class HSCompanyServiceIT {
             HSCompany finalAssociatedCompany = associatedCompany;
             assertTrue(associatedCompanies.stream().anyMatch(ac -> ac.getCompany().getId() == finalAssociatedCompany.getId()));
             assertTrue(associatedCompanies.stream().anyMatch(ac -> ac.getCompany().getProperty("address").equals(finalAssociatedCompany.getAddress())));
-        } catch (HubSpotException e) {
-            throw e;
         } finally {
             hubSpot.company().delete(company.getId());
             hubSpot.company().delete(associatedCompany.getId());
@@ -292,8 +276,6 @@ public class HSCompanyServiceIT {
             assertFalse(contacts.isEmpty());
             HSContact finalContact = contact;
             assertTrue(contacts.stream().anyMatch(c -> c.getId() == finalContact.getId()));
-        } catch (HubSpotException e) {
-            throw e;
         } finally {
             hubSpot.company().delete(company.getId());
             hubSpot.contact().delete(contact.getId());
@@ -323,8 +305,6 @@ public class HSCompanyServiceIT {
                 assertEquals(companiesContacts.get(resCompanyId).size(), savedCompaniesAndContacts.get(resCompanyId).size());
                 assertTrue(companiesContacts.get(resCompanyId).containsAll(savedCompaniesAndContacts.get(resCompanyId)));
             });
-        } catch (HubSpotException e) {
-            throw e;
         } finally {
             savedCompaniesAndContacts.forEach((key, value) -> {
                 try {
@@ -356,8 +336,6 @@ public class HSCompanyServiceIT {
             HSCompany updatedCompany = hubSpot.company().patch(editCompany);
 
             assertEquals(editCompany.getCountry(), updatedCompany.getCountry());
-        } catch (HubSpotException e) {
-            throw e;
         } finally {
             hubSpot.company().delete(company.getId());
         }
@@ -373,8 +351,6 @@ public class HSCompanyServiceIT {
             hubSpot.company().delete(company);
 
             assertNull(hubSpot.company().getByID(company.getId()));
-        } catch (HubSpotException e) {
-            throw e;
         } finally {
             hubSpot.company().delete(company.getId());
         }
