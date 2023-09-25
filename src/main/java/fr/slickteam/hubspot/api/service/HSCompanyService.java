@@ -284,21 +284,10 @@ public class HSCompanyService {
      * @return A list of associated contacts
      * @throws HubSpotException - if HTTP call fails
      */
-    public List<HSContact> getCompanyContacts(Long companyId) throws HubSpotException {
-        log.log(DEBUG, "getCompanyContacts - companyId : " + companyId);
+    public List<HSContact> getCompanyContacts(Long companyId, List<String> properties) throws HubSpotException {
+        log.log(DEBUG, "getCompanyContacts - companyId : " + companyId + " ; properties : " + properties);
         List<Long> contactIdList = associationService.getCompanyContactIdList(companyId);
-        return contactIdList.stream()
-                .map(this::getContactById)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-    }
-
-    private HSContact getContactById(Long contactId) {
-        try {
-            return contactService.getByID(contactId);
-        } catch (HubSpotException e) {
-            return null;
-        }
+        return contactService.getContactListByIdAndProperties(contactIdList, properties);
     }
 
     /**

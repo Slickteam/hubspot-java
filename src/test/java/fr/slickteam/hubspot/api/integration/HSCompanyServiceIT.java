@@ -267,7 +267,7 @@ public class HSCompanyServiceIT {
             contact = hubSpot.contact().create(new HSContact(testEmail1, testFirstname, testLastname, testPhoneNumber, testLifeCycleStage));
             hubSpot.association().contactToCompany(contact.getId(), company.getId());
 
-            List<HSContact> contacts = hubSpot.company().getCompanyContacts(company.getId());
+            List<HSContact> contacts = hubSpot.company().getCompanyContacts(company.getId(), List.of("email", "lastname"));
 
             createdCompanyId = company.getId();
             createdContact = contact.getId();
