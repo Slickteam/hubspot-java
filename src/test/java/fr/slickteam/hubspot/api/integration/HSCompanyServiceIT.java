@@ -289,7 +289,7 @@ public class HSCompanyServiceIT {
             HSCompany company = getNewTestCompany();
             List<Long> contacts = new ArrayList<>();
             for (int j = 0; j < 4; j++) {
-                HSContact contact = hubSpot.contact().create(new HSContact("testbac0" + i + j + "@mail.com", testFirstname, testLastname, testPhoneNumber, testLifeCycleStage));
+                HSContact contact = hubSpot.contact().create(new HSContact("testbac1" + i + j + "@mail.com", testFirstname, testLastname, testPhoneNumber, testLifeCycleStage));
                 hubSpot.association().contactToCompany(contact.getId(), company.getId());
                 contacts.add(contact.getId());
             }
