@@ -19,9 +19,21 @@ public class HSAssociationService {
     private static final System.Logger log = System.getLogger(HSAssociationService.class.getName());
 
     private static class BasePath {
+        /**
+         * The constant V3.
+         */
         public static final String V3 = "/crm/v3/objects/";
+        /**
+         * The constant V3_ASSOCIATION.
+         */
         public static final String V3_ASSOCIATION = "/crm/v3/associations/";
+        /**
+         * The constant V4_OBJECT.
+         */
         public static final String V4_OBJECT = "/crm/v4/objects/";
+        /**
+         * The constant V4_ASSOCIATION.
+         */
         public static final String V4_ASSOCIATION = "/crm/v4/associations/";
     }
 
@@ -174,7 +186,6 @@ public class HSAssociationService {
      * @param associatedCompanyIdList - ID List of the Associated companies to link
      * @throws HubSpotException - if HTTP call fails
      */
-
     public void companyToChildCompanyList(long companyId, List<Long> associatedCompanyIdList) throws HubSpotException {
         log.log(DEBUG, "companyToChildCompanyList - companyId : " + companyId + " | associatedCompanyIdList : " + associatedCompanyIdList);
         String inputProperties = getCompanyToChildCompanyInputList(companyId, associatedCompanyIdList);
@@ -251,7 +262,6 @@ public class HSAssociationService {
      * @param companyIdList - ID list of the companies
      * @throws HubSpotException - if HTTP call fails
      */
-
     public void removeContactToCompanyList(long contactId, List<Long> companyIdList) throws HubSpotException {
         log.log(DEBUG, "removeContactToCompanyList - contactId : " + contactId + " | companyIdList : " + companyIdList);
         String inputProperties = getRemoveInputList(contactId, companyIdList, "contact_to_company");
@@ -271,7 +281,6 @@ public class HSAssociationService {
      * @param companyIdList - ID list of the companies
      * @throws HubSpotException - if HTTP call fails
      */
-
     public void removeCompanyToChildCompanyList(long companyId, List<Long> companyIdList) throws HubSpotException {
         log.log(DEBUG, "removeCompanyToChildCompanyList - companyId : " + companyId + " | companyIdList : " + companyIdList);
         String inputProperties = getRemoveInputList(companyId, companyIdList, "company_to_company");
@@ -316,6 +325,7 @@ public class HSAssociationService {
      * Get companies associated to a contact
      *
      * @param contactId - ID of the contact to link
+     * @return the contact company id list
      * @throws HubSpotException - if HTTP call fails
      */
     public List<Long> getContactCompanyIdList(long contactId) throws HubSpotException {
@@ -337,6 +347,7 @@ public class HSAssociationService {
      * Get contacts associated to a company
      *
      * @param companyId - ID of the company to link
+     * @return the company contact id list
      * @throws HubSpotException - if HTTP call fails
      */
     public List<Long> getCompanyContactIdList(long companyId) throws HubSpotException {
@@ -358,6 +369,7 @@ public class HSAssociationService {
      * Get all companies ids associated to a company
      *
      * @param companyId - ID of the company
+     * @return the companies to company
      * @throws HubSpotException - if HTTP call fails
      */
     public List<JSONObject> getCompaniesToCompany(long companyId) throws HubSpotException {
@@ -379,6 +391,7 @@ public class HSAssociationService {
      * Get business to contact associations for a list of businesses
      *
      * @param companyIds - ID of the compagny to link
+     * @return the list
      * @throws HubSpotException - if HTTP call fails
      */
     public List<JSONObject> companiesToContacts(List<Long> companyIds) throws HubSpotException {

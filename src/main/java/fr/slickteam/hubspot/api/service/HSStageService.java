@@ -6,6 +6,9 @@ import kong.unirest.json.JSONObject;
 
 import static java.lang.System.Logger.Level.DEBUG;
 
+/**
+ * The type Hs stage service.
+ */
 public class HSStageService {
 
     private static final System.Logger log = System.getLogger(HSStageService.class.getName());
@@ -28,7 +31,8 @@ public class HSStageService {
     /**
      * Create a new stage
      *
-     * @param hsStage - stage to create
+     * @param pipelineId the pipeline id
+     * @param hsStage    - stage to create
      * @return created stage
      * @throws HubSpotException - if HTTP call fails
      */
@@ -42,7 +46,8 @@ public class HSStageService {
     /**
      * Delete a stage.
      *
-     * @param stage - stage to delete
+     * @param pipelineId the pipeline id
+     * @param stage      - stage to delete
      * @throws HubSpotException - if HTTP call fails
      */
     public void delete(long pipelineId, HSStage stage) throws HubSpotException {

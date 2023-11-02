@@ -21,7 +21,13 @@ public class HSContactService {
     private static final System.Logger log = System.getLogger(HSContactService.class.getName());
 
     private static final String CONTACT_URL = "/crm/v3/objects/contacts/";
+    /**
+     * The constant ID_PROPERTY_EMAIL.
+     */
     public static final String ID_PROPERTY_EMAIL = "idProperty=email";
+    /**
+     * The constant PARAMETER_OPERATOR.
+     */
     public static final String PARAMETER_OPERATOR = "?";
     private final HttpService httpService;
     private final HSService hsService;
@@ -41,6 +47,11 @@ public class HSContactService {
         associationService = new HSAssociationService(httpService);
     }
 
+    /**
+     * Sets company service.
+     *
+     * @param companyService the company service
+     */
     public void setCompanyService(HSCompanyService companyService) {
         this.companyService = companyService;
     }
@@ -178,7 +189,7 @@ public class HSContactService {
     /**
      * Get Contact Companies with properties.
      *
-     * @param contactId - ID of the contact
+     * @param contactId  - ID of the contact
      * @param properties - List of string properties as company name or deal description
      * @return the list of companies associated to the contact
      * @throws HubSpotException - if HTTP call fails

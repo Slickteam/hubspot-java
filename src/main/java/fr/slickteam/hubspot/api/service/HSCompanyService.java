@@ -42,6 +42,11 @@ public class HSCompanyService {
         dealService = new HSDealService(httpService);
     }
 
+    /**
+     * Sets contact service.
+     *
+     * @param contactService the contact service
+     */
     public void setContactService(HSContactService contactService) {
         this.contactService = contactService;
     }
@@ -223,7 +228,8 @@ public class HSCompanyService {
     /**
      * Get HubSpot associated companies by company ID.
      *
-     * @param companyId - ID of company
+     * @param companyId  - ID of company
+     * @param properties the properties
      * @return A list of associated companies with details
      * @throws HubSpotException - if HTTP call fails
      */
@@ -280,7 +286,8 @@ public class HSCompanyService {
     /**
      * Get HubSpot contacts for one company.
      *
-     * @param companyId - ID of company
+     * @param companyId  - ID of company
+     * @param properties the properties
      * @return A list of associated contacts
      * @throws HubSpotException - if HTTP call fails
      */

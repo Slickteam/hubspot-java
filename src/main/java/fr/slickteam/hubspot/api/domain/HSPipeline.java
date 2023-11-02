@@ -8,6 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * The type Hs pipeline.
+ */
 public class HSPipeline extends HSObject{
 
     private static final String ID = "id";
@@ -18,9 +21,22 @@ public class HSPipeline extends HSObject{
     private static final String UPDATED_AT = "updatedAt";
     private static final String ARCHIVED = "archived";
 
+    /**
+     * Instantiates a new Hs pipeline.
+     */
     public HSPipeline() {
     }
 
+    /**
+     * Instantiates a new Hs pipeline.
+     *
+     * @param label        the label
+     * @param displayOrder the display order
+     * @param stages       the stages
+     * @param createdAt    the created at
+     * @param updatedAt    the updated at
+     * @param archived     the archived
+     */
     public HSPipeline(String label, int displayOrder, List<HSStage> stages, Instant createdAt, Instant updatedAt, boolean archived) {
         this.setLabel(label);
         this.setDisplayOrder(displayOrder);
@@ -30,6 +46,17 @@ public class HSPipeline extends HSObject{
         this.setArchived(archived);
     }
 
+    /**
+     * Instantiates a new Hs pipeline.
+     *
+     * @param label        the label
+     * @param displayOrder the display order
+     * @param stages       the stages
+     * @param createdAt    the created at
+     * @param updatedAt    the updated at
+     * @param archived     the archived
+     * @param properties   the properties
+     */
     public HSPipeline(String label, int displayOrder, List<HSStage> stages, Instant createdAt, Instant updatedAt, boolean archived, Map<String, String> properties) {
         super(properties);
         this.setLabel(label);
@@ -40,38 +67,82 @@ public class HSPipeline extends HSObject{
         this.setArchived(archived);
     }
 
+    /**
+     * Gets id.
+     *
+     * @return the id
+     */
     public long getId() {
         return getLongProperty(ID);
     }
 
+    /**
+     * Sets id.
+     *
+     * @param id the id
+     * @return the id
+     */
     public HSPipeline setId(long id) {
         setProperty(ID, Long.toString(id));
         return this;
     }
 
+    /**
+     * Gets label.
+     *
+     * @return the label
+     */
     public String getLabel() {
         return getProperty(LABEL);
     }
 
+    /**
+     * Sets label.
+     *
+     * @param label the label
+     * @return the label
+     */
     public HSPipeline setLabel(String label) {
         setProperty(LABEL, label);
         return this;
     }
 
+    /**
+     * Gets display order.
+     *
+     * @return the display order
+     */
     public int getDisplayOrder() {
         return (getIntProperty(DISPLAY_ORDER));
     }
 
+    /**
+     * Sets display order.
+     *
+     * @param displayOrder the display order
+     * @return the display order
+     */
     public HSPipeline setDisplayOrder(int displayOrder) {
         setProperty(DISPLAY_ORDER, Long.toString(displayOrder));
         return this;
     }
 
+    /**
+     * Gets stages.
+     *
+     * @return the stages
+     */
     public List<HSStage> getStages() {
         JSONArray jsonArray = new JSONArray(getProperty(STAGES));
         return getStagesProperties(jsonArray);
     }
 
+    /**
+     * Sets stages.
+     *
+     * @param stages the stages
+     * @return the stages
+     */
     public HSPipeline setStages(List<HSStage> stages) {
         JSONArray jsonArray = new JSONArray();
         stages.forEach(stage -> jsonArray.put(stageToJson(stage)));
@@ -79,28 +150,61 @@ public class HSPipeline extends HSObject{
         return this;
     }
 
+    /**
+     * Gets created at.
+     *
+     * @return the created at
+     */
     public Instant getCreatedAt() {
         return getDateProperty(CREATED_AT);
     }
 
+    /**
+     * Sets created at.
+     *
+     * @param createdAt the created at
+     * @return the created at
+     */
     public HSPipeline setCreatedAt(Instant createdAt) {
         setProperty(CREATED_AT, createdAt.toString());
         return this;
     }
 
+    /**
+     * Gets update at.
+     *
+     * @return the update at
+     */
     public Instant getUpdateAt() {
         return getDateProperty(UPDATED_AT);
     }
 
+    /**
+     * Sets update at.
+     *
+     * @param updatedAt the updated at
+     * @return the update at
+     */
     public HSPipeline setUpdateAt(Instant updatedAt) {
         setProperty(UPDATED_AT, updatedAt.toString());
         return this;
     }
 
+    /**
+     * Gets archived.
+     *
+     * @return the archived
+     */
     public boolean getArchived() {
         return getBooleanProperty(ARCHIVED);
     }
 
+    /**
+     * Sets archived.
+     *
+     * @param archived the archived
+     * @return the archived
+     */
     public HSPipeline setArchived(boolean archived) {
         setProperty(ARCHIVED, Boolean.toString(archived));
         return this;

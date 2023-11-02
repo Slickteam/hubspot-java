@@ -28,11 +28,23 @@ public class HttpService {
     private final String apiBase;
     private final OAuthConfig oAuthConfig;
 
+    /**
+     * Instantiates a new Http service.
+     *
+     * @param properties the properties
+     */
     public HttpService(HubSpotProperties properties) {
         this.apiBase = properties.getApiBase();
         this.oAuthConfig = new OAuthConfig(properties);
     }
 
+    /**
+     * Parse json data hs object.
+     *
+     * @param jsonBody the json body
+     * @param hsObject the hs object
+     * @return the hs object
+     */
     public HSObject parseJSONData(JSONObject jsonBody, HSObject hsObject) {
         JSONObject jsonProperties = jsonBody.getJSONObject("properties");
 
@@ -49,6 +61,13 @@ public class HttpService {
         return hsObject;
     }
 
+    /**
+     * Gets request.
+     *
+     * @param url the url
+     * @return the request
+     * @throws HubSpotException the hub spot exception
+     */
     public Object getRequest(String url) throws HubSpotException {
         try {
             HttpResponse<JsonNode> resp = get(apiBase + url)
@@ -68,6 +87,14 @@ public class HttpService {
         }
     }
 
+    /**
+     * Post request object.
+     *
+     * @param url        the url
+     * @param properties the properties
+     * @return the object
+     * @throws HubSpotException the hub spot exception
+     */
     public Object postRequest(String url, String properties) throws HubSpotException {
         try {
             HttpResponse<JsonNode> resp = post(apiBase + url)
@@ -89,6 +116,14 @@ public class HttpService {
         }
     }
 
+    /**
+     * Patch request object.
+     *
+     * @param url        the url
+     * @param properties the properties
+     * @return the object
+     * @throws HubSpotException the hub spot exception
+     */
     public Object patchRequest(String url, String properties) throws HubSpotException {
         try {
             HttpResponse<JsonNode> resp = patch(apiBase + url)
@@ -110,6 +145,14 @@ public class HttpService {
         }
     }
 
+    /**
+     * Put request object.
+     *
+     * @param url        the url
+     * @param properties the properties
+     * @return the object
+     * @throws HubSpotException the hub spot exception
+     */
     public Object putRequest(String url, String properties) throws HubSpotException {
         try {
             HttpResponse<JsonNode> resp = put(apiBase + url)
@@ -131,6 +174,13 @@ public class HttpService {
         }
     }
 
+    /**
+     * Put request object.
+     *
+     * @param url the url
+     * @return the object
+     * @throws HubSpotException the hub spot exception
+     */
     public Object putRequest(String url) throws HubSpotException {
         try {
             HttpResponse<JsonNode> resp = put(apiBase + url)
@@ -150,6 +200,12 @@ public class HttpService {
         }
     }
 
+    /**
+     * Delete request.
+     *
+     * @param url the url
+     * @throws HubSpotException the hub spot exception
+     */
     public void deleteRequest(String url) throws HubSpotException {
         try {
             HttpResponse<JsonNode> resp = delete(apiBase + url)
