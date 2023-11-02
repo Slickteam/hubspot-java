@@ -2,14 +2,16 @@ plugins {
     `java-library`
     `maven-publish`
     signing
+    id("org.sonarqube") version "4.4.1.3373"
+    id("jacoco")
 }
 
 repositories {
     mavenCentral()
 }
 
-group = "fr.slickteam.hubspotApi"
-version = "1.3.4-SNAPSHOT"
+group = "fr.slickteam.hubspot.api"
+version = "2.0.5"
 description = "Java Wrapper for HubSpot API"
 
 java {
@@ -18,6 +20,10 @@ java {
 
     withJavadocJar()
     withSourcesJar()
+}
+
+jacoco {
+    toolVersion = "0.8.9"
 }
 
 dependencies {
@@ -32,8 +38,18 @@ tasks.withType<JavaCompile> {
     options.compilerArgs.add("-Xlint:unchecked")
 }
 
-val ossrhLogin: String? by project
-val ossrhPassword: String? by project
+sonar {
+    properties {
+        property("sonar.projectKey", "Slickteam_hubspot-java")
+        property("sonar.organization", "slickteam")
+        property("sonar.host.url", "https://sonarcloud.io")
+        property("sonar.verbose", "true")
+        property("sonar.dynamicAnalysis", "reuseReports")
+        property("sonar.junit.reportsPaths", "$buildDir/test-results/test")
+        property("sonar.java.coveragePlugin", "jacoco")
+        property("sonar.coverage.jacoco.xmlReportPaths", "${buildDir}/reports/unit_jacoco.xml")
+    }
+}
 
 publishing {
     publications {
@@ -74,15 +90,18 @@ publishing {
             val snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
             url = uri(if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
             credentials {
-                username = ossrhLogin
-                password = ossrhPassword
+                username = System.getenv("MAVEN_USERNAME")
+                password = System.getenv("MAVEN_PASSWORD")
             }
-
         }
     }
 }
 
 signing {
-    useGpgCmd()
-    sign(configurations.archives.get())
+    val signingKey = System.getenv("GPG_SIGNING_KEY")
+    val signingPassphrase = System.getenv("GPG_SIGNING_PASSPHRASE")
+    useInMemoryPgpKeys(signingKey, signingPassphrase)
+    val extension = extensions
+            .getByName("publishing") as PublishingExtension
+    sign(extension.publications)
 }

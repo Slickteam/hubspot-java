@@ -1,5 +1,5 @@
 # hubspot-java
-Java Wrapper for HubSpot API (<http://developers.hubspot.com/docs/overview>)
+Java Wrapper for HubSpot API (<https://developers.hubspot.com/docs/api/overview>)
 Application to register in Hubspot developer portal, so you can use it.
 It uses OAuth2 to authenticate on Hubspot API.
 
