@@ -26,11 +26,11 @@ public class Helper {
         HubSpotProperties hubSpotProperties = new HubSpotProperties();
 
         hubSpotProperties.setApiBase(HubSpotPropertiesHelper.loadPropertyValue("apiBase"));
-        hubSpotProperties.setAccessToken(HubSpotPropertiesHelper.loadPropertyValue("accessToken"));
-        hubSpotProperties.setClientId(HubSpotPropertiesHelper.loadPropertyValue("clientId"));
-        hubSpotProperties.setClientSecret(HubSpotPropertiesHelper.loadPropertyValue("clientSecret"));
-        hubSpotProperties.setRedirectUrl(HubSpotPropertiesHelper.loadPropertyValue("redirectUrl"));
-        hubSpotProperties.setRefreshToken(HubSpotPropertiesHelper.loadPropertyValue("refreshToken"));
+        hubSpotProperties.setAccessToken(HubSpotPropertiesHelper.loadPropertyValue("ACCESSTOKEN"));
+        hubSpotProperties.setClientId(HubSpotPropertiesHelper.loadPropertyValue("CLIENTID"));
+        hubSpotProperties.setClientSecret(HubSpotPropertiesHelper.loadPropertyValue("CLIENT_SECRET"));
+        hubSpotProperties.setRedirectUrl(HubSpotPropertiesHelper.loadPropertyValue("REDIRECT_URL"));
+        hubSpotProperties.setRefreshToken(HubSpotPropertiesHelper.loadPropertyValue("REFRESH_TOKEN"));
 
         return hubSpotProperties;
     }
