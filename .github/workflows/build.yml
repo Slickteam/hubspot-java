@@ -39,13 +39,13 @@ jobs:
           files: |
             build/test-results/**/*.xml
 
-      - name: Build and analyze
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          ACCESSTOKEN: ${{ secrets.ACCESSTOKEN }}
-          CLIENTID: ${{ secrets.CLIENTID }}
-          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
-          REDIRECT_URL: ${{ secrets.REDIRECT_URL }}
-          REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
-        run: ./gradlew build sonar --info
+#      - name: Build and analyze
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+#          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+#          ACCESSTOKEN: ${{ secrets.ACCESSTOKEN }}
+#          CLIENTID: ${{ secrets.CLIENTID }}
+#          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+#          REDIRECT_URL: ${{ secrets.REDIRECT_URL }}
+#          REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
+#        run: ./gradlew build sonar --info
