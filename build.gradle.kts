@@ -2,7 +2,7 @@ plugins {
     `java-library`
     `maven-publish`
     signing
-    id("org.sonarqube") version "4.3.1.3277"
+    id("org.sonarqube") version "4.4.1.3373"
     id("jacoco")
 }
 
@@ -50,6 +50,9 @@ tasks.withType<JavaCompile> {
 
 sonarqube {
     properties {
+        property("sonar.projectKey", "Slickteam_hubspot-java")
+        property("sonar.organization", "slickteam")
+        property("sonar.host.url", "https://sonarcloud.io")
         property("sonar.verbose", "true")
         property("sonar.dynamicAnalysis", "reuseReports")
         property("sonar.junit.reportsPaths", "$buildDir/test-results/test")
