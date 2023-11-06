@@ -160,17 +160,21 @@ public class HSCompanyServiceIT {
 
     @Test
     public void getTotalNumberOfCompanies_Test() throws Exception {
+        HSCompany parentCompany = new HSCompany();
         HSCompany company = new HSCompany();
         HSCompany company2 = new HSCompany();
         HSCompany company3 = new HSCompany();
         HSCompany company4 = new HSCompany();
-        HSCompany company5 = new HSCompany();
         try {
+            parentCompany = getNewTestCompany();
             company = getNewTestCompany();
             company2 = getNewTestCompany();
             company3 = getNewTestCompany();
             company4 = getNewTestCompany();
-            company5 = getNewTestCompany();
+            hubSpot.association().companyToCompany(parentCompany.getId(), company.getId(), HSAssociationTypeEnum.PARENT);
+            hubSpot.association().companyToCompany(parentCompany.getId(), company2.getId(), HSAssociationTypeEnum.PARENT);
+            hubSpot.association().companyToCompany(parentCompany.getId(), company3.getId(), HSAssociationTypeEnum.PARENT);
+            hubSpot.association().companyToCompany(parentCompany.getId(), company4.getId(), HSAssociationTypeEnum.PARENT);
 
             assertTrue(hubSpot.company().getTotalNumberOfCompanies() > 0);
         } finally {
@@ -178,7 +182,7 @@ public class HSCompanyServiceIT {
             hubSpot.company().delete(company2.getId());
             hubSpot.company().delete(company3.getId());
             hubSpot.company().delete(company4.getId());
-            hubSpot.company().delete(company5.getId());
+            hubSpot.company().delete(parentCompany.getId());
         }
     }
 

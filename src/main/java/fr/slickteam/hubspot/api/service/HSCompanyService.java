@@ -364,6 +364,10 @@ public class HSCompanyService {
                                   "        {\n" +
                                   "          \"propertyName\": \"hs_object_id\",\n" +
                                   "          \"operator\": \"HAS_PROPERTY\"\n" +
+                                  "        },\n" +
+                                  "        {\n" +
+                                  "          \"propertyName\": \"hs_parent_company_id\",\n" +
+                                  "          \"operator\": \"HAS_PROPERTY\"\n" +
                                   "        }\n" +
                                   "      ]\n" +
                                   "    }\n" +
