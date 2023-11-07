@@ -187,6 +187,28 @@ public class HSCompanyServiceIT {
     }
 
     @Test
+    public void searchCompaniesWithFilters_Test() throws Exception {
+        HSCompany company = new HSCompany();
+        HSCompany company2 = new HSCompany();
+        HSCompany company3 = new HSCompany();
+        HSCompany company4 = new HSCompany();
+        try {
+            company = getNewTestCompany();
+            company2 = getNewTestCompany();
+            company3 = getNewTestCompany();
+            company4 = getNewTestCompany();
+
+            assertTrue(hubSpot.company().searchCompaniesWithFilters("test", 100).size() >= 4);
+
+        } finally {
+            hubSpot.company().delete(company.getId());
+            hubSpot.company().delete(company2.getId());
+            hubSpot.company().delete(company3.getId());
+            hubSpot.company().delete(company4.getId());
+        }
+    }
+
+    @Test
     @Ignore("Add comment to explain why this test is ignored")
     public void addContact_Test() throws Exception {
         HSCompany company = new HSCompany();

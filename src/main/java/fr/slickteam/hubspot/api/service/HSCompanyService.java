@@ -387,6 +387,125 @@ public class HSCompanyService {
     }
 
     /**
+     * Search HubSpot companies with name, city name, zip and id filters
+     *
+     * @param input      - string to query in company name, phone, or domain
+     * @param limit      - size of the page
+     * @return  a company list filtered
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public List<HSCompany> searchCompaniesWithFilters(String input, int limit) throws HubSpotException {
+        log.log(DEBUG, "searchCompaniesWithFilters");
+        String url = COMPANY_URL_V3 + "search";
+        // Query properties are used to search by website, phone, name or domain
+        String queryProperties = "{\n" +
+                "  \"query\": \""+ input +"\"," +
+                "  \"properties\": [\n" +
+                "    \"id\",\n" +
+                "    \"name\",\n" +
+                "    \"city\",\n" +
+                "    \"zip\"\n" +
+                "  ],\n" +
+                "  \"limit\": "+ limit +",\n" +
+                "  \"after\": 0\n" +
+                "}";
+
+        String filtersProperties;
+
+        // If input is convertible to number, we search by zip and id
+        if(isConvertibleToNumber(input)) {
+            filtersProperties = " {\n" +
+                    "      \"filters\": [\n" +
+                    "        {\n" +
+                    "          \"propertyName\": \"zip\",\n" +
+                    "          \"value\": \"" + input + "\",\n" +
+                    "          \"operator\": \"EQ\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"propertyName\": \"hs_object_id\",\n" +
+                    "          \"value\": \"" + input + "\",\n" +
+                    "          \"operator\": \"EQ\"\n" +
+                    "        }\n" +
+                    "      ]\n" +
+                    "    }\n";
+            // Else we search by city name
+        } else {
+            filtersProperties = " {\n" +
+                    "      \"filters\": [\n" +
+                    "        {\n" +
+                    "          \"propertyName\": \"city\",\n" +
+                    "          \"value\": \"" + input + "\",\n" +
+                    "          \"operator\": \"EQ\"\n" +
+                    "        }\n" +
+                    "      ]\n" +
+                    "    }\n";
+        }
+
+        String filterGroupsProperties = "{\n" +
+                "  \"filterGroups\": [\n" +
+                filtersProperties +
+                "  ],\n" +
+                "  \"sorts\": [\n" +
+                "    \"name\"\n" +
+                "  ],\n" +
+                "  \"properties\": [\n" +
+                "    \"id\",\n" +
+                "    \"name\",\n" +
+                "    \"city\",\n" +
+                "    \"zip\"\n" +
+                "  ],\n" +
+                "  \"limit\": "+ limit +"\n" +
+                "}";
+
+
+        List<HSCompany> queryCompanies = sendCompanySearchRequest(url, queryProperties);
+        List<HSCompany> filterCompanies = sendCompanySearchRequest(url, filterGroupsProperties);
+        return concatenateAndRemoveDuplicates(queryCompanies, filterCompanies);
+    }
+
+    public static boolean isConvertibleToNumber(String input) {
+        try {
+            Double.parseDouble(input);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    public static List<HSCompany> concatenateAndRemoveDuplicates(List<HSCompany> list1, List<HSCompany> list2) {
+        List<HSCompany> result = new ArrayList<>();
+        result.addAll(list1);
+        result.addAll(list2);
+
+        result = result.stream()
+                .distinct()
+                .sorted(Comparator.comparing(HSCompany::getName))
+                .collect(Collectors.toList());
+
+        return result;
+    }
+
+    public List<HSCompany> sendCompanySearchRequest(String url, String properties) throws HubSpotException {
+        List<HSCompany> companies = Collections.emptyList();
+
+        try {
+            JSONObject response = (JSONObject) httpService.postRequest(url, properties);
+            JSONArray jsonList = response.optJSONArray("results");
+            companies = new ArrayList<>(jsonList.length());
+            for (int i = 0; i < jsonList.length(); i++) {
+                companies.add(parseCompanyData(jsonList.optJSONObject(i)));
+            }
+        } catch (HubSpotException e) {
+            if (e.getMessage().equals("Not Found")) {
+                return companies;
+            } else {
+                throw e;
+            }
+        }
+        return companies;
+    }
+
+    /**
      * Patch a company.
      *
      * @param company - company to update
