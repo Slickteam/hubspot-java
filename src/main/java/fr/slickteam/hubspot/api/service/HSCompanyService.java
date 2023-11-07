@@ -4,7 +4,6 @@ import fr.slickteam.hubspot.api.domain.*;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
 import kong.unirest.json.JSONArray;
 import kong.unirest.json.JSONObject;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -387,17 +386,16 @@ public class HSCompanyService {
     }
 
     /**
-     * Search HubSpot companies with name, city name, zip and id filters
+     * Query HubSpot companies with default searchable properties : website, phone, name and domain
      *
-     * @param input      - string to query in company name, phone, or domain
+     * @param input      - string to query in company website, phone, name and domain
      * @param limit      - size of the page
      * @return  a company list filtered
      * @throws HubSpotException - if HTTP call fails
      */
-    public List<HSCompany> searchCompaniesWithFilters(String input, int limit) throws HubSpotException {
-        log.log(DEBUG, "searchCompaniesWithFilters");
+    public List<HSCompany> queryByDefaultSearchableProperties(String input, int limit) throws HubSpotException {
+        log.log(DEBUG, "searchDefaultSearchableProperties");
         String url = COMPANY_URL_V3 + "search";
-        // Query properties are used to search by website, phone, name or domain
         String queryProperties = "{\n" +
                 "  \"query\": \""+ input +"\"," +
                 "  \"properties\": [\n" +
@@ -410,40 +408,39 @@ public class HSCompanyService {
                 "  \"after\": 0\n" +
                 "}";
 
-        String filtersProperties;
+        return sendCompanySearchRequest(url, queryProperties);
+    }
 
-        // If input is convertible to number, we search by zip and id
-        if(isConvertibleToNumber(input)) {
-            filtersProperties = " {\n" +
-                    "      \"filters\": [\n" +
-                    "        {\n" +
-                    "          \"propertyName\": \"zip\",\n" +
-                    "          \"value\": \"" + input + "\",\n" +
-                    "          \"operator\": \"EQ\"\n" +
-                    "        },\n" +
-                    "        {\n" +
-                    "          \"propertyName\": \"hs_object_id\",\n" +
-                    "          \"value\": \"" + input + "\",\n" +
-                    "          \"operator\": \"EQ\"\n" +
-                    "        }\n" +
-                    "      ]\n" +
-                    "    }\n";
-            // Else we search by city name
-        } else {
-            filtersProperties = " {\n" +
-                    "      \"filters\": [\n" +
-                    "        {\n" +
-                    "          \"propertyName\": \"city\",\n" +
-                    "          \"value\": \"" + input + "\",\n" +
-                    "          \"operator\": \"EQ\"\n" +
-                    "        }\n" +
-                    "      ]\n" +
-                    "    }\n";
-        }
+    /**
+     * Search HubSpot companies filtered by properties
+     *
+     * @param propertiesAndValues - map of properties and values to filter
+     * @param limit - size of the page
+     * @return  a company list filtered
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public List<HSCompany> searchFilteredByProperties(Map<String, String> propertiesAndValues,int limit) throws HubSpotException {
+        log.log(DEBUG, "filterSearchResult");
+        String url = COMPANY_URL_V3 + "search";
 
-        String filterGroupsProperties = "{\n" +
+        String filtersPropertyList = propertiesAndValues.entrySet().stream()
+                .map(entry ->
+                        " {\n" +
+                        "      \"filters\": [\n" +
+                        "        {\n" +
+                        "          \"propertyName\": \"" + entry.getKey() + "\",\n" +
+                        "          \"value\": \"" + entry.getValue() + "\",\n" +
+                        "          \"operator\": \"EQ\"\n" +
+                        "        }" +
+                        "      ]\n" +
+                        "    }\n"
+                )
+                .collect(Collectors.joining(",\n"));
+
+        String filterGroupsProperties =
+                "{\n" +
                 "  \"filterGroups\": [\n" +
-                filtersProperties +
+                        filtersPropertyList +
                 "  ],\n" +
                 "  \"sorts\": [\n" +
                 "    \"name\"\n" +
@@ -457,32 +454,7 @@ public class HSCompanyService {
                 "  \"limit\": "+ limit +"\n" +
                 "}";
 
-
-        List<HSCompany> queryCompanies = sendCompanySearchRequest(url, queryProperties);
-        List<HSCompany> filterCompanies = sendCompanySearchRequest(url, filterGroupsProperties);
-        return concatenateAndRemoveDuplicates(queryCompanies, filterCompanies);
-    }
-
-    public static boolean isConvertibleToNumber(String input) {
-        try {
-            Double.parseDouble(input);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
-    }
-
-    public static List<HSCompany> concatenateAndRemoveDuplicates(List<HSCompany> list1, List<HSCompany> list2) {
-        List<HSCompany> result = new ArrayList<>();
-        result.addAll(list1);
-        result.addAll(list2);
-
-        result = result.stream()
-                .distinct()
-                .sorted(Comparator.comparing(HSCompany::getName))
-                .collect(Collectors.toList());
-
-        return result;
+        return sendCompanySearchRequest(url, filterGroupsProperties);
     }
 
     public List<HSCompany> sendCompanySearchRequest(String url, String properties) throws HubSpotException {

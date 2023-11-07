@@ -187,7 +187,7 @@ public class HSCompanyServiceIT {
     }
 
     @Test
-    public void searchCompaniesWithFilters_Test() throws Exception {
+    public void queryByDefaultSearchableProperties_Test() throws Exception {
         HSCompany company = new HSCompany();
         HSCompany company2 = new HSCompany();
         HSCompany company3 = new HSCompany();
@@ -198,7 +198,40 @@ public class HSCompanyServiceIT {
             company3 = getNewTestCompany();
             company4 = getNewTestCompany();
 
-            assertTrue(hubSpot.company().searchCompaniesWithFilters("test", 100).size() >= 4);
+            assertTrue(hubSpot.company().queryByDefaultSearchableProperties("test", 100).size() >= 4);
+
+        } finally {
+            hubSpot.company().delete(company.getId());
+            hubSpot.company().delete(company2.getId());
+            hubSpot.company().delete(company3.getId());
+            hubSpot.company().delete(company4.getId());
+        }
+    }
+
+    @Test
+    public void searchFilteredByProperties_Test() throws Exception {
+        HSCompany company = new HSCompany();
+        HSCompany company2 = new HSCompany();
+        HSCompany company3 = new HSCompany();
+        HSCompany company4 = new HSCompany();
+        Map<String, String> properties = new HashMap<>();
+        properties.put("zip", "10000");
+
+        Map<String, String> properties2 = new HashMap<>();
+        properties2.put("city", "rennes");
+        properties2.put("zip", "10000");
+
+        Map<String, String> properties3 = new HashMap<>();
+        properties3.put("city", "city");
+        try {
+            company = getNewTestCompany();
+            company2 = getNewTestCompany();
+            company3 = getNewTestCompany();
+            company4 = getNewTestCompany();
+
+            assertTrue(hubSpot.company().searchFilteredByProperties(properties, 100).size() >= 4);
+            assertTrue(hubSpot.company().searchFilteredByProperties(properties2, 100).size() >= 4);
+            assertTrue(hubSpot.company().searchFilteredByProperties(properties3, 100).size() >= 4);
 
         } finally {
             hubSpot.company().delete(company.getId());
@@ -450,7 +483,7 @@ public class HSCompanyServiceIT {
     }
 
     private HSCompany getNewTestCompany() throws HubSpotException {
-        return hubSpot.company().create(new HSCompany("TestCompany" + Instant.now().getEpochSecond(), testPhoneNumber, "address", "zip", "city", "country", "description", "www.website.com"));
+        return hubSpot.company().create(new HSCompany("TestCompany" + Instant.now().getEpochSecond(), testPhoneNumber, "address", "10000", "city", "country", "description", "www.website.com"));
     }
 
     private HSDeal getNewTestDeal() throws HubSpotException {
