@@ -10,6 +10,7 @@ import org.junit.rules.ExpectedException;
 import java.util.List;
 import java.util.Optional;
 
+import static java.lang.Thread.sleep;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 
@@ -31,6 +32,8 @@ public class HSPipelineServiceIT {
         if (createdPipelineId != null) {
             hubSpot.pipeline().delete(createdPipelineId);
         }
+        // add sleep to avoid "Too many requests" error
+        sleep(100);
     }
 
     @Ignore("Required scopes missing")

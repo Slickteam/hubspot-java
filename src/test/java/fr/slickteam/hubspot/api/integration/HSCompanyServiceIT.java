@@ -13,6 +13,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 
+import static java.lang.Thread.sleep;
 import static org.junit.Assert.*;
 
 public class HSCompanyServiceIT {
@@ -56,6 +57,8 @@ public class HSCompanyServiceIT {
         if (createdDealId2 != null) {
             hubSpot.deal().delete(createdDealId2);
         }
+        // add sleep to avoid "Too many requests" error
+        sleep(100);
     }
 
     @Test
@@ -296,10 +299,8 @@ public class HSCompanyServiceIT {
         HSCompany company = new HSCompany();
         HSCompany associatedCompany = new HSCompany();
         try {
-            company = getNewTestCompany();
-            associatedCompany = getNewTestCompany();
-            hubSpot.company().create(company);
-            hubSpot.company().create(associatedCompany);
+            company = hubSpot.company().create(getNewTestCompany());
+            associatedCompany = hubSpot.company().create(getNewTestCompany());
             hubSpot.association().companyToCompany(company.getId(), associatedCompany.getId(), HSAssociationTypeEnum.PARENT);
             List<HSAssociatedCompany> associatedCompanies = hubSpot.company().getAssociatedCompanies(company.getId(), List.of("address"));
 

@@ -15,6 +15,7 @@ import org.mockito.Mockito;
 
 import java.math.BigDecimal;
 
+import static java.lang.Thread.sleep;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
@@ -41,6 +42,8 @@ public class HSProductServiceIT {
         if (createdProductId != null) {
             hubSpot.product().delete(createdProductId);
         }
+        // add sleep to avoid "Too many requests" error
+        sleep(100);
     }
 
     @Test

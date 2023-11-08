@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static java.lang.Thread.sleep;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -52,6 +53,8 @@ public class HSDealServiceIT {
         if (createdDealId != null) {
             hubSpot.deal().delete(createdDealId);
         }
+        // add sleep to avoid "Too many requests" error
+        sleep(100);
     }
 
     @Test

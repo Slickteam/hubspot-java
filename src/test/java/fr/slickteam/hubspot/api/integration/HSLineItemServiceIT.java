@@ -62,6 +62,8 @@ public class HSLineItemServiceIT {
             hubSpot.hsService().deleteHSObject("/crm/v3/objects/products/" + testProductId);
             testProductId = null;
         }
+        // add sleep to avoid "Too many requests" error
+        sleep(100);
     }
 
     @Test
