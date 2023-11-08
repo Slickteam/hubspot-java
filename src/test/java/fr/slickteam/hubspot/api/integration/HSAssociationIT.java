@@ -14,6 +14,8 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.lang.Thread.sleep;
+
 
 public class HSAssociationIT {
     private Long createdContactId;
@@ -72,6 +74,8 @@ public class HSAssociationIT {
             hubSpot.hsService().deleteHSObject("/crm/v3/objects/products/" + testProductId);
             testProductId = null;
         }
+        // add sleep to avoid "Too many requests" error
+        sleep(100);
     }
 
     @Test

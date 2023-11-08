@@ -13,6 +13,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 
+import static java.lang.Thread.sleep;
 import static org.junit.Assert.*;
 
 public class HSCompanyServiceIT {
@@ -56,6 +57,8 @@ public class HSCompanyServiceIT {
         if (createdDealId2 != null) {
             hubSpot.deal().delete(createdDealId2);
         }
+        // add sleep to avoid "Too many requests" error
+        sleep(100);
     }
 
     @Test
@@ -160,17 +163,21 @@ public class HSCompanyServiceIT {
 
     @Test
     public void getTotalNumberOfCompanies_Test() throws Exception {
+        HSCompany parentCompany = new HSCompany();
         HSCompany company = new HSCompany();
         HSCompany company2 = new HSCompany();
         HSCompany company3 = new HSCompany();
         HSCompany company4 = new HSCompany();
-        HSCompany company5 = new HSCompany();
         try {
+            parentCompany = getNewTestCompany();
             company = getNewTestCompany();
             company2 = getNewTestCompany();
             company3 = getNewTestCompany();
             company4 = getNewTestCompany();
-            company5 = getNewTestCompany();
+            hubSpot.association().companyToCompany(parentCompany.getId(), company.getId(), HSAssociationTypeEnum.PARENT);
+            hubSpot.association().companyToCompany(parentCompany.getId(), company2.getId(), HSAssociationTypeEnum.PARENT);
+            hubSpot.association().companyToCompany(parentCompany.getId(), company3.getId(), HSAssociationTypeEnum.PARENT);
+            hubSpot.association().companyToCompany(parentCompany.getId(), company4.getId(), HSAssociationTypeEnum.PARENT);
 
             assertTrue(hubSpot.company().getTotalNumberOfCompanies() > 0);
         } finally {
@@ -178,7 +185,62 @@ public class HSCompanyServiceIT {
             hubSpot.company().delete(company2.getId());
             hubSpot.company().delete(company3.getId());
             hubSpot.company().delete(company4.getId());
-            hubSpot.company().delete(company5.getId());
+            hubSpot.company().delete(parentCompany.getId());
+        }
+    }
+
+    @Test
+    public void queryByDefaultSearchableProperties_Test() throws Exception {
+        HSCompany company = new HSCompany();
+        HSCompany company2 = new HSCompany();
+        HSCompany company3 = new HSCompany();
+        HSCompany company4 = new HSCompany();
+        try {
+            company = getNewTestCompany();
+            company2 = getNewTestCompany();
+            company3 = getNewTestCompany();
+            company4 = getNewTestCompany();
+
+            assertTrue(hubSpot.company().queryByDefaultSearchableProperties("test", 100).size() >= 4);
+
+        } finally {
+            hubSpot.company().delete(company.getId());
+            hubSpot.company().delete(company2.getId());
+            hubSpot.company().delete(company3.getId());
+            hubSpot.company().delete(company4.getId());
+        }
+    }
+
+    @Test
+    public void searchFilteredByProperties_Test() throws Exception {
+        HSCompany company = new HSCompany();
+        HSCompany company2 = new HSCompany();
+        HSCompany company3 = new HSCompany();
+        HSCompany company4 = new HSCompany();
+        Map<String, String> properties = new HashMap<>();
+        properties.put("zip", "10000");
+
+        Map<String, String> properties2 = new HashMap<>();
+        properties2.put("city", "rennes");
+        properties2.put("zip", "10000");
+
+        Map<String, String> properties3 = new HashMap<>();
+        properties3.put("city", "city");
+        try {
+            company = getNewTestCompany();
+            company2 = getNewTestCompany();
+            company3 = getNewTestCompany();
+            company4 = getNewTestCompany();
+
+            assertTrue(hubSpot.company().searchFilteredByProperties(properties, 100).size() >= 4);
+            assertTrue(hubSpot.company().searchFilteredByProperties(properties2, 100).size() >= 4);
+            assertTrue(hubSpot.company().searchFilteredByProperties(properties3, 100).size() >= 4);
+
+        } finally {
+            hubSpot.company().delete(company.getId());
+            hubSpot.company().delete(company2.getId());
+            hubSpot.company().delete(company3.getId());
+            hubSpot.company().delete(company4.getId());
         }
     }
 
@@ -237,10 +299,8 @@ public class HSCompanyServiceIT {
         HSCompany company = new HSCompany();
         HSCompany associatedCompany = new HSCompany();
         try {
-            company = getNewTestCompany();
-            associatedCompany = getNewTestCompany();
-            hubSpot.company().create(company);
-            hubSpot.company().create(associatedCompany);
+            company = hubSpot.company().create(getNewTestCompany());
+            associatedCompany = hubSpot.company().create(getNewTestCompany());
             hubSpot.association().companyToCompany(company.getId(), associatedCompany.getId(), HSAssociationTypeEnum.PARENT);
             List<HSAssociatedCompany> associatedCompanies = hubSpot.company().getAssociatedCompanies(company.getId(), List.of("address"));
 
@@ -424,7 +484,7 @@ public class HSCompanyServiceIT {
     }
 
     private HSCompany getNewTestCompany() throws HubSpotException {
-        return hubSpot.company().create(new HSCompany("TestCompany" + Instant.now().getEpochSecond(), testPhoneNumber, "address", "zip", "city", "country", "description", "www.website.com"));
+        return hubSpot.company().create(new HSCompany("TestCompany" + Instant.now().getEpochSecond(), testPhoneNumber, "address", "10000", "city", "country", "description", "www.website.com"));
     }
 
     private HSDeal getNewTestDeal() throws HubSpotException {

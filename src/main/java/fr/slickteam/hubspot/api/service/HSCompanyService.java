@@ -4,7 +4,6 @@ import fr.slickteam.hubspot.api.domain.*;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
 import kong.unirest.json.JSONArray;
 import kong.unirest.json.JSONObject;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -42,6 +41,11 @@ public class HSCompanyService {
         dealService = new HSDealService(httpService);
     }
 
+    /**
+     * Sets contact service.
+     *
+     * @param contactService the contact service
+     */
     public void setContactService(HSContactService contactService) {
         this.contactService = contactService;
     }
@@ -223,7 +227,8 @@ public class HSCompanyService {
     /**
      * Get HubSpot associated companies by company ID.
      *
-     * @param companyId - ID of company
+     * @param companyId  - ID of company
+     * @param properties the properties
      * @return A list of associated companies with details
      * @throws HubSpotException - if HTTP call fails
      */
@@ -280,7 +285,8 @@ public class HSCompanyService {
     /**
      * Get HubSpot contacts for one company.
      *
-     * @param companyId - ID of company
+     * @param companyId  - ID of company
+     * @param properties the properties
      * @return A list of associated contacts
      * @throws HubSpotException - if HTTP call fails
      */
@@ -357,6 +363,10 @@ public class HSCompanyService {
                                   "        {\n" +
                                   "          \"propertyName\": \"hs_object_id\",\n" +
                                   "          \"operator\": \"HAS_PROPERTY\"\n" +
+                                  "        },\n" +
+                                  "        {\n" +
+                                  "          \"propertyName\": \"hs_parent_company_id\",\n" +
+                                  "          \"operator\": \"HAS_PROPERTY\"\n" +
                                   "        }\n" +
                                   "      ]\n" +
                                   "    }\n" +
@@ -373,6 +383,98 @@ public class HSCompanyService {
 
         JSONObject response = (JSONObject) httpService.postRequest(url, searchProperties);
         return Long.parseLong(response.get("total")+"");
+    }
+
+    /**
+     * Query HubSpot companies with default searchable properties : website, phone, name and domain
+     *
+     * @param input      - string to query in company website, phone, name and domain
+     * @param limit      - size of the page
+     * @return  a company list filtered
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public List<HSCompany> queryByDefaultSearchableProperties(String input, int limit) throws HubSpotException {
+        log.log(DEBUG, "searchDefaultSearchableProperties");
+        String url = COMPANY_URL_V3 + "search";
+        String queryProperties = "{\n" +
+                "  \"query\": \""+ input +"\"," +
+                "  \"properties\": [\n" +
+                "    \"id\",\n" +
+                "    \"name\",\n" +
+                "    \"city\",\n" +
+                "    \"zip\"\n" +
+                "  ],\n" +
+                "  \"limit\": "+ limit +",\n" +
+                "  \"after\": 0\n" +
+                "}";
+
+        return sendCompanySearchRequest(url, queryProperties);
+    }
+
+    /**
+     * Search HubSpot companies filtered by properties
+     *
+     * @param propertiesAndValues - map of properties and values to filter
+     * @param limit - size of the page
+     * @return  a company list filtered
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public List<HSCompany> searchFilteredByProperties(Map<String, String> propertiesAndValues,int limit) throws HubSpotException {
+        log.log(DEBUG, "filterSearchResult");
+        String url = COMPANY_URL_V3 + "search";
+
+        String filtersPropertyList = propertiesAndValues.entrySet().stream()
+                .map(entry ->
+                        " {\n" +
+                        "      \"filters\": [\n" +
+                        "        {\n" +
+                        "          \"propertyName\": \"" + entry.getKey() + "\",\n" +
+                        "          \"value\": \"" + entry.getValue() + "\",\n" +
+                        "          \"operator\": \"EQ\"\n" +
+                        "        }" +
+                        "      ]\n" +
+                        "    }\n"
+                )
+                .collect(Collectors.joining(",\n"));
+
+        String filterGroupsProperties =
+                "{\n" +
+                "  \"filterGroups\": [\n" +
+                        filtersPropertyList +
+                "  ],\n" +
+                "  \"sorts\": [\n" +
+                "    \"name\"\n" +
+                "  ],\n" +
+                "  \"properties\": [\n" +
+                "    \"id\",\n" +
+                "    \"name\",\n" +
+                "    \"city\",\n" +
+                "    \"zip\"\n" +
+                "  ],\n" +
+                "  \"limit\": "+ limit +"\n" +
+                "}";
+
+        return sendCompanySearchRequest(url, filterGroupsProperties);
+    }
+
+    public List<HSCompany> sendCompanySearchRequest(String url, String properties) throws HubSpotException {
+        List<HSCompany> companies = Collections.emptyList();
+
+        try {
+            JSONObject response = (JSONObject) httpService.postRequest(url, properties);
+            JSONArray jsonList = response.optJSONArray("results");
+            companies = new ArrayList<>(jsonList.length());
+            for (int i = 0; i < jsonList.length(); i++) {
+                companies.add(parseCompanyData(jsonList.optJSONObject(i)));
+            }
+        } catch (HubSpotException e) {
+            if (e.getMessage().equals("Not Found")) {
+                return companies;
+            } else {
+                throw e;
+            }
+        }
+        return companies;
     }
 
     /**

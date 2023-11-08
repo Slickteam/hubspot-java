@@ -15,10 +15,24 @@ public class UrlMap {
 
 	private HashMap<String, Object> params = new HashMap<>();
 
+	/**
+	 * Put url map.
+	 *
+	 * @param key the key
+	 * @param val the val
+	 * @return the url map
+	 */
 	public UrlMap put(String key, Object val){
 		return put(key, val, false);
 	}
 
+	/**
+	 * Put duplicate url map.
+	 *
+	 * @param key the key
+	 * @param val the val
+	 * @return the url map
+	 */
 	public UrlMap putDuplicate(String key, Object val){
 		return put(key, val, true);
 	}
@@ -38,6 +52,12 @@ public class UrlMap {
 		return this;
 	}
 
+	/**
+	 * Get object.
+	 *
+	 * @param key the key
+	 * @return the object
+	 */
 	public Object get(String key){
 		return params.get(key);
 	}
@@ -61,6 +81,12 @@ public class UrlMap {
 				}).collect(Collectors.joining("&"));
 	}
 
+	/**
+	 * Url encode string.
+	 *
+	 * @param param the param
+	 * @return the string
+	 */
 	public static String urlEncode(Object param){
 		try {
 			return URLEncoder.encode(

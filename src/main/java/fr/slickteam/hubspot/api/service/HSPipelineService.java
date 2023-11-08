@@ -9,6 +9,9 @@ import java.util.List;
 
 import static java.lang.System.Logger.Level.DEBUG;
 
+/**
+ * The type Hs pipeline service.
+ */
 public class HSPipelineService {
 
     private static final System.Logger log = System.getLogger(HSPipelineService.class.getName());

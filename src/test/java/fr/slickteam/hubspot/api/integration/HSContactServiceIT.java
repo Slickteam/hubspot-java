@@ -17,6 +17,7 @@ import org.mockito.Mockito;
 import java.time.Instant;
 import java.util.*;
 
+import static java.lang.Thread.sleep;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
@@ -51,6 +52,8 @@ public class HSContactServiceIT {
         for (long createdContactId : createdContactIds) {
             hubSpot.contact().delete(createdContactId);
         }
+        // add sleep to avoid "Too many requests" error
+        sleep(100);
     }
 
     @Test
