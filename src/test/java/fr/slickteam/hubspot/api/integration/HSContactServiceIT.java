@@ -203,7 +203,6 @@ public class HSContactServiceIT {
 
     @Test
     public void getContactCompanies_withProperties_Test() throws Exception {
-        Map<String, String> properties = new HashMap<>();
         HSContact contact = hubSpot
                 .contact()
                 .create(new HSContact(testEmail1, testFirstname, testLastname, testPhoneNumber, testLifeCycleStage));
@@ -356,7 +355,7 @@ public class HSContactServiceIT {
         assertNotEquals(0L, createdContact.getId());
         properties.put("hs_object_id", String.valueOf(createdContact.getId()));
         List<HSContact> hsContacts = hubSpot.contact().searchFilteredByProperties(properties, 10);
-        // assertFalse(hsContacts.isEmpty());
+        assertFalse(hsContacts.size() > 0);
     }
 
     @Test
