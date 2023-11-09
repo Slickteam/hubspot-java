@@ -201,7 +201,7 @@ public class HSCompanyServiceIT {
             company3 = getNewTestCompany();
             company4 = getNewTestCompany();
 
-            assertTrue(hubSpot.company().queryByDefaultSearchableProperties("test", 100).size() >= 4);
+            assertTrue(hubSpot.company().queryByDefaultSearchableProperties("test", 10).size() >= 4);
 
         } finally {
             hubSpot.company().delete(company.getId());
@@ -232,9 +232,9 @@ public class HSCompanyServiceIT {
             company3 = getNewTestCompany();
             company4 = getNewTestCompany();
 
-            assertTrue(hubSpot.company().searchFilteredByProperties(properties, 100).size() >= 4);
-            assertTrue(hubSpot.company().searchFilteredByProperties(properties2, 100).size() >= 4);
-            assertTrue(hubSpot.company().searchFilteredByProperties(properties3, 100).size() >= 4);
+            assertTrue(hubSpot.company().searchFilteredByProperties(properties, 10).size() >= 4);
+            assertTrue(hubSpot.company().searchFilteredByProperties(properties2, 10).size() >= 4);
+            assertTrue(hubSpot.company().searchFilteredByProperties(properties3, 10).size() >= 4);
 
         } finally {
             hubSpot.company().delete(company.getId());

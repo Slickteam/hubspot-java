@@ -27,6 +27,7 @@ public class HSCompanyService {
     private static final String COMPANY_URL_V4 = "/crm/v4/objects/companies/";
     private static final String BATCH = "batch/";
     private static final String READ = "read/";
+    private static final String SEARCH = "search";
 
 
     /**
@@ -355,7 +356,7 @@ public class HSCompanyService {
      */
     public Long getTotalNumberOfCompanies() throws HubSpotException {
         log.log(DEBUG, "getTotalNumberOfCompanies");
-        String url = COMPANY_URL_V3 + "search";
+        String url = COMPANY_URL_V3 + SEARCH;
         String searchProperties = "{\n" +
                                   "  \"filterGroups\": [\n" +
                                   "    {\n" +
@@ -394,8 +395,8 @@ public class HSCompanyService {
      * @throws HubSpotException - if HTTP call fails
      */
     public List<HSCompany> queryByDefaultSearchableProperties(String input, int limit) throws HubSpotException {
-        log.log(DEBUG, "searchDefaultSearchableProperties");
-        String url = COMPANY_URL_V3 + "search";
+        log.log(DEBUG, "queryByDefaultSearchableProperties");
+        String url = COMPANY_URL_V3 + SEARCH;
         String queryProperties = "{\n" +
                 "  \"query\": \""+ input +"\"," +
                 "  \"properties\": [\n" +
@@ -420,7 +421,7 @@ public class HSCompanyService {
      * @throws HubSpotException - if HTTP call fails
      */
     public List<HSCompany> searchFilteredByProperties(Map<String, String> propertiesAndValues,int limit) throws HubSpotException {
-        log.log(DEBUG, "filterSearchResult");
+        log.log(DEBUG, "searchFilteredByProperties");
         String url = COMPANY_URL_V3 + "search";
 
         String filtersPropertyList = propertiesAndValues.entrySet().stream()

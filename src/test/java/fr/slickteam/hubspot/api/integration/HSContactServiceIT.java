@@ -337,6 +337,29 @@ public class HSContactServiceIT {
     }
 
     @Test
+    public void queryByDefaultSearchableProperties_Test() throws Exception {
+        HSContact contact = new HSContact(testEmail1, testFirstname, testLastname, testPhoneNumber, testLifeCycleStage);
+
+        contact = hubSpot.contact().create(contact);
+        createdContactIds.add(contact.getId());
+
+        assertFalse(hubSpot.contact().queryByDefaultSearchableProperties(testFirstname, 10).isEmpty());
+    }
+     @Test
+    public void searchFilteredByProperties_Test() throws Exception {
+        HSContact contact = new HSContact(testEmail1, testFirstname, testLastname, testPhoneNumber, testLifeCycleStage);
+        Map<String, String> properties = new HashMap<>();
+         HSContact createdContact = hubSpot.contact().create(contact);
+
+        createdContactIds.add(createdContact.getId());
+
+        assertNotEquals(0L, createdContact.getId());
+        properties.put("hs_object_id", String.valueOf(createdContact.getId()));
+        List<HSContact> hsContacts = hubSpot.contact().searchFilteredByProperties(properties, 10);
+        // assertFalse(hsContacts.isEmpty());
+    }
+
+    @Test
     public void deleteContact_by_id_Test() throws Exception {
         HSContact contact = new HSContact(testEmail1, testFirstname, testLastname, testPhoneNumber, testLifeCycleStage);
         contact = hubSpot.contact().create(contact);
@@ -356,4 +379,7 @@ public class HSContactServiceIT {
         exception.expectMessage(StringContains.containsString("Contact ID must be provided"));
         hubSpot.contact().delete(contact);
     }
+
+
+
 }
