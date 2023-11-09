@@ -8,6 +8,7 @@ import kong.unirest.json.JSONArray;
 import kong.unirest.json.JSONObject;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.lang.System.Logger.Level.DEBUG;
 
@@ -35,6 +36,7 @@ public class HSContactService {
     private HSCompanyService companyService;
     private static final String BATCH = "batch/";
     private static final String READ = "read/";
+    private static final String SEARCH = "search";
 
     /**
      * Constructor with HTTPService injected
@@ -275,5 +277,96 @@ public class HSContactService {
 
         hsService.parseJSONData(jsonObject, hsContact);
         return hsContact;
+    }
+
+    /**
+     * Query HubSpot contact with default searchable properties : firstname,lastname,email,
+     * phone,hs_additional_emails, fax, mobilephone, company, hs_marketable_until_renewal
+     *
+     * @param input      - string to query
+     * @param limit      - size of the page
+     * @return  a contact list filtered
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public List<HSContact> queryByDefaultSearchableProperties(String input, int limit) throws HubSpotException {
+        log.log(DEBUG, "queryByDefaultSearchableProperties");
+        String url = CONTACT_URL + SEARCH;
+        String queryProperties = "{\n" +
+                "  \"query\": \""+ input +"\"," +
+                "  \"properties\": [\n" +
+                "    \"id\",\n" +
+                "    \"firstname\",\n" +
+                "    \"lastname\"\n" +
+                "  ],\n" +
+                "  \"limit\": "+ limit +",\n" +
+                "  \"after\": 0\n" +
+                "}";
+
+        return sendContactSearchRequest(url, queryProperties);
+    }
+
+    public List<HSContact> sendContactSearchRequest(String url, String properties) throws HubSpotException {
+        List<HSContact> contacts = Collections.emptyList();
+
+        try {
+            JSONObject response = (JSONObject) httpService.postRequest(url, properties);
+            JSONArray jsonList = response.optJSONArray("results");
+            contacts = new ArrayList<>(jsonList.length());
+            for (int i = 0; i < jsonList.length(); i++) {
+                contacts.add(parseContactData(jsonList.optJSONObject(i)));
+            }
+        } catch (HubSpotException e) {
+            if (e.getMessage().equals("Not Found")) {
+                return contacts;
+            } else {
+                throw e;
+            }
+        }
+        return contacts;
+    }
+
+    /**
+     * Search HubSpot contacts filtered by properties
+     *
+     * @param propertiesAndValues - map of properties and values to filter
+     * @param limit - size of the page
+     * @return  a contact list filtered
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public List<HSContact> searchFilteredByProperties(Map<String, String> propertiesAndValues,int limit) throws HubSpotException {
+        log.log(DEBUG, "searchFilteredByProperties");
+        String url = CONTACT_URL + SEARCH;
+
+        String filtersPropertyList = propertiesAndValues.entrySet().stream()
+                .map(entry ->
+                        " {\n" +
+                                "      \"filters\": [\n" +
+                                "        {\n" +
+                                "          \"propertyName\": \"" + entry.getKey() + "\",\n" +
+                                "          \"value\": \"" + entry.getValue() + "\",\n" +
+                                "          \"operator\": \"EQ\"\n" +
+                                "        }" +
+                                "      ]\n" +
+                                "    }\n"
+                )
+                .collect(Collectors.joining(",\n"));
+
+        String filterGroupsProperties =
+                "{\n" +
+                        "  \"filterGroups\": [\n" +
+                        filtersPropertyList +
+                        "  ],\n" +
+                        "  \"sorts\": [\n" +
+                        "    \"lastname\"\n" +
+                        "  ],\n" +
+                        "  \"properties\": [\n" +
+                        "    \"id\",\n" +
+                        "    \"firstname\",\n" +
+                        "    \"lastname\"\n" +
+                        "  ],\n" +
+                        "  \"limit\": "+ limit +"\n" +
+                        "}";
+
+        return sendContactSearchRequest(url, filterGroupsProperties);
     }
 }
