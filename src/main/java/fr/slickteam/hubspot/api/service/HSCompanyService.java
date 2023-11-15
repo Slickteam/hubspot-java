@@ -401,6 +401,7 @@ public class HSCompanyService {
                 "  \"query\": \""+ input +"\"," +
                 "  \"properties\": [\n" +
                 "    \"id\",\n" +
+                "    \"hs_parent_company_id\",\n" +
                 "    \"name\",\n" +
                 "    \"city\",\n" +
                 "    \"zip\"\n" +
@@ -439,24 +440,40 @@ public class HSCompanyService {
                 .collect(Collectors.joining(",\n"));
 
         String filterGroupsProperties =
-                "{\n" +
-                "  \"filterGroups\": [\n" +
+                        "{\n" +
+                        "  \"filterGroups\": [\n" +
                         filtersPropertyList +
-                "  ],\n" +
-                "  \"sorts\": [\n" +
-                "    \"name\"\n" +
-                "  ],\n" +
-                "  \"properties\": [\n" +
-                "    \"id\",\n" +
-                "    \"name\",\n" +
-                "    \"city\",\n" +
-                "    \"zip\"\n" +
-                "  ],\n" +
-                "  \"limit\": "+ limit +"\n" +
-                "}";
+                        "  ],\n" +
+                        "  \"sorts\": [\n" +
+                        "    \"name\"\n" +
+                        "  ],\n" +
+                        "  \"properties\": [\n" +
+                        "    \"id\",\n" +
+                        "    \"hs_parent_company_id\",\n" +
+                        "    \"name\",\n" +
+                        "    \"city\",\n" +
+                        "    \"zip\"\n" +
+                        "  ],\n" +
+                        "  \"limit\": "+ limit +"\n" +
+                        "}";
 
         return sendCompanySearchRequest(url, filterGroupsProperties);
     }
+
+
+//            for (JSONObject JsonAssociation : associationList) {
+//        // Initiate associated company parameters
+//        HSCompany company = getByIdAndProperties((Long) JsonAssociation.get("toObjectId"), properties);
+//        HSAssociationTypeOutput associationType = new HSAssociationTypeOutput();
+//        // Create association type from JSON Object
+//        JSONObject jsonAssociationType = ((JSONArray) JsonAssociation.get("associationTypes")).getJSONObject(0);
+//        associationType.setLabel((String) jsonAssociationType.get("label"));
+//        associationType.setTypeId((Integer) jsonAssociationType.get("typeId"));
+//        // Create associated company and add it to a list
+//        HSAssociatedCompany associatedCompany = new HSAssociatedCompany(associationType, company);
+//        associatedCompanies.add(associatedCompany);
+//    }
+
 
     public List<HSCompany> sendCompanySearchRequest(String url, String properties) throws HubSpotException {
         List<HSCompany> companies = Collections.emptyList();
