@@ -29,3 +29,7 @@ target/
 
 # mpeltonen/sbt-idea plugin
 .idea_modules/
+
+### Maven ###
+config.properties
+```
