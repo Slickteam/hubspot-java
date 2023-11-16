@@ -342,7 +342,7 @@ public class HSContactServiceIT {
         contact = hubSpot.contact().create(contact);
         createdContactIds.add(contact.getId());
 
-        assertFalse(hubSpot.contact().queryByDefaultSearchableProperties(testFirstname, 10).isEmpty());
+        assertFalse(hubSpot.contact().queryByDefaultSearchableProperties(testFirstname, 10).size() > 0);
     }
      @Test
     public void searchFilteredByProperties_Test() throws Exception {
