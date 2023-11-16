@@ -31,5 +31,5 @@ target/
 .idea_modules/
 
 ### Maven ###
-config.properties
+src/test/resources/config.properties
 ```
