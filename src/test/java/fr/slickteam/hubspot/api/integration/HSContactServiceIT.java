@@ -338,23 +338,25 @@ public class HSContactServiceIT {
     @Test
     public void queryByDefaultSearchableProperties_Test() throws Exception {
         HSContact contact = new HSContact(testEmail1, testFirstname, testLastname, testPhoneNumber, testLifeCycleStage);
+        List<String> responseProperties = Arrays.asList("id", "firstname", "lastname");
 
         contact = hubSpot.contact().create(contact);
         createdContactIds.add(contact.getId());
 
-        assertFalse(hubSpot.contact().queryByDefaultSearchableProperties(testFirstname, 10).size() > 0);
+        assertFalse(hubSpot.contact().queryByDefaultSearchableProperties(testFirstname, responseProperties, 10).size() > 0);
     }
      @Test
     public void searchFilteredByProperties_Test() throws Exception {
         HSContact contact = new HSContact(testEmail1, testFirstname, testLastname, testPhoneNumber, testLifeCycleStage);
         Map<String, String> properties = new HashMap<>();
-         HSContact createdContact = hubSpot.contact().create(contact);
+         List<String> responseProperties = Arrays.asList("id", "firstname", "lastname");
+        HSContact createdContact = hubSpot.contact().create(contact);
 
         createdContactIds.add(createdContact.getId());
 
         assertNotEquals(0L, createdContact.getId());
         properties.put("hs_object_id", String.valueOf(createdContact.getId()));
-        List<HSContact> hsContacts = hubSpot.contact().searchFilteredByProperties(properties, 10);
+        List<HSContact> hsContacts = hubSpot.contact().searchFilteredByProperties(properties, responseProperties, 10);
         assertFalse(hsContacts.size() > 0);
     }
 

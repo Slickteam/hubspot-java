@@ -284,19 +284,23 @@ public class HSContactService {
      * phone,hs_additional_emails, fax, mobilephone, company, hs_marketable_until_renewal
      *
      * @param input      - string to query
+     * @param responseProperties - list of properties to return
      * @param limit      - size of the page
      * @return  a contact list filtered
      * @throws HubSpotException - if HTTP call fails
      */
-    public List<HSContact> queryByDefaultSearchableProperties(String input, int limit) throws HubSpotException {
+    public List<HSContact> queryByDefaultSearchableProperties(String input, List<String> responseProperties, int limit) throws HubSpotException {
         log.log(DEBUG, "queryByDefaultSearchableProperties");
         String url = CONTACT_URL + SEARCH;
+
+        String responsePropertiesList = responseProperties.stream()
+                .map(property -> "    \"" + property + "\"")
+                .collect(Collectors.joining(",\n"));
+
         String queryProperties = "{\n" +
                 "  \"query\": \""+ input +"\"," +
                 "  \"properties\": [\n" +
-                "    \"id\",\n" +
-                "    \"firstname\",\n" +
-                "    \"lastname\"\n" +
+                responsePropertiesList +
                 "  ],\n" +
                 "  \"limit\": "+ limit +",\n" +
                 "  \"after\": 0\n" +
@@ -328,16 +332,17 @@ public class HSContactService {
     /**
      * Search HubSpot contacts filtered by properties
      *
-     * @param propertiesAndValues - map of properties and values to filter
+     * @param propertiesAndValuesFilters - map of properties and values to filter
+     * @param responseProperties - list of properties to return
      * @param limit - size of the page
      * @return  a contact list filtered
      * @throws HubSpotException - if HTTP call fails
      */
-    public List<HSContact> searchFilteredByProperties(Map<String, String> propertiesAndValues,int limit) throws HubSpotException {
+    public List<HSContact> searchFilteredByProperties(Map<String, String> propertiesAndValuesFilters, List<String> responseProperties, int limit) throws HubSpotException {
         log.log(DEBUG, "searchFilteredByProperties");
         String url = CONTACT_URL + SEARCH;
 
-        String filtersPropertyList = propertiesAndValues.entrySet().stream()
+        String filtersPropertyList = propertiesAndValuesFilters.entrySet().stream()
                 .map(entry ->
                         " {\n" +
                                 "      \"filters\": [\n" +
@@ -351,6 +356,10 @@ public class HSContactService {
                 )
                 .collect(Collectors.joining(",\n"));
 
+        String responsePropertiesList = responseProperties.stream()
+                .map(property -> "    \"" + property + "\"")
+                .collect(Collectors.joining(",\n"));
+
         String filterGroupsProperties =
                 "{\n" +
                         "  \"filterGroups\": [\n" +
@@ -360,9 +369,7 @@ public class HSContactService {
                         "    \"lastname\"\n" +
                         "  ],\n" +
                         "  \"properties\": [\n" +
-                        "    \"id\",\n" +
-                        "    \"firstname\",\n" +
-                        "    \"lastname\"\n" +
+                        responsePropertiesList +
                         "  ],\n" +
                         "  \"limit\": "+ limit +"\n" +
                         "}";
