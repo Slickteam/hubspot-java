@@ -195,13 +195,14 @@ public class HSCompanyServiceIT {
         HSCompany company2 = new HSCompany();
         HSCompany company3 = new HSCompany();
         HSCompany company4 = new HSCompany();
+        List<String> responseProperties = Arrays.asList("id", "hs_parent_company_id", "name", "city", "zip");
         try {
             company = getNewTestCompany();
             company2 = getNewTestCompany();
             company3 = getNewTestCompany();
             company4 = getNewTestCompany();
 
-            assertTrue(hubSpot.company().queryByDefaultSearchableProperties("test", 10).size() >= 4);
+            assertTrue(hubSpot.company().queryByDefaultSearchableProperties("test", responseProperties,10).size() >= 4);
 
         } finally {
             hubSpot.company().delete(company.getId());
@@ -226,15 +227,18 @@ public class HSCompanyServiceIT {
 
         Map<String, String> properties3 = new HashMap<>();
         properties3.put("city", "city");
+
+        List<String> responseProperties = Arrays.asList("id", "hs_parent_company_id", "name", "city", "zip");
+
         try {
             company = getNewTestCompany();
             company2 = getNewTestCompany();
             company3 = getNewTestCompany();
             company4 = getNewTestCompany();
 
-            assertTrue(hubSpot.company().searchFilteredByProperties(properties, 10).size() >= 4);
-            assertTrue(hubSpot.company().searchFilteredByProperties(properties2, 10).size() >= 4);
-            assertTrue(hubSpot.company().searchFilteredByProperties(properties3, 10).size() >= 4);
+            assertTrue(hubSpot.company().searchFilteredByProperties(properties, responseProperties, 10).size() >= 4);
+            assertTrue(hubSpot.company().searchFilteredByProperties(properties2, responseProperties, 10).size() >= 4);
+            assertTrue(hubSpot.company().searchFilteredByProperties(properties3, responseProperties, 10).size() >= 4);
 
         } finally {
             hubSpot.company().delete(company.getId());

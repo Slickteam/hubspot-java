@@ -390,21 +390,23 @@ public class HSCompanyService {
      * Query HubSpot companies with default searchable properties : website, phone, name and domain
      *
      * @param input      - string to query in company website, phone, name and domain
+     * @param responseProperties - list of properties to return
      * @param limit      - size of the page
      * @return  a company list filtered
      * @throws HubSpotException - if HTTP call fails
      */
-    public List<HSCompany> queryByDefaultSearchableProperties(String input, int limit) throws HubSpotException {
+    public List<HSCompany> queryByDefaultSearchableProperties(String input, List<String> responseProperties, int limit) throws HubSpotException {
         log.log(DEBUG, "queryByDefaultSearchableProperties");
         String url = COMPANY_URL_V3 + SEARCH;
+
+        String responsePropertiesList = responseProperties.stream()
+                .map(property -> "    \"" + property + "\"")
+                .collect(Collectors.joining(",\n"));
+
         String queryProperties = "{\n" +
                 "  \"query\": \""+ input +"\"," +
                 "  \"properties\": [\n" +
-                "    \"id\",\n" +
-                "    \"hs_parent_company_id\",\n" +
-                "    \"name\",\n" +
-                "    \"city\",\n" +
-                "    \"zip\"\n" +
+                responsePropertiesList +
                 "  ],\n" +
                 "  \"limit\": "+ limit +",\n" +
                 "  \"after\": 0\n" +
@@ -416,16 +418,17 @@ public class HSCompanyService {
     /**
      * Search HubSpot companies filtered by properties
      *
-     * @param propertiesAndValues - map of properties and values to filter
+     * @param propertiesAndValuesFilters - map of properties and values to filter
+     * @param responseProperties - list of properties to return
      * @param limit - size of the page
      * @return  a company list filtered
      * @throws HubSpotException - if HTTP call fails
      */
-    public List<HSCompany> searchFilteredByProperties(Map<String, String> propertiesAndValues,int limit) throws HubSpotException {
+    public List<HSCompany> searchFilteredByProperties(Map<String, String> propertiesAndValuesFilters, List<String> responseProperties, int limit) throws HubSpotException {
         log.log(DEBUG, "searchFilteredByProperties");
         String url = COMPANY_URL_V3 + "search";
 
-        String filtersPropertyList = propertiesAndValues.entrySet().stream()
+        String filtersPropertyList = propertiesAndValuesFilters.entrySet().stream()
                 .map(entry ->
                         " {\n" +
                         "      \"filters\": [\n" +
@@ -439,40 +442,24 @@ public class HSCompanyService {
                 )
                 .collect(Collectors.joining(",\n"));
 
+        String responsePropertiesList = responseProperties.stream()
+                .map(property -> "    \"" + property + "\"")
+                .collect(Collectors.joining(",\n"));
+
         String filterGroupsProperties =
                         "{\n" +
-                        "  \"filterGroups\": [\n" +
-                        filtersPropertyList +
+                        "  \"filterGroups\": [\n" + filtersPropertyList +
                         "  ],\n" +
                         "  \"sorts\": [\n" +
                         "    \"name\"\n" +
                         "  ],\n" +
-                        "  \"properties\": [\n" +
-                        "    \"id\",\n" +
-                        "    \"hs_parent_company_id\",\n" +
-                        "    \"name\",\n" +
-                        "    \"city\",\n" +
-                        "    \"zip\"\n" +
+                        "  \"properties\": [\n" + responsePropertiesList +
                         "  ],\n" +
                         "  \"limit\": "+ limit +"\n" +
                         "}";
 
         return sendCompanySearchRequest(url, filterGroupsProperties);
     }
-
-
-//            for (JSONObject JsonAssociation : associationList) {
-//        // Initiate associated company parameters
-//        HSCompany company = getByIdAndProperties((Long) JsonAssociation.get("toObjectId"), properties);
-//        HSAssociationTypeOutput associationType = new HSAssociationTypeOutput();
-//        // Create association type from JSON Object
-//        JSONObject jsonAssociationType = ((JSONArray) JsonAssociation.get("associationTypes")).getJSONObject(0);
-//        associationType.setLabel((String) jsonAssociationType.get("label"));
-//        associationType.setTypeId((Integer) jsonAssociationType.get("typeId"));
-//        // Create associated company and add it to a list
-//        HSAssociatedCompany associatedCompany = new HSAssociatedCompany(associationType, company);
-//        associatedCompanies.add(associatedCompany);
-//    }
 
 
     public List<HSCompany> sendCompanySearchRequest(String url, String properties) throws HubSpotException {
