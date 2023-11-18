@@ -23,14 +23,12 @@ public class HSQuote extends HSObject {
     /**
      * Instantiates a new Hs quote.
      *
-     * @param hsObjectId     the hs object id
      * @param hsCreateDate      the hs create date
      * @param hsLastmodifiedDate     the hs last modified date
      * @param hsPdfDownloadLink     the hs pdf download link
      */
 
-    public HSQuote(String hsObjectId, Instant hsCreateDate, Instant hsLastmodifiedDate, String hsPdfDownloadLink) {
-        this.setHsObjectId(hsObjectId);
+    public HSQuote(Instant hsCreateDate, Instant hsLastmodifiedDate, String hsPdfDownloadLink) {
         this.setHsCreateDate(hsCreateDate);
         this.setHsLastmodifiedDate(hsLastmodifiedDate);
         this.setHsPdfDownloadLink(hsPdfDownloadLink);
