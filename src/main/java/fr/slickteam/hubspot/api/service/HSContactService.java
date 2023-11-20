@@ -309,6 +309,16 @@ public class HSContactService {
         return sendContactSearchRequest(url, queryProperties);
     }
 
+
+    /**
+     * Send Hubspot contact search HTTP request
+     *
+     * @param url      - url of the request
+     * @param properties - list of properties to query
+     * @return  a contact list filtered
+     * @throws HubSpotException - if HTTP call fails
+     */
+
     public List<HSContact> sendContactSearchRequest(String url, String properties) throws HubSpotException {
         List<HSContact> contacts = Collections.emptyList();
 

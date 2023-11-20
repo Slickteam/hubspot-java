@@ -426,7 +426,7 @@ public class HSCompanyService {
      */
     public List<HSCompany> searchFilteredByProperties(Map<String, String> propertiesAndValuesFilters, List<String> responseProperties, int limit) throws HubSpotException {
         log.log(DEBUG, "searchFilteredByProperties");
-        String url = COMPANY_URL_V3 + "search";
+        String url = COMPANY_URL_V3 + SEARCH;
 
         String filtersPropertyList = propertiesAndValuesFilters.entrySet().stream()
                 .map(entry ->
@@ -462,6 +462,14 @@ public class HSCompanyService {
     }
 
 
+    /**
+     * Send HubSpot companies request with properties to query or filter
+     *
+     * @param url - url to send the request
+     * @param properties - properties to query or filter
+     * @return  a company list filtered
+     * @throws HubSpotException - if HTTP call fails
+     */
     public List<HSCompany> sendCompanySearchRequest(String url, String properties) throws HubSpotException {
         List<HSCompany> companies = Collections.emptyList();
 
