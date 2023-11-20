@@ -42,7 +42,10 @@ public class HSAssociationService {
     private static final String COMPANIES = "companies/";
     private static final String COMPANY = "company/";
     private static final String DEAL = "deal/";
+    private static final String DEALS = "deals/";
     private static final String LINE_ITEM = "line_item/";
+    private static final String LINE_ITEMS = "line_items/";
+    private static final String QUOTES = "quotes/";
     private static final String DEAL_TO_LINE_ITEM = "deal_to_line_item";
     private static final String DEAL_TO_CONTACT = "deal_to_contact";
     private static final String DEAL_TO_COMPANY = "deal_to_company";
@@ -460,4 +463,93 @@ public class HSAssociationService {
 
         httpService.putRequest(url);
     }
+
+    /**
+     * Get all companies ids associated to a deal
+     *
+     * @param dealId - ID of the deal
+     * @return the companies associated to the deal
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public List<JSONObject> getCompaniesToDeal(long dealId) throws HubSpotException {
+        log.log(DEBUG, "getCompaniesToDeal - dealId : " + dealId);
+        String url =
+                BasePath.V4_OBJECT + DEALS + dealId + "/" + ASSOCIATION + COMPANIES;
+        try {
+            return hsService.parseJsonResultToList(url);
+        } catch (HubSpotException e) {
+            if (e.getMessage().equals("No company associated found for this deal")) {
+                return new ArrayList<>();
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    /**
+     * Get all contacts ids associated to a deal
+     *
+     * @param dealId - ID of the deal
+     * @return the contacts associated to the deal
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public List<JSONObject> getContactsToDeal(long dealId) throws HubSpotException {
+        log.log(DEBUG, "getContactsToDeal - dealId : " + dealId);
+        String url =
+                BasePath.V4_OBJECT + DEALS + dealId + "/" + ASSOCIATION + CONTACTS;
+        try {
+            return hsService.parseJsonResultToList(url);
+        } catch (HubSpotException e) {
+            if (e.getMessage().equals("No contact associated found for this deal")) {
+                return new ArrayList<>();
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    /**
+     * Get all line items ids associated to a deal
+     *
+     * @param dealId - ID of the deal
+     * @return the line items associated to the deal
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public List<JSONObject> getLineItemsToDeal(long dealId) throws HubSpotException {
+        log.log(DEBUG, "getLineItemsToDeal - dealId : " + dealId);
+        String url =
+                BasePath.V4_OBJECT + DEALS + dealId + "/" + ASSOCIATION + LINE_ITEMS;
+        try {
+            return hsService.parseJsonResultToList(url);
+        } catch (HubSpotException e) {
+            if (e.getMessage().equals("No line item associated found for this deal")) {
+                return new ArrayList<>();
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    /**
+     * Get all quotes ids associated to a deal
+     *
+     * @param dealId - ID of the deal
+     * @return the quotes associated to the deal
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public List<JSONObject> getQuotesToDeal(long dealId) throws HubSpotException {
+        log.log(DEBUG, "getQuotesToDeal - dealId : " + dealId);
+        String url =
+                BasePath.V4_OBJECT + DEALS + dealId + "/" + ASSOCIATION + QUOTES;
+        try {
+            return hsService.parseJsonResultToList(url);
+        } catch (HubSpotException e) {
+            if (e.getMessage().equals("No quote associated found for this deal")) {
+                return new ArrayList<>();
+            } else {
+                throw e;
+            }
+        }
+    }
+
 }

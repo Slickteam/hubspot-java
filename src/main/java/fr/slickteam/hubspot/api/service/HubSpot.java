@@ -74,7 +74,16 @@ public class HubSpot {
     }
 
     /**
-     * Hs service hs service.
+     * Quote hs quote service.
+     *
+     * @return the hs quote service
+     */
+    public HSQuoteService quote() {
+        return new HSQuoteService(httpService);
+    }
+
+    /**
+     * Service hs service.
      *
      * @return the hs service
      */

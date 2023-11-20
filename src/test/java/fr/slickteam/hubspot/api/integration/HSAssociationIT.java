@@ -3,6 +3,7 @@ import fr.slickteam.hubspot.api.domain.*;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
 import fr.slickteam.hubspot.api.service.HubSpot;
 import fr.slickteam.hubspot.api.utils.Helper;
+import kong.unirest.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static java.lang.Thread.sleep;
+import static org.junit.Assert.assertEquals;
 
 
 public class HSAssociationIT {
@@ -417,5 +419,56 @@ public class HSAssociationIT {
         exception.expect(HubSpotException.class);
         exception.expectMessage("Not Found");
         hubSpot.association().dealToLineItem(-777, lineItem.getId());
+    }
+
+    @Test
+    public void get_association_Companies_To_Deal_success() throws HubSpotException {
+        HSDeal deal = hubSpot.deal().create(new HSDeal(testDealName, testDealStage, testPipeline, testAmount, testClosedate));
+        createdDealId = deal.getId();
+        HSCompany company = hubSpot.company().create(new HSCompany(testEmail1,
+                testPhoneNumber,
+                testAddress,
+                testZip,
+                testCity,
+                testCountry));
+        createdCompanyIds.add(company.getId());
+
+        hubSpot.association().dealToCompany(deal.getId(), company.getId());
+        hubSpot.association().getCompaniesToDeal(deal.getId());
+
+        assertEquals (1,hubSpot.association().getCompaniesToDeal(deal.getId()).size());
+    }
+
+    @Test
+    public void get_association_Contacts_To_Deal_success() throws HubSpotException {
+        HSDeal deal = hubSpot.deal().create(new HSDeal(testDealName, testDealStage, testPipeline, testAmount, testClosedate));
+        createdDealId = deal.getId();
+        HSContact contact = hubSpot.contact().create(new HSContact(testEmail1,
+                testFirstname,
+                testLastname,
+                testPhoneNumber,
+                testLifeCycleStage));
+
+        createdContactId = contact.getId();
+
+        hubSpot.association().dealToContact(deal.getId(), contact.getId());
+        List<JSONObject> contactsAssociated = hubSpot.association().getContactsToDeal(deal.getId());
+
+        assertEquals (1, contactsAssociated.size());
+    }
+
+    @Test
+    public void get_association_Line_Items_To_Deal_success() throws HubSpotException {
+        HSDeal deal = hubSpot.deal().create(new HSDeal(testDealName, testDealStage, testPipeline, testAmount, testClosedate));
+        HSLineItem lineItem = hubSpot.lineItem().create(new HSLineItem(testProductId, testQuantity));
+
+        createdDealId = deal.getId();
+        createdLineItemId = lineItem.getId();
+
+        hubSpot.association().dealToLineItem(deal.getId(), lineItem.getId());
+
+        List<JSONObject> lineItemsAssociated = hubSpot.association().getLineItemsToDeal(deal.getId());
+
+        assertEquals (1, lineItemsAssociated.size());
     }
 }
