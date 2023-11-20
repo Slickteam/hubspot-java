@@ -9,10 +9,9 @@ import java.util.Map;
 public class HSQuote extends HSObject {
 
     private static final String ID = "vid";
-    private static final String HS_OBJECT_ID = "hs_object_id";
-    private static final String HS_CREATEDATE = "hs_createdate";
-    private static final String HS_LASTMODIFIEDDATE = "hs_lastmodifieddate";
-    private static final String HS_PDF_DOWNLOAD_LINK = "hs_pdf_download_link";
+    private static final String CREATED_AT = "createdAt";
+    private static final String UPDATED_AT = "updatedAt";
+    private static final String ARCHIVED = "archived";
 
     /**
      * Instantiates a new Hs quote.
@@ -23,36 +22,29 @@ public class HSQuote extends HSObject {
     /**
      * Instantiates a new Hs quote.
      *
-     * @param hsCreateDate      the hs create date
-     * @param hsLastmodifiedDate     the hs last modified date
-     * @param hsPdfDownloadLink     the hs pdf download link
+     * @param properties      the hs quote title
      */
 
-    public HSQuote(Instant hsCreateDate, Instant hsLastmodifiedDate, String hsPdfDownloadLink) {
-        this.setHsCreateDate(hsCreateDate);
-        this.setHsLastmodifiedDate(hsLastmodifiedDate);
-        this.setHsPdfDownloadLink(hsPdfDownloadLink);
+    public HSQuote(Map<String, String> properties) {
+        super(properties);
     }
 
     /**
      * Instantiates a new Hs quote.
      *
-     * @param id          the id
-     * @param hsObjectId     the hs object id
-     * @param hsCreateDate      the hs create date
-     * @param hsLastmodifiedDate     the hs last modified date
-     * @param hsPdfDownloadLink     the hs pdf download link
-     * @param properties  the properties
+     * @param properties      the hs quote title
+     * @param createdAt       the hs quote expiration date
+     * @param updatedAt       the hs quote created date
+     * @param archived        the hs quote last modified date
      */
 
-    public HSQuote(long id, String hsObjectId, Instant hsCreateDate, Instant hsLastmodifiedDate, String hsPdfDownloadLink,
-                   Map<String, String> properties) {
+    public HSQuote(Map<String, String> properties, Instant createdAt, Instant updatedAt, boolean archived) {
         super(properties);
-        this.setHsObjectId(hsObjectId);
-        this.setHsCreateDate(hsCreateDate);
-        this.setHsLastmodifiedDate(hsLastmodifiedDate);
-        this.setHsPdfDownloadLink(hsPdfDownloadLink);
+        this.setCreatedAt(createdAt);
+        this.setUpdatedAt(updatedAt);
+        this.setArchived(archived);
     }
+
 
     /**
      * Gets id.
@@ -75,83 +67,65 @@ public class HSQuote extends HSObject {
     }
 
     /**
-     * Gets hs object id.
+     * Gets created at.
      *
-     * @return the hs object id
+     * @return the created at
      */
-    public String getHsObjectId() {
-        return getProperty(HS_OBJECT_ID);
+    public Instant getCreatedAt() {
+        return getDateProperty(CREATED_AT);
     }
 
     /**
-     * Sets hs object id.
+     * Sets created at.
      *
-     * @param hsObjectId the hs object id
-     * @return the hs object id
+     * @param createdAt the created at
+     * @return the created at
      */
-    public HSQuote setHsObjectId(String hsObjectId) {
-        setProperty(HS_OBJECT_ID, hsObjectId);
+    public HSQuote setCreatedAt(Instant createdAt) {
+        setProperty(CREATED_AT, createdAt.toString());
         return this;
     }
 
     /**
-     * Gets hs create date.
+     * Gets updated at.
      *
-     * @return the hs create date
+     * @return the updated at
      */
-    public Instant getHsCreateDate() {
-        return Instant.parse(getProperty(HS_CREATEDATE));
+    public Instant getUpdatedAt() {
+        return getDateProperty(UPDATED_AT);
     }
 
     /**
-     * Sets hs create date.
+     * Sets updated at.
      *
-     * @param hsCreateDate the hs create date
-     * @return the hs create date
+     * @param updatedAt the updated at
+     * @return the updated at
      */
-    public HSQuote setHsCreateDate(Instant hsCreateDate) {
-        setProperty(HS_CREATEDATE, hsCreateDate.toString());
+    public HSQuote setUpdatedAt(Instant updatedAt) {
+        setProperty(UPDATED_AT, updatedAt.toString());
         return this;
     }
 
     /**
-     * Gets hs lastmodified date.
+     * Gets archived.
      *
-     * @return the hs lastmodified date
+     * @return the archived
      */
-    public Instant getHsLastmodifiedDate() {
-        return Instant.parse(getProperty(HS_LASTMODIFIEDDATE));
+    public boolean getArchived() {
+        return getBooleanProperty(ARCHIVED);
     }
 
     /**
-     * Sets hs lastmodified date.
+     * Sets archived.
      *
-     * @param hsLastmodifiedDate the hs lastmodified date
-     * @return the hs lastmodified date
+     * @param archived the archived
+     * @return the archived
      */
-    public HSQuote setHsLastmodifiedDate(Instant hsLastmodifiedDate) {
-        setProperty(HS_LASTMODIFIEDDATE, hsLastmodifiedDate.toString());
+    public HSQuote setArchived(boolean archived) {
+        setProperty(ARCHIVED, Boolean.toString(archived));
         return this;
     }
 
-    /**
-     * Gets hs pdf download link.
-     *
-     * @return the hs pdf download link
-     */
-    public String getHsPdfDownloadLink() {
-        return getProperty(HS_PDF_DOWNLOAD_LINK);
-    }
 
-    /**
-     * Sets hs pdf download link.
-     *
-     * @param hsPdfDownloadLink the hs pdf download link
-     * @return the hs pdf download link
-     */
-    public HSQuote setHsPdfDownloadLink(String hsPdfDownloadLink) {
-        setProperty(HS_PDF_DOWNLOAD_LINK, hsPdfDownloadLink);
-        return this;
-    }
 
 }

@@ -2,8 +2,10 @@ package fr.slickteam.hubspot.api.service;
 
 import fr.slickteam.hubspot.api.domain.HSQuote;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
+import kong.unirest.json.JSONArray;
 import kong.unirest.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static java.lang.System.Logger.Level.DEBUG;
@@ -17,6 +19,7 @@ public class HSQuoteService {
 
     private static final System.Logger log = System.getLogger(HSQuoteService.class.getName());
     private static final String QUOTE_URL = "/crm/v3/objects/quotes/";
+    private static final String PATCH_URL = "/crm/v3/objects/quote/";
 
     private final HttpService httpService;
     private final HSService hsService;
@@ -48,7 +51,7 @@ public class HSQuoteService {
      * Get HubSpot quote by its ID with list of properties.
      *
      * @param id         - ID of the quote
-     * @param properties - List of string properties as quote name or quote stage
+     * @param properties - List of string properties as hs_status or hs_language
      * @return the quote with the selected properties
      * @throws HubSpotException - if HTTP call fails
      */
@@ -57,6 +60,35 @@ public class HSQuoteService {
         String propertiesUrl = String.join(",", properties);
         String url = QUOTE_URL + id + "?properties=" + propertiesUrl;
         return getQuote(url);
+    }
+
+    /**
+     * Get All HubSpot quote.
+     *
+     * @return a list of quotes
+     * @param properties - List of string properties as hs_status or hs_language
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public List<HSQuote> getAllWithProperties(List<String> properties) throws HubSpotException {
+        log.log(DEBUG, "getAll - properties : " + properties);
+        String propertiesUrl = String.join(",", properties);
+        String url = QUOTE_URL + "?properties=" + propertiesUrl;
+        try {
+            return parseQuoteDataList((JSONObject) httpService.getRequest(url));
+        } catch (HubSpotException e) {
+            if (e.getMessage().equals("Not Found")) {
+                return new ArrayList<>();
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    private List<HSQuote> parseQuoteDataList(JSONObject jsonObject) {
+        List<HSQuote> quotes = new ArrayList<>();
+        JSONArray jsonQuotes = jsonObject.getJSONArray("results");
+        jsonQuotes.forEach(jsonQuote -> quotes.add(parseQuoteData((JSONObject) jsonQuote)));
+        return quotes;
     }
 
     private HSQuote getQuote(String url) throws HubSpotException {
@@ -109,7 +141,7 @@ public class HSQuoteService {
      */
     public HSQuote patch(HSQuote quote) throws HubSpotException {
         log.log(DEBUG, "patch - quote : " + quote);
-        String url = QUOTE_URL + quote.getId();
+        String url = PATCH_URL + quote.getId();
 
         String properties = quote.toJsonString();
 
