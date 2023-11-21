@@ -3,7 +3,6 @@ import fr.slickteam.hubspot.api.domain.*;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
 import fr.slickteam.hubspot.api.service.HubSpot;
 import fr.slickteam.hubspot.api.utils.Helper;
-import kong.unirest.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -434,9 +433,9 @@ public class HSAssociationIT {
         createdCompanyIds.add(company.getId());
 
         hubSpot.association().dealToCompany(deal.getId(), company.getId());
-        hubSpot.association().getCompaniesToDeal(deal.getId());
+        hubSpot.association().getCompanieIdsToDeal(deal.getId());
 
-        assertEquals (1,hubSpot.association().getCompaniesToDeal(deal.getId()).size());
+        assertEquals (1,hubSpot.association().getCompanieIdsToDeal(deal.getId()).size());
     }
 
     @Test
@@ -452,9 +451,9 @@ public class HSAssociationIT {
         createdContactId = contact.getId();
 
         hubSpot.association().dealToContact(deal.getId(), contact.getId());
-        List<JSONObject> contactsAssociated = hubSpot.association().getContactsToDeal(deal.getId());
+        List<Long> contactIdsAssociated = hubSpot.association().getContactIdsToDeal(deal.getId());
 
-        assertEquals (1, contactsAssociated.size());
+        assertEquals (1, contactIdsAssociated.size());
     }
 
     @Test
@@ -467,8 +466,8 @@ public class HSAssociationIT {
 
         hubSpot.association().dealToLineItem(deal.getId(), lineItem.getId());
 
-        List<JSONObject> lineItemsAssociated = hubSpot.association().getLineItemsToDeal(deal.getId());
+        List<Long> lineItemIdsAssociated = hubSpot.association().getLineItemIdsToDeal(deal.getId());
 
-        assertEquals (1, lineItemsAssociated.size());
+        assertEquals (1, lineItemIdsAssociated.size());
     }
 }
