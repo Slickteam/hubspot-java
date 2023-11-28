@@ -337,7 +337,10 @@ public class HSCompanyService {
             for (int i = 0; i < jsonList.length(); i++) {
                 companies.add(parseCompanyData(jsonList.optJSONObject(i)));
             }
-            String nextPageToken = ((JSONObject)((JSONObject) response.get("paging")).get("next")).getString("after");
+            String nextPageToken = null;
+            if (response.has("paging") && ((JSONObject) response.get("paging")).has("next")) {
+                nextPageToken = ((JSONObject)((JSONObject) response.get("paging")).get("next")).getString("after");
+            }
             return new PagedHSCompanyList(companies, nextPageToken);
         } catch (HubSpotException e) {
             if (e.getMessage().equals("Not Found")) {
