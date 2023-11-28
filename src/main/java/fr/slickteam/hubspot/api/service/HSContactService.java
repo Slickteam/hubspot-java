@@ -3,6 +3,8 @@ package fr.slickteam.hubspot.api.service;
 import com.google.common.base.Strings;
 import fr.slickteam.hubspot.api.domain.HSCompany;
 import fr.slickteam.hubspot.api.domain.HSContact;
+import fr.slickteam.hubspot.api.domain.PagedHSCompanyList;
+import fr.slickteam.hubspot.api.domain.PagedHSContactList;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
 import kong.unirest.json.JSONArray;
 import kong.unirest.json.JSONObject;
@@ -117,6 +119,41 @@ public class HSContactService {
         } catch (HubSpotException e) {
             if (e.getMessage().equals("Not Found")) {
                 return new ArrayList<>();
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    /**
+     * Get HubSpot contacts with pagination and a list of properties.
+     *
+     * @param after      - paging cursor token of the last successfully read resource in HubSpot
+     * @param limit      - size of the page
+     * @param properties - List of string properties as contact firstname
+     * @return the page with the list of contacts and the token for next page
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public PagedHSContactList getContacts(String after, int limit, List<String> properties) throws HubSpotException {
+        log.log(DEBUG, "getContacts - after : " + after + " | limit : " + limit + " | properties : " + properties);
+        String propertiesUrl = String.join(",", properties);
+        String url = CONTACT_URL + "?limit=" + limit + "&after=" + after + "&properties=" + propertiesUrl;
+
+        try {
+            JSONObject response = (JSONObject) httpService.getRequest(url);
+            JSONArray jsonList = response.optJSONArray("results");
+            List<HSContact> contacts = new ArrayList<>(jsonList.length());
+            for (int i = 0; i < jsonList.length(); i++) {
+                contacts.add(parseContactData(jsonList.optJSONObject(i)));
+            }
+            String nextPageToken = null;
+            if (response.has("paging") && ((JSONObject) response.get("paging")).has("next")) {
+                nextPageToken = ((JSONObject)((JSONObject) response.get("paging")).get("next")).getString("after");
+            }
+            return new PagedHSContactList(contacts, nextPageToken);
+        } catch (HubSpotException e) {
+            if (e.getMessage().equals("Not Found")) {
+                return new PagedHSContactList(Collections.emptyList(), "0");
             } else {
                 throw e;
             }

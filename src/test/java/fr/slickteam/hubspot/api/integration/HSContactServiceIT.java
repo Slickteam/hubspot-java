@@ -1,6 +1,8 @@
 package fr.slickteam.hubspot.api.integration;
 
 import fr.slickteam.hubspot.api.domain.HSCompany;
+import fr.slickteam.hubspot.api.domain.PagedHSCompanyList;
+import fr.slickteam.hubspot.api.domain.PagedHSContactList;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
 import fr.slickteam.hubspot.api.domain.HSContact;
 import fr.slickteam.hubspot.api.service.HSContactService;
@@ -380,5 +382,50 @@ public class HSContactServiceIT {
     }
 
 
+    @Test
+    public void getContacts_Test() throws Exception {
+        HSContact contact = new HSContact();
+        HSContact contact2 = new HSContact();
+        HSContact contact3 = new HSContact();
+        HSContact contact4 = new HSContact();
+        HSContact contact5 = new HSContact();
+        try {
+            contact = getNewTestContact();
+            contact2 = getNewTestContact();
+            contact3 = getNewTestContact();
+            contact4 = getNewTestContact();
+            contact5 = getNewTestContact();
+
+            List<String> properties = Arrays.asList("id", "firstname", "lastname");
+
+            PagedHSContactList contacts = hubSpot.contact().getContacts("0", 10, properties);
+
+            assertNotNull(contacts);
+            assertEquals(10, contacts.getContacts().size());
+
+            contacts = hubSpot.contact().getContacts("0", 2, properties);
+
+            assertEquals(2, contacts.getContacts().size());
+            PagedHSContactList contactsNextPage = hubSpot.contact().getContacts(contacts.getAfter(), 2, properties);
+            PagedHSContactList contactsBigPage = hubSpot.contact().getContacts("0", 4, properties);
+
+            assertEquals(2, contactsNextPage.getContacts().size());
+            assertEquals(4, contactsBigPage.getContacts().size());
+            assertEquals(contacts.getContacts().get(0).getId(), contactsBigPage.getContacts().get(0).getId());
+            assertEquals(contacts.getContacts().get(1).getId(), contactsBigPage.getContacts().get(1).getId());
+            assertEquals(contactsNextPage.getContacts().get(0).getId(), contactsBigPage.getContacts().get(2).getId());
+            assertEquals(contactsNextPage.getContacts().get(1).getId(), contactsBigPage.getContacts().get(3).getId());
+        } finally {
+            hubSpot.contact().delete(contact.getId());
+            hubSpot.contact().delete(contact2.getId());
+            hubSpot.contact().delete(contact3.getId());
+            hubSpot.contact().delete(contact4.getId());
+            hubSpot.contact().delete(contact5.getId());
+        }
+    }
+
+    private HSContact getNewTestContact() throws HubSpotException {
+        return hubSpot.contact().create(new HSContact(UUID.randomUUID()+"@test.fr", testFirstname, testLastname, testPhoneNumber, testLifeCycleStage));
+    }
 
 }
