@@ -3,6 +3,7 @@ package fr.slickteam.hubspot.api.service;
 import com.google.common.base.Strings;
 import fr.slickteam.hubspot.api.domain.HSCompany;
 import fr.slickteam.hubspot.api.domain.HSContact;
+import fr.slickteam.hubspot.api.domain.PagedHSContactList;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
 import kong.unirest.json.JSONArray;
 import kong.unirest.json.JSONObject;
@@ -30,6 +31,9 @@ public class HSContactService {
      * The constant PARAMETER_OPERATOR.
      */
     public static final String PARAMETER_OPERATOR = "?";
+    public static final String PAGING = "paging";
+    public static final String LOG_PROPERTIES = " | properties : ";
+    public static final String RESULTS = "results";
     private final HttpService httpService;
     private final HSService hsService;
     private final HSAssociationService associationService;
@@ -80,7 +84,7 @@ public class HSContactService {
      * @throws HubSpotException - if HTTP call fails
      */
     public HSContact getByIdAndProperties(long id, List<String> properties) throws HubSpotException {
-        log.log(DEBUG, "getByIdAndProperties - id : " + id + " | properties : " + properties);
+        log.log(DEBUG, "getByIdAndProperties - id : " + id + LOG_PROPERTIES + properties);
         String propertiesUrl = String.join(",", properties);
         String url = CONTACT_URL + id + "?properties=" + propertiesUrl;
         return getContact(url);
@@ -95,20 +99,20 @@ public class HSContactService {
      * @throws HubSpotException - if HTTP call fails
      */
     public List<HSContact> getContactListByIdAndProperties(List<Long> idList, List<String> properties) throws HubSpotException {
-        log.log(DEBUG, "getContactListByIdAndProperties - idList : " + idList + " | properties : " + properties);
+        log.log(DEBUG, "getContactListByIdAndProperties - idList : " + idList + LOG_PROPERTIES + properties);
         String formatProperties = getJsonProperties(properties);
         String formatIdList = getJsonInputList(idList);
         String associationProperties = "{\n" +
-                "  \"properties\": [\n" + formatProperties +
-                "   ],\n" +
-                "  \"propertiesWithHistory\": [],\n" +
-                "   \"inputs\": [\n" + formatIdList +
-                "   ]\n" +
-                "}";
+                                       "  \"properties\": [\n" + formatProperties +
+                                       "   ],\n" +
+                                       "  \"propertiesWithHistory\": [],\n" +
+                                       "   \"inputs\": [\n" + formatIdList +
+                                       "   ]\n" +
+                                       "}";
         String url = CONTACT_URL + BATCH + READ;
         try {
             JSONObject response = (JSONObject) httpService.postRequest(url, associationProperties);
-            JSONArray jsonList = response.optJSONArray("results");
+            JSONArray jsonList = response.optJSONArray(RESULTS);
             List<HSContact> contacts = new ArrayList<>(jsonList.length());
             for (int i = 0; i < jsonList.length(); i++) {
                 contacts.add(parseContactData(jsonList.optJSONObject(i)));
@@ -117,6 +121,41 @@ public class HSContactService {
         } catch (HubSpotException e) {
             if (e.getMessage().equals("Not Found")) {
                 return new ArrayList<>();
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    /**
+     * Get HubSpot contacts with pagination and a list of properties.
+     *
+     * @param after      - paging cursor token of the last successfully read resource in HubSpot
+     * @param limit      - size of the page
+     * @param properties - List of string properties as contact firstname
+     * @return the page with the list of contacts and the token for next page
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public PagedHSContactList getContacts(String after, int limit, List<String> properties) throws HubSpotException {
+        log.log(DEBUG, "getContacts - after : " + after + " | limit : " + limit + LOG_PROPERTIES + properties);
+        String propertiesUrl = String.join(",", properties);
+        String url = CONTACT_URL + "?limit=" + limit + "&after=" + after + "&properties=" + propertiesUrl;
+
+        try {
+            JSONObject response = (JSONObject) httpService.getRequest(url);
+            JSONArray jsonList = response.optJSONArray(RESULTS);
+            List<HSContact> contacts = new ArrayList<>(jsonList.length());
+            for (int i = 0; i < jsonList.length(); i++) {
+                contacts.add(parseContactData(jsonList.optJSONObject(i)));
+            }
+            String nextPageToken = null;
+            if (response.has(PAGING) && ((JSONObject) response.get(PAGING)).has("next")) {
+                nextPageToken = ((JSONObject) ((JSONObject) response.get(PAGING)).get("next")).getString("after");
+            }
+            return new PagedHSContactList(contacts, nextPageToken);
+        } catch (HubSpotException e) {
+            if (e.getMessage().equals("Not Found")) {
+                return new PagedHSContactList(Collections.emptyList(), "0");
             } else {
                 throw e;
             }
@@ -283,10 +322,10 @@ public class HSContactService {
      * Query HubSpot contact with default searchable properties : firstname,lastname,email,
      * phone,hs_additional_emails, fax, mobilephone, company, hs_marketable_until_renewal
      *
-     * @param input      - string to query
+     * @param input              - string to query
      * @param responseProperties - list of properties to return
-     * @param limit      - size of the page
-     * @return  a contact list filtered
+     * @param limit              - size of the page
+     * @return a contact list filtered
      * @throws HubSpotException - if HTTP call fails
      */
     public List<HSContact> queryByDefaultSearchableProperties(String input, List<String> responseProperties, int limit) throws HubSpotException {
@@ -298,13 +337,13 @@ public class HSContactService {
                 .collect(Collectors.joining(",\n"));
 
         String queryProperties = "{\n" +
-                "  \"query\": \""+ input +"\"," +
-                "  \"properties\": [\n" +
-                responsePropertiesList +
-                "  ],\n" +
-                "  \"limit\": "+ limit +",\n" +
-                "  \"after\": 0\n" +
-                "}";
+                                 "  \"query\": \"" + input + "\"," +
+                                 "  \"properties\": [\n" +
+                                 responsePropertiesList +
+                                 "  ],\n" +
+                                 "  \"limit\": " + limit + ",\n" +
+                                 "  \"after\": 0\n" +
+                                 "}";
 
         return sendContactSearchRequest(url, queryProperties);
     }
@@ -313,9 +352,9 @@ public class HSContactService {
     /**
      * Send Hubspot contact search HTTP request
      *
-     * @param url      - url of the request
+     * @param url        - url of the request
      * @param properties - list of properties to query
-     * @return  a contact list filtered
+     * @return a contact list filtered
      * @throws HubSpotException - if HTTP call fails
      */
 
@@ -324,7 +363,7 @@ public class HSContactService {
 
         try {
             JSONObject response = (JSONObject) httpService.postRequest(url, properties);
-            JSONArray jsonList = response.optJSONArray("results");
+            JSONArray jsonList = response.optJSONArray(RESULTS);
             contacts = new ArrayList<>(jsonList.length());
             for (int i = 0; i < jsonList.length(); i++) {
                 contacts.add(parseContactData(jsonList.optJSONObject(i)));
@@ -343,9 +382,9 @@ public class HSContactService {
      * Search HubSpot contacts filtered by properties
      *
      * @param propertiesAndValuesFilters - map of properties and values to filter
-     * @param responseProperties - list of properties to return
-     * @param limit - size of the page
-     * @return  a contact list filtered
+     * @param responseProperties         - list of properties to return
+     * @param limit                      - size of the page
+     * @return a contact list filtered
      * @throws HubSpotException - if HTTP call fails
      */
     public List<HSContact> searchFilteredByProperties(Map<String, String> propertiesAndValuesFilters, List<String> responseProperties, int limit) throws HubSpotException {
@@ -355,14 +394,14 @@ public class HSContactService {
         String filtersPropertyList = propertiesAndValuesFilters.entrySet().stream()
                 .map(entry ->
                         " {\n" +
-                                "      \"filters\": [\n" +
-                                "        {\n" +
-                                "          \"propertyName\": \"" + entry.getKey() + "\",\n" +
-                                "          \"value\": \"" + entry.getValue() + "\",\n" +
-                                "          \"operator\": \"EQ\"\n" +
-                                "        }" +
-                                "      ]\n" +
-                                "    }\n"
+                        "      \"filters\": [\n" +
+                        "        {\n" +
+                        "          \"propertyName\": \"" + entry.getKey() + "\",\n" +
+                        "          \"value\": \"" + entry.getValue() + "\",\n" +
+                        "          \"operator\": \"EQ\"\n" +
+                        "        }" +
+                        "      ]\n" +
+                        "    }\n"
                 )
                 .collect(Collectors.joining(",\n"));
 
@@ -372,17 +411,17 @@ public class HSContactService {
 
         String filterGroupsProperties =
                 "{\n" +
-                        "  \"filterGroups\": [\n" +
-                        filtersPropertyList +
-                        "  ],\n" +
-                        "  \"sorts\": [\n" +
-                        "    \"lastname\"\n" +
-                        "  ],\n" +
-                        "  \"properties\": [\n" +
-                        responsePropertiesList +
-                        "  ],\n" +
-                        "  \"limit\": "+ limit +"\n" +
-                        "}";
+                "  \"filterGroups\": [\n" +
+                filtersPropertyList +
+                "  ],\n" +
+                "  \"sorts\": [\n" +
+                "    \"lastname\"\n" +
+                "  ],\n" +
+                "  \"properties\": [\n" +
+                responsePropertiesList +
+                "  ],\n" +
+                "  \"limit\": " + limit + "\n" +
+                "}";
 
         return sendContactSearchRequest(url, filterGroupsProperties);
     }

@@ -17,6 +17,7 @@ import static java.lang.System.Logger.Level.DEBUG;
 public class HSCompanyService {
 
     private static final System.Logger log = System.getLogger(HSCompanyService.class.getName());
+    public static final String PAGING = "paging";
     private final HttpService httpService;
     private final HSService hsService;
     private HSContactService contactService;
@@ -337,7 +338,10 @@ public class HSCompanyService {
             for (int i = 0; i < jsonList.length(); i++) {
                 companies.add(parseCompanyData(jsonList.optJSONObject(i)));
             }
-            String nextPageToken = ((JSONObject)((JSONObject) response.get("paging")).get("next")).getString("after");
+            String nextPageToken = null;
+            if (response.has(PAGING) && ((JSONObject) response.get(PAGING)).has("next")) {
+                nextPageToken = ((JSONObject)((JSONObject) response.get(PAGING)).get("next")).getString("after");
+            }
             return new PagedHSCompanyList(companies, nextPageToken);
         } catch (HubSpotException e) {
             if (e.getMessage().equals("Not Found")) {
