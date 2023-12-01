@@ -470,4 +470,18 @@ public class HSAssociationIT {
 
         assertEquals (1, lineItemIdsAssociated.size());
     }
+
+    @Test
+    public void remove_association_deal_to_lineitem_success() throws HubSpotException {
+        HSProduct product = hubSpot.product().create(new HSProduct("test product", "test", BigDecimal.valueOf(50), "MONTHLY"));
+        HSLineItem lineItem = hubSpot.lineItem().create(new HSLineItem(String.valueOf(product.getId()), 1));
+        HSDeal deal = hubSpot.deal().create(new HSDeal(testDealName, testDealStage, testPipeline, testAmount, testClosedate));
+
+        hubSpot.association().dealToLineItem(deal.getId(), lineItem.getId());
+        hubSpot.association().removeLineItemFromDeal(deal.getId(), lineItem.getId());
+
+        hubSpot.lineItem().delete(lineItem.getId());
+        hubSpot.deal().delete(deal.getId());
+        hubSpot.product().delete(product.getId());
+    }
 }

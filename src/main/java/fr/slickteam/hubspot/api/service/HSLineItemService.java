@@ -2,8 +2,14 @@ package fr.slickteam.hubspot.api.service;
 
 import fr.slickteam.hubspot.api.domain.HSLineItem;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
+import kong.unirest.json.JSONArray;
 import kong.unirest.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static fr.slickteam.hubspot.api.utils.JsonUtils.getJsonInputList;
+import static fr.slickteam.hubspot.api.utils.JsonUtils.getJsonProperties;
 import static java.lang.System.Logger.Level.DEBUG;
 
 /**
@@ -15,7 +21,12 @@ public class HSLineItemService {
 
     private static final System.Logger log = System.getLogger(HSLineItemService.class.getName());
 
-    private final static String LINE_ITEM_URL = "/crm/v3/objects/line_items/";
+    public static final String LOG_PROPERTIES = " | properties : ";
+    public static final String RESULTS = "results";
+
+    private static final String LINE_ITEM_URL = "/crm/v3/objects/line_items/";
+    private static final String BATCH = "batch/";
+    private static final String READ = "read/";
     private final HttpService httpService;
     private final HSService hsService;
 
@@ -130,5 +141,42 @@ public class HSLineItemService {
         String url = LINE_ITEM_URL + id;
 
         httpService.deleteRequest(url);
+    }
+
+    /**
+     * Get HubSpot a list of line items by id with properties.
+     *
+     * @param idList     - ID list of companies
+     * @param properties - List of string properties as product id or name
+     * @return a line item list with properties
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public List<HSLineItem> getLineItemListByIdAndProperties(List<Long> idList, List<String> properties) throws HubSpotException {
+        log.log(DEBUG, "getLineItemListByIdAndProperties - idList : " + idList + LOG_PROPERTIES + properties);
+        String formatProperties = getJsonProperties(properties);
+        String formatIdList = getJsonInputList(idList);
+        String associationProperties = "{\n" +
+                                       "  \"properties\": [\n" + formatProperties +
+                                       "   ],\n" +
+                                       "  \"propertiesWithHistory\": [],\n" +
+                                       "   \"inputs\": [\n" + formatIdList +
+                                       "   ]\n" +
+                                       "}";
+        String url = LINE_ITEM_URL + BATCH + READ;
+        try {
+            JSONObject response = (JSONObject) httpService.postRequest(url, associationProperties);
+            JSONArray jsonList = response.optJSONArray(RESULTS);
+            List<HSLineItem> lineItems = new ArrayList<>(jsonList.length());
+            for (int i = 0; i < jsonList.length(); i++) {
+                lineItems.add(parseLineItemData(jsonList.optJSONObject(i)));
+            }
+            return lineItems;
+        } catch (HubSpotException e) {
+            if (e.getMessage().equals("Not Found")) {
+                return new ArrayList<>();
+            } else {
+                throw e;
+            }
+        }
     }
 }

@@ -7,6 +7,8 @@ import kong.unirest.json.JSONObject;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static fr.slickteam.hubspot.api.utils.JsonUtils.getJsonInputList;
+import static fr.slickteam.hubspot.api.utils.JsonUtils.getJsonProperties;
 import static java.lang.System.Logger.Level.DEBUG;
 
 /**
@@ -18,6 +20,9 @@ public class HSCompanyService {
 
     private static final System.Logger log = System.getLogger(HSCompanyService.class.getName());
     public static final String PAGING = "paging";
+    public static final String LOG_PROPERTIES = " | properties : ";
+    public static final String RESULTS = "results";
+    public static final String NOT_FOUND = "Not Found";
     private final HttpService httpService;
     private final HSService hsService;
     private HSContactService contactService;
@@ -112,7 +117,7 @@ public class HSCompanyService {
         try {
             return parseCompanyData((JSONObject) httpService.getRequest(url));
         } catch (HubSpotException e) {
-            if (e.getMessage().equals("Not Found")) {
+            if (e.getMessage().equals(NOT_FOUND)) {
                 return null;
             } else {
                 throw e;
@@ -129,7 +134,7 @@ public class HSCompanyService {
      * @throws HubSpotException - if HTTP call fails
      */
     public List<HSCompany> getCompanyListByIdAndProperties(List<Long> idList, List<String> properties) throws HubSpotException {
-        log.log(DEBUG, "getCompanyListByIdAndProperties - idList : " + idList + " | properties : " + properties);
+        log.log(DEBUG, "getCompanyListByIdAndProperties - idList : " + idList + LOG_PROPERTIES + properties);
         String formatProperties = getJsonProperties(properties);
         String formatIdList = getJsonInputList(idList);
         String associationProperties = "{\n" +
@@ -142,45 +147,19 @@ public class HSCompanyService {
         String url = COMPANY_URL_V3 + BATCH + READ;
         try {
             JSONObject response = (JSONObject) httpService.postRequest(url, associationProperties);
-            JSONArray jsonList = response.optJSONArray("results");
+            JSONArray jsonList = response.optJSONArray(RESULTS);
             List<HSCompany> companies = new ArrayList<>(jsonList.length());
             for (int i = 0; i < jsonList.length(); i++) {
                 companies.add(parseCompanyData(jsonList.optJSONObject(i)));
             }
             return companies;
         } catch (HubSpotException e) {
-            if (e.getMessage().equals("Not Found")) {
+            if (e.getMessage().equals(NOT_FOUND)) {
                 return new ArrayList<>();
             } else {
                 throw e;
             }
         }
-    }
-
-    private String getJsonProperties(List<String> properties) {
-        StringJoiner stringJoiner = new StringJoiner(",\n", "", "\n");
-        for (String property : properties) {
-            stringJoiner.add("\"" + property + "\"");
-        }
-        return stringJoiner.toString();
-    }
-
-    private String getJsonInputList(List<Long> idList) {
-        StringBuilder stringBuilder = new StringBuilder();
-
-        int lastIndex = idList.size() - 1;
-        int index = 0;
-
-        for (long companyId : idList) {
-            stringBuilder.append(" { \"id\": \"").append(companyId).append("\" }");
-            if (index != lastIndex) {
-                stringBuilder.append(",\n");
-            } else {
-                stringBuilder.append("\n");
-            }
-            index++;
-        }
-        return stringBuilder.toString();
     }
 
     /**
@@ -192,7 +171,7 @@ public class HSCompanyService {
      * @throws HubSpotException - if HTTP call fails
      */
     public HSCompany getByIdAndProperties(long id, List<String> properties) throws HubSpotException {
-        log.log(DEBUG, "getByIdAndProperties - id : " + id + " | properties : " + properties);
+        log.log(DEBUG, "getByIdAndProperties - id : " + id + LOG_PROPERTIES + properties);
         String propertiesUrl = String.join(",", properties);
         String url = COMPANY_URL_V3 + id + "?properties=" + propertiesUrl;
         return getCompany(url);
@@ -327,13 +306,13 @@ public class HSCompanyService {
      * @throws HubSpotException - if HTTP call fails
      */
     public PagedHSCompanyList getCompanies(String after, int limit, List<String> properties) throws HubSpotException {
-        log.log(DEBUG, "getCompanies - after : " + after + " | limit : " + limit + " | properties : " + properties);
+        log.log(DEBUG, "getCompanies - after : " + after + " | limit : " + limit + LOG_PROPERTIES + properties);
         String propertiesUrl = String.join(",", properties);
         String url = COMPANY_URL_V3 + "?limit=" + limit + "&after=" + after + "&properties=" + propertiesUrl;
 
         try {
             JSONObject response = (JSONObject) httpService.getRequest(url);
-            JSONArray jsonList = response.optJSONArray("results");
+            JSONArray jsonList = response.optJSONArray(RESULTS);
             List<HSCompany> companies = new ArrayList<>(jsonList.length());
             for (int i = 0; i < jsonList.length(); i++) {
                 companies.add(parseCompanyData(jsonList.optJSONObject(i)));
@@ -344,7 +323,7 @@ public class HSCompanyService {
             }
             return new PagedHSCompanyList(companies, nextPageToken);
         } catch (HubSpotException e) {
-            if (e.getMessage().equals("Not Found")) {
+            if (e.getMessage().equals(NOT_FOUND)) {
                 return new PagedHSCompanyList(Collections.emptyList(), "0");
             } else {
                 throw e;
@@ -479,13 +458,13 @@ public class HSCompanyService {
 
         try {
             JSONObject response = (JSONObject) httpService.postRequest(url, properties);
-            JSONArray jsonList = response.optJSONArray("results");
+            JSONArray jsonList = response.optJSONArray(RESULTS);
             companies = new ArrayList<>(jsonList.length());
             for (int i = 0; i < jsonList.length(); i++) {
                 companies.add(parseCompanyData(jsonList.optJSONObject(i)));
             }
         } catch (HubSpotException e) {
-            if (e.getMessage().equals("Not Found")) {
+            if (e.getMessage().equals(NOT_FOUND)) {
                 return companies;
             } else {
                 throw e;

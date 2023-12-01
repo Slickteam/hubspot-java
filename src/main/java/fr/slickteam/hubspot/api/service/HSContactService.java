@@ -11,6 +11,8 @@ import kong.unirest.json.JSONObject;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static fr.slickteam.hubspot.api.utils.JsonUtils.getJsonInputList;
+import static fr.slickteam.hubspot.api.utils.JsonUtils.getJsonProperties;
 import static java.lang.System.Logger.Level.DEBUG;
 
 /**
@@ -160,32 +162,6 @@ public class HSContactService {
                 throw e;
             }
         }
-    }
-
-    private String getJsonProperties(List<String> properties) {
-        StringJoiner stringJoiner = new StringJoiner(",\n", "", "\n");
-        for (String property : properties) {
-            stringJoiner.add("\"" + property + "\"");
-        }
-        return stringJoiner.toString();
-    }
-
-    private String getJsonInputList(List<Long> idList) {
-        StringBuilder stringBuilder = new StringBuilder();
-
-        int lastIndex = idList.size() - 1;
-        int index = 0;
-
-        for (long companyId : idList) {
-            stringBuilder.append(" { \"id\": \"").append(companyId).append("\" }");
-            if (index != lastIndex) {
-                stringBuilder.append(",\n");
-            } else {
-                stringBuilder.append("\n");
-            }
-            index++;
-        }
-        return stringBuilder.toString();
     }
 
     /**
