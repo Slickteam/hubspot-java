@@ -531,32 +531,6 @@ public class HSAssociationService {
     }
 
     /**
-     * Remove associate between a deal and a line item
-     *
-     * @param dealId - ID of the deal
-     * @param lineItemId - ID of the line item
-     * @throws HubSpotException - if HTTP call fails
-     */
-    public void removeLineItemFromDeal(long dealId, long lineItemId) throws HubSpotException {
-        log.log(DEBUG, "removeLineItemFromDeal - dealId : " + dealId + " | lineItemId : " + lineItemId);
-        String associationProperties = "{\n" +
-                                       "  \"inputs\": [\n" +
-                                       "    {\n" +
-                                       "      \"from\": {\n" +
-                                       "        \"id\": \"" + dealId + "\"\n" +
-                                       "      },\n" +
-                                       "      \"to\": {\n" +
-                                       "        \"id\": \"" + lineItemId + "\"\n" +
-                                       "      },\n" +
-                                       "      \"type\": \"deal_to_lineitem\"" +
-                                       "    }\n" +
-                                       "  ]\n" +
-                                       "}";
-        String url = BasePath.V4_ASSOCIATION + DEALS + LINE_ITEMS + BATCH + ARCHIVE;
-        httpService.postRequest(url, associationProperties);
-    }
-
-    /**
      * Get all quotes IDs associated to a deal
      *
      * @param dealId - ID of the deal
