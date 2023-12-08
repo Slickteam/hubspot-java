@@ -8,6 +8,10 @@ import java.util.StringJoiner;
  */
 public final class JsonUtils {
 
+    private JsonUtils() {
+        //SONAR
+    }
+
     /**
      * Gets json properties.
      *
