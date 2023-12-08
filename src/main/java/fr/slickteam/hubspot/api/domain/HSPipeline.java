@@ -72,8 +72,8 @@ public class HSPipeline extends HSObject{
      *
      * @return the id
      */
-    public long getId() {
-        return getLongProperty(ID);
+    public String getId() {
+        return getProperty(ID);
     }
 
     /**
@@ -82,8 +82,8 @@ public class HSPipeline extends HSObject{
      * @param id the id
      * @return the id
      */
-    public HSPipeline setId(long id) {
-        setProperty(ID, Long.toString(id));
+    public HSPipeline setId(String id) {
+        setProperty(ID, id);
         return this;
     }
 

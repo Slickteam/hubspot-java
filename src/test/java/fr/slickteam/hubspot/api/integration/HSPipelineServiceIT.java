@@ -16,7 +16,7 @@ import static org.junit.Assert.assertNull;
 
 public class HSPipelineServiceIT {
 
-    private Long createdPipelineId;
+    private String createdPipelineId;
     private HubSpot hubSpot;
 
     @Rule

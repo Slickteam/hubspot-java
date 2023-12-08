@@ -40,7 +40,7 @@ public class HSPipelineService {
     public HSPipeline create(HSPipeline hsPipeline) throws HubSpotException {
         log.log(DEBUG, "create - hsPipeline : " + hsPipeline);
         JSONObject jsonObject = (JSONObject) httpService.postRequest(PIPELINE_URL + DEALS, hsPipeline.toJsonString());
-        hsPipeline.setId(jsonObject.getLong("id"));
+        hsPipeline.setId(jsonObject.getString("id"));
         return hsPipeline;
     }
 
@@ -61,9 +61,9 @@ public class HSPipelineService {
      * @param id - ID of the pipeline to delete
      * @throws HubSpotException - if HTTP call fails
      */
-    public void delete(Long id) throws HubSpotException {
+    public void delete(String id) throws HubSpotException {
         log.log(DEBUG, "delete - id : " + id);
-        if (id == 0) {
+        if (id == null || id.isEmpty()) {
             throw new HubSpotException("Pipeline ID must be provided");
         }
         String url = PIPELINE_URL + DEALS + id;
@@ -91,11 +91,11 @@ public class HSPipelineService {
     /**
      * Get HubSpot pipeline by its ID.
      *
-     * @param pipelineId - ID of pipeline
+     * @param pipelineId - ID of pipeline (String because there is a 'default' pipeline)
      * @return A pipeline
      * @throws HubSpotException - if HTTP call fails
      */
-    public HSPipeline getPipelineById(long pipelineId) throws HubSpotException {
+    public HSPipeline getPipelineById(String pipelineId) throws HubSpotException {
         log.log(DEBUG, "getPipelineById - pipelineId : " + pipelineId);
         String url = PIPELINE_URL + DEALS + pipelineId;
         return getPipeline(url);
