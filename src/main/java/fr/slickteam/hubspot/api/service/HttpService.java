@@ -275,6 +275,8 @@ public class HttpService {
                     log.log(ERROR, "checkResponse : message is empty");
                     throw new HubSpotException(resp.getStatusText(), resp.getStatus());
                 }
+            } catch (HubSpotException e) {
+                throw e;
             } catch (Exception e) {
                 log.log(ERROR, getHttpErrorMessageAndStatus(resp), e);
             }
