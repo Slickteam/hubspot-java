@@ -67,8 +67,8 @@ public class HSStage extends HSObject{
      *
      * @return the id
      */
-    public long getId() {
-        return getLongProperty(ID);
+    public String getId() {
+        return getProperty(ID);
     }
 
     /**
@@ -77,8 +77,8 @@ public class HSStage extends HSObject{
      * @param id the id
      * @return the id
      */
-    public HSStage setId(long id) {
-        setProperty(ID, Long.toString(id));
+    public HSStage setId(String id) {
+        setProperty(ID, id);
         return this;
     }
 

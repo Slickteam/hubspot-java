@@ -39,7 +39,7 @@ public class HSStageService {
     public HSStage create(String pipelineId, HSStage hsStage) throws HubSpotException {
         log.log(DEBUG, "create - pipelineId : " + pipelineId + " | hsStage : " + hsStage);
         JSONObject jsonObject = (JSONObject) httpService.postRequest(PIPELINE_URL + DEALS + pipelineId + "/" + STAGES, hsStage.toJsonString());
-        hsStage.setId(jsonObject.getLong("id"));
+        hsStage.setId(jsonObject.getString("id"));
         return hsStage;
     }
 
@@ -62,12 +62,12 @@ public class HSStageService {
      * @param stageId    - ID of the stage to delete
      * @throws HubSpotException - if HTTP call fails
      */
-    public void delete(String pipelineId, long stageId) throws HubSpotException {
+    public void delete(String pipelineId, String stageId) throws HubSpotException {
         log.log(DEBUG, "delete - pipelineId : " + pipelineId + " | stageId : " + stageId);
         if (pipelineId == null || pipelineId.isEmpty()) {
             throw new HubSpotException("Pipeline ID must be provided");
         }
-        if (stageId == 0) {
+        if (stageId == null || stageId.isEmpty()) {
             throw new HubSpotException("Stage ID must be provided");
         }
         String url = PIPELINE_URL + DEALS + pipelineId + "/" + STAGES + stageId;
@@ -83,7 +83,7 @@ public class HSStageService {
      * @return A pipeline stage
      * @throws HubSpotException - if HTTP call fails
      */
-    public HSStage getStageById(String pipelineId, long stageId) throws HubSpotException {
+    public HSStage getStageById(String pipelineId, String stageId) throws HubSpotException {
         log.log(DEBUG, "getStageById - pipelineId : " + pipelineId + " | stageId : " + stageId);
         String url = PIPELINE_URL + DEALS + pipelineId + "/" + STAGES + stageId;
         return getStage(url);
