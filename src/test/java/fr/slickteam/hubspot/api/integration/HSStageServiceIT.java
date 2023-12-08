@@ -11,8 +11,7 @@ import org.junit.rules.ExpectedException;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 public class HSStageServiceIT {
 
@@ -32,7 +31,8 @@ public class HSStageServiceIT {
         HSPipeline pipeline = getNewTestPipeline();
         HSStage stage = getNewTestStage(pipeline.getId());
 
-        assertNotEquals(0, stage.getId());
+        assertNotNull(stage.getId());
+        assertNotEquals("", stage.getId());
         hubSpot.pipeline().delete(pipeline.getId());
     }
 
@@ -54,7 +54,7 @@ public class HSStageServiceIT {
         HSPipeline pipelineTest = findPipelineWithStage(pipelines);
         HSStage stageTest = pipelineTest.getStages().get(0);
         HSStage findStage = hubSpot.stage().getStageById(pipelineTest.getId(), stageTest.getId());
-        Assert.assertNotNull(findStage);
+        assertNotNull(findStage);
         Assert.assertEquals(stageTest.getId(), findStage.getId());
     }
 

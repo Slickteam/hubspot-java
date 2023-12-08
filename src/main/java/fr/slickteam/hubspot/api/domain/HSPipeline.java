@@ -215,7 +215,7 @@ public class HSPipeline extends HSObject{
         for (int i = 0; i < jsonArray.length(); i++) {
             HSStage stage = new HSStage();
             JSONObject jsonStage = jsonArray.getJSONObject(i);
-            stage.setId(Long.parseLong((String) jsonStage.get(ID)));
+            stage.setId((String) jsonStage.get(ID));
             stage.setLabel((String) jsonStage.get(LABEL));
             stage.setDisplayOrder(((int) jsonStage.get(DISPLAY_ORDER)));
             stage.setMetadata(String.valueOf(jsonStage.get("metadata")));
@@ -229,7 +229,7 @@ public class HSPipeline extends HSObject{
 
     private JSONObject stageToJson(HSStage stage) {
         JSONObject jsonStage = new JSONObject();
-        jsonStage.put(ID, stage.getId()+"");
+        jsonStage.put(ID, stage.getId());
         jsonStage.put(LABEL, stage.getLabel());
         jsonStage.put(DISPLAY_ORDER, stage.getDisplayOrder());
         jsonStage.put("metadata", stage.getMetadata());

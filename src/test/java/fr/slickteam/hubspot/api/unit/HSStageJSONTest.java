@@ -27,7 +27,7 @@ public class HSStageJSONTest {
         JSONObject jsonObject = new JSONObject(inputData);
         HSStage stage = service.parseStageData(jsonObject);
 
-        assertEquals(71, stage.getId());
+        assertEquals("71", stage.getId());
         assertEquals("1", stage.getProperty("test"));
     }
 
