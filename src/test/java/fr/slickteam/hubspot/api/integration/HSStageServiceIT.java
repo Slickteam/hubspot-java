@@ -66,7 +66,7 @@ public class HSStageServiceIT {
         return firstPipeline.orElse(null);
     }
 
-    private HSStage getNewTestStage(long pipelineId) throws HubSpotException {
+    private HSStage getNewTestStage(String pipelineId) throws HubSpotException {
         return hubSpot.stage().create(pipelineId, new HSStage());
     }
 

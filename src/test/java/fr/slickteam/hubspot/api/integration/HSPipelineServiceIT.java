@@ -11,12 +11,11 @@ import java.util.List;
 import java.util.Optional;
 
 import static java.lang.Thread.sleep;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 public class HSPipelineServiceIT {
 
-    private Long createdPipelineId;
+    private String createdPipelineId;
     private HubSpot hubSpot;
 
     @Rule
@@ -43,7 +42,8 @@ public class HSPipelineServiceIT {
         pipeline = hubSpot.pipeline().create(pipeline);
         createdPipelineId = pipeline.getId();
 
-        assertNotEquals(0, pipeline.getId());
+        assertNotNull(pipeline.getId());
+        assertNotEquals("", pipeline.getId());
     }
 
     @Ignore("Required scopes missing")

@@ -27,7 +27,7 @@ public class HSPipelineJSONTest {
         JSONObject jsonObject = new JSONObject(inputData);
 
         HSPipeline pipeline = service.parsePipelineData(jsonObject);
-        assertEquals(71, pipeline.getId());
+        assertEquals("71", pipeline.getId());
         assertEquals("1", pipeline.getProperty("test"));
     }
 

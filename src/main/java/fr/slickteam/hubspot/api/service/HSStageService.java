@@ -36,7 +36,7 @@ public class HSStageService {
      * @return created stage
      * @throws HubSpotException - if HTTP call fails
      */
-    public HSStage create(long pipelineId, HSStage hsStage) throws HubSpotException {
+    public HSStage create(String pipelineId, HSStage hsStage) throws HubSpotException {
         log.log(DEBUG, "create - pipelineId : " + pipelineId + " | hsStage : " + hsStage);
         JSONObject jsonObject = (JSONObject) httpService.postRequest(PIPELINE_URL + DEALS + pipelineId + "/" + STAGES, hsStage.toJsonString());
         hsStage.setId(jsonObject.getLong("id"));
@@ -50,7 +50,7 @@ public class HSStageService {
      * @param stage      - stage to delete
      * @throws HubSpotException - if HTTP call fails
      */
-    public void delete(long pipelineId, HSStage stage) throws HubSpotException {
+    public void delete(String pipelineId, HSStage stage) throws HubSpotException {
         log.log(DEBUG, "delete - pipelineId : " + pipelineId + " | stage : " + stage);
         delete(pipelineId, stage.getId());
     }
@@ -62,9 +62,9 @@ public class HSStageService {
      * @param stageId    - ID of the stage to delete
      * @throws HubSpotException - if HTTP call fails
      */
-    public void delete(long pipelineId, long stageId) throws HubSpotException {
+    public void delete(String pipelineId, long stageId) throws HubSpotException {
         log.log(DEBUG, "delete - pipelineId : " + pipelineId + " | stageId : " + stageId);
-        if (pipelineId == 0) {
+        if (pipelineId == null || pipelineId.isEmpty()) {
             throw new HubSpotException("Pipeline ID must be provided");
         }
         if (stageId == 0) {
@@ -83,7 +83,7 @@ public class HSStageService {
      * @return A pipeline stage
      * @throws HubSpotException - if HTTP call fails
      */
-    public HSStage getStageById(long pipelineId, long stageId) throws HubSpotException {
+    public HSStage getStageById(String pipelineId, long stageId) throws HubSpotException {
         log.log(DEBUG, "getStageById - pipelineId : " + pipelineId + " | stageId : " + stageId);
         String url = PIPELINE_URL + DEALS + pipelineId + "/" + STAGES + stageId;
         return getStage(url);

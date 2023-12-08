@@ -24,6 +24,7 @@ import static kong.unirest.Unirest.*;
 public class HttpService {
 
     private static final System.Logger log = System.getLogger(HttpService.class.getName());
+    public static final String MESSAGE = "message";
 
     private final String apiBase;
     private final OAuthConfig oAuthConfig;
@@ -255,23 +256,29 @@ public class HttpService {
                         break;
                     case 207:
                         message = ((List<JSONObject>) ((JSONArray) resp.getBody().getObject().get("errors")).toList()).stream()
-                                .map(error -> error.get("message"))
+                                .map(error -> error.get(MESSAGE))
                                 .collect(Collectors.toList())
                                 .toString();
                         break;
                     default:
-                        resp.getBody().getObject().getString("message");
+                        resp.getBody().getObject().getString(MESSAGE);
                 }
+
+                if (Strings.isNullOrEmpty(message)) {
+                    message = resp.getBody().getObject().getString(MESSAGE);
+                }
+
+                if (!Strings.isNullOrEmpty(message)) {
+                    log.log(ERROR, getHttpErrorMessageAndStatus(resp));
+                    throw new HubSpotException(message, resp.getStatus());
+                } else {
+                    log.log(ERROR, "checkResponse : message is empty");
+                    throw new HubSpotException(resp.getStatusText(), resp.getStatus());
+                }
+            } catch (HubSpotException e) {
+                throw e;
             } catch (Exception e) {
                 log.log(ERROR, getHttpErrorMessageAndStatus(resp), e);
-            }
-
-            if (!Strings.isNullOrEmpty(message)) {
-                log.log(ERROR, getHttpErrorMessageAndStatus(resp));
-                throw new HubSpotException(message, resp.getStatus());
-            } else {
-                log.log(ERROR, "checkResponse : message is empty");
-                throw new HubSpotException(resp.getStatusText(), resp.getStatus());
             }
         } else {
             if (resp.getBody() != null) {
@@ -280,9 +287,9 @@ public class HttpService {
             } else {
                 log.log(TRACE, "checkResponse : HTTP status : " + resp.getStatus() +
                                " (" + resp.getStatusText() + ")");
-                return null;
             }
         }
+        return null;
     }
 
     private static String getHttpErrorMessageAndStatus(HttpResponse<JsonNode> resp) {
