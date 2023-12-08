@@ -262,16 +262,20 @@ public class HttpService {
                     default:
                         resp.getBody().getObject().getString("message");
                 }
+
+                if (Strings.isNullOrEmpty(message)) {
+                    message = resp.getBody().getObject().getString("message");
+                }
+
+                if (!Strings.isNullOrEmpty(message)) {
+                    log.log(ERROR, getHttpErrorMessageAndStatus(resp));
+                    throw new HubSpotException(message, resp.getStatus());
+                } else {
+                    log.log(ERROR, "checkResponse : message is empty");
+                    throw new HubSpotException(resp.getStatusText(), resp.getStatus());
+                }
             } catch (Exception e) {
                 log.log(ERROR, getHttpErrorMessageAndStatus(resp), e);
-            }
-
-            if (!Strings.isNullOrEmpty(message)) {
-                log.log(ERROR, getHttpErrorMessageAndStatus(resp));
-                throw new HubSpotException(message, resp.getStatus());
-            } else {
-                log.log(ERROR, "checkResponse : message is empty");
-                throw new HubSpotException(resp.getStatusText(), resp.getStatus());
             }
         } else {
             if (resp.getBody() != null) {
@@ -280,9 +284,9 @@ public class HttpService {
             } else {
                 log.log(TRACE, "checkResponse : HTTP status : " + resp.getStatus() +
                                " (" + resp.getStatusText() + ")");
-                return null;
             }
         }
+        return null;
     }
 
     private static String getHttpErrorMessageAndStatus(HttpResponse<JsonNode> resp) {
