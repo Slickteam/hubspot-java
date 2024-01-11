@@ -1,20 +1,27 @@
 package fr.slickteam.hubspot.api.webhook;
 
+import com.google.common.hash.Hashing;
+import fr.slickteam.hubspot.api.service.HSAssociationService;
+import org.apache.commons.codec.digest.HmacAlgorithms;
 import org.apache.commons.codec.digest.HmacUtils;
 
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 public class HubSpotWebHookSignatureUtils {
+
+    private static final System.Logger log = System.getLogger(HubSpotWebHookSignatureUtils.class.getName());
 
     private HubSpotWebHookSignatureUtils() {
         // default constructor
     }
 
     public static boolean isSignatureValid(String signature, String clientSecret, String requestMethod, String requestURI, String payload, String timestamp) {
-        String utf8EncodedString = StandardCharsets.UTF_8.encode(requestMethod + " " + reencodeURIForHubSpot(requestURI) + " " + payload + " " + timestamp).toString();
-        String hash = new HmacUtils("HmacSHA256", clientSecret).hmacHex(utf8EncodedString);
-        String newSignature = Base64.getEncoder().encodeToString(hash.getBytes());
+        ByteBuffer utf8EncodedString = StandardCharsets.UTF_8.encode(requestMethod + requestURI + payload + timestamp);
+        byte[] hash = new HmacUtils(HmacAlgorithms.HMAC_SHA_256, clientSecret).hmac(utf8EncodedString);
+        String newSignature = Base64.getEncoder().encodeToString(hash);
+        log.log(System.Logger.Level.TRACE, "isSignatureValid - new signature : " + newSignature);
         return newSignature.equals(signature);
     }
 
