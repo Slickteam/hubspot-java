@@ -11,7 +11,7 @@ repositories {
 }
 
 group = "fr.slickteam.hubspot.api"
-version = "2.1.5-SNAPSHOT"
+version = "2.1.6-SNAPSHOT"
 description = "Java Wrapper for HubSpot API"
 
 java {
@@ -46,9 +46,13 @@ sonar {
         property("sonar.host.url", "https://sonarcloud.io")
         property("sonar.verbose", "true")
         property("sonar.dynamicAnalysis", "reuseReports")
-        property("sonar.junit.reportsPaths", "$buildDir/test-results/test")
+
+        val junitReportPath = layout.buildDirectory.dir("test-results/test")
+        property("sonar.junit.reportsPaths", junitReportPath.get().asFile)
+
+        val jacocoReportPath = layout.buildDirectory.dir("reports/jacoco.xml")
         property("sonar.java.coveragePlugin", "jacoco")
-        property("sonar.coverage.jacoco.xmlReportPaths", "${buildDir}/reports/unit_jacoco.xml")
+        property("sonar.coverage.jacoco.xmlReportPaths", jacocoReportPath.get().asFile)
     }
 }
 
