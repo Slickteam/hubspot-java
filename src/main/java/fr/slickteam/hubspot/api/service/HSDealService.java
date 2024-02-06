@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static fr.slickteam.hubspot.api.utils.JsonUtils.getJsonInputList;
+import static fr.slickteam.hubspot.api.utils.JsonUtils.getJsonProperties;
 import static java.lang.System.Logger.Level.DEBUG;
 
 /**
@@ -25,7 +27,10 @@ public class HSDealService {
 
     private static final String LINE_ITEM_URL = "/crm/v3/objects/line_items/";
     private static final String DEAL_URL = "/crm/v3/objects/deals/";
+    private static final String BATCH = "batch/";
+    private static final String READ = "read/";
     private static final String SEARCH = "search/";
+    private static final String RESULTS = "results";
 
     private final HttpService httpService;
     private final HSService hsService;
@@ -76,6 +81,43 @@ public class HSDealService {
         } catch (HubSpotException e) {
             if (e.getMessage().equals("Not Found")) {
                 return null;
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    /**
+     * Get HubSpot a list of deals by id with properties.
+     *
+     * @param idList     - ID list of deals
+     * @param properties - List of string properties as deal name or deal stage
+     * @return a deal list with properties
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public List<HSDeal> getDealListByIdAndProperties(List<Long> idList, List<String> properties) throws HubSpotException {
+        log.log(DEBUG, "getDealListByIdAndProperties - idList : " + idList + " | properties : " + properties);
+        String formatProperties = getJsonProperties(properties);
+        String formatIdList = getJsonInputList(idList);
+        String dealProperties = "{\n" +
+                                "  \"properties\": [\n" + formatProperties +
+                                "   ],\n" +
+                                "  \"propertiesWithHistory\": [],\n" +
+                                "   \"inputs\": [\n" + formatIdList +
+                                "   ]\n" +
+                                "}";
+        String url = DEAL_URL + BATCH + READ;
+        try {
+            JSONObject response = (JSONObject) httpService.postRequest(url, dealProperties);
+            JSONArray jsonList = response.optJSONArray(RESULTS);
+            List<HSDeal> deals = new ArrayList<>(jsonList.length());
+            for (int i = 0; i < jsonList.length(); i++) {
+                deals.add(parseDealData(jsonList.optJSONObject(i)));
+            }
+            return deals;
+        } catch (HubSpotException e) {
+            if (e.getMessage().equals("Not Found")) {
+                return new ArrayList<>();
             } else {
                 throw e;
             }
@@ -261,6 +303,35 @@ public class HSDealService {
             }
 
             associatedDeals.put(dealId, contactIds);
+        }
+
+        return associatedDeals;
+    }
+
+    /**
+     * Get HubSpot associated line items for a list of deal IDs.
+     *
+     * @param dealIds - IDs of deals
+     * @return A map containing for each deal ID a list of line item IDs
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public Map<Long, List<Long>> getAssociatedLineItemIds(List<Long> dealIds) throws HubSpotException {
+        log.log(DEBUG, "getAssociatedLineItemIds - dealIds : " + dealIds);
+        List<JSONObject> associationList = associationService.dealsToLineItems(dealIds);
+        Map<Long, List<Long>> associatedDeals = new HashMap<>();
+
+        for (JSONObject associationsByDeal : associationList) {
+            // Initiate associated deal parameters
+            Long dealId = Long.parseLong(associationsByDeal.getJSONObject("from").get("id").toString());
+            JSONArray lineItems = associationsByDeal.getJSONArray("to");
+
+            List<Long> lineItemIds = new ArrayList<>();
+
+            for (int i = 0, max = lineItems.length(); i < max; i++) {
+                lineItemIds.add(Long.parseLong(lineItems.getJSONObject(i).get("toObjectId").toString()));
+            }
+
+            associatedDeals.put(dealId, lineItemIds);
         }
 
         return associatedDeals;

@@ -19,10 +19,10 @@ import static java.lang.System.Logger.Level.DEBUG;
 public class HSCompanyService {
 
     private static final System.Logger log = System.getLogger(HSCompanyService.class.getName());
-    public static final String PAGING = "paging";
-    public static final String LOG_PROPERTIES = " | properties : ";
-    public static final String RESULTS = "results";
-    public static final String NOT_FOUND = "Not Found";
+    private static final String PAGING = "paging";
+    private static final String LOG_PROPERTIES = " | properties : ";
+    private static final String RESULTS = "results";
+    private static final String NOT_FOUND = "Not Found";
     private final HttpService httpService;
     private final HSService hsService;
     private HSContactService contactService;

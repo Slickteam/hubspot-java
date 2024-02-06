@@ -17,10 +17,10 @@ import static java.lang.System.Logger.Level.DEBUG;
 public class HSAssociationService {
 
     private static final System.Logger log = System.getLogger(HSAssociationService.class.getName());
-    public static final String ID_BATCH_REQUEST = "      \"id\": \"";
-    public static final String CLOSE_BLOCK = "    },\n";
-    public static final String COMPANY_ID_LOGS = " | companyId : ";
-    public static final String COMPANY_ID_LIST_LOGS = " | companyIdList : ";
+    private static final String ID_BATCH_REQUEST = "      \"id\": \"";
+    private static final String CLOSE_BLOCK = "    },\n";
+    private static final String COMPANY_ID_LOGS = " | companyId : ";
+    private static final String COMPANY_ID_LIST_LOGS = " | companyIdList : ";
 
     private static class BasePath {
         /**
@@ -585,7 +585,7 @@ public class HSAssociationService {
     }
 
     /**
-     * Get company to company associations for a list of deals
+     * Get deal to company associations for a list of deals
      *
      * @param dealIds - ID of the deals
      * @return the list of associations
@@ -613,7 +613,7 @@ public class HSAssociationService {
     }
 
     /**
-     * Get company to contact associations for a list of deals
+     * Get deal to contact associations for a list of deals
      *
      * @param dealIds - ID of the deals
      * @return the list of associations
@@ -629,6 +629,34 @@ public class HSAssociationService {
         String postBody = dealIdList.substring(0, dealIdList.length() - 2) + "]\n" + "}";
         String url =
                 BasePath.V4_ASSOCIATION + DEAL + CONTACT + BATCH + READ;
+        try {
+            return hsService.parsePostJsonResultToList(url, postBody);
+        } catch (HubSpotException e) {
+            if (e.getMessage().equals("No contact associated found for these deals")) {
+                return new ArrayList<>();
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    /**
+     * Get deal to line items associations for a list of deals
+     *
+     * @param dealIds - ID of the deals
+     * @return the list of associations
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public List<JSONObject> dealsToLineItems(List<Long> dealIds) throws HubSpotException {
+        log.log(DEBUG, "dealsToLineItems - dealIds : " + dealIds);
+        StringBuilder dealIdList = new StringBuilder("{\n" +
+                                                     "  \"inputs\": [\n");
+        dealIds.forEach(id -> dealIdList.append("    {\n")
+                .append(ID_BATCH_REQUEST).append(id).append("\"\n")
+                .append(CLOSE_BLOCK));
+        String postBody = dealIdList.substring(0, dealIdList.length() - 2) + "]\n" + "}";
+        String url =
+                BasePath.V4_ASSOCIATION + DEAL + LINE_ITEMS + BATCH + READ;
         try {
             return hsService.parsePostJsonResultToList(url, postBody);
         } catch (HubSpotException e) {
