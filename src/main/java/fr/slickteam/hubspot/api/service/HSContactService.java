@@ -32,10 +32,10 @@ public class HSContactService {
     /**
      * The constant PARAMETER_OPERATOR.
      */
-    public static final String PARAMETER_OPERATOR = "?";
-    public static final String PAGING = "paging";
-    public static final String LOG_PROPERTIES = " | properties : ";
-    public static final String RESULTS = "results";
+    private static final String PARAMETER_OPERATOR = "?";
+    private static final String PAGING = "paging";
+    private static final String LOG_PROPERTIES = " | properties : ";
+    private static final String RESULTS = "results";
     private final HttpService httpService;
     private final HSService hsService;
     private final HSAssociationService associationService;

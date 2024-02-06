@@ -21,8 +21,8 @@ public class HSLineItemService {
 
     private static final System.Logger log = System.getLogger(HSLineItemService.class.getName());
 
-    public static final String LOG_PROPERTIES = " | properties : ";
-    public static final String RESULTS = "results";
+    private static final String LOG_PROPERTIES = " | properties : ";
+    private static final String RESULTS = "results";
 
     private static final String LINE_ITEM_URL = "/crm/v3/objects/line_items/";
     private static final String BATCH = "batch/";

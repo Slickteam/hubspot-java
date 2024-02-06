@@ -24,7 +24,7 @@ import static kong.unirest.Unirest.*;
 public class HttpService {
 
     private static final System.Logger log = System.getLogger(HttpService.class.getName());
-    public static final String MESSAGE = "message";
+    private static final String MESSAGE = "message";
 
     private final String apiBase;
     private final OAuthConfig oAuthConfig;

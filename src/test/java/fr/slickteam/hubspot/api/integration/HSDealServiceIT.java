@@ -1,8 +1,6 @@
 package fr.slickteam.hubspot.api.integration;
 
-import fr.slickteam.hubspot.api.domain.HSCompany;
-import fr.slickteam.hubspot.api.domain.HSContact;
-import fr.slickteam.hubspot.api.domain.HSDeal;
+import fr.slickteam.hubspot.api.domain.*;
 import fr.slickteam.hubspot.api.service.HSDealService;
 import fr.slickteam.hubspot.api.service.HubSpot;
 import fr.slickteam.hubspot.api.utils.Helper;
@@ -34,6 +32,7 @@ public class HSDealServiceIT {
     private final Instant testCloseDate = Instant.now();
     private final BigDecimal testAmount = BigDecimal.valueOf(50);
     private Long createdDealId;
+    private String testProductId = null;
 
 
     private HubSpot hubSpot;
@@ -44,6 +43,11 @@ public class HSDealServiceIT {
     @Before
     public void setUp() throws Exception {
         hubSpot = new HubSpot(Helper.provideHubspotProperties());
+        HSObject object = new HSObject();
+        object.setProperty("price", testAmount.toString());
+        object = hubSpot.hsService().createHSObject("/crm/v3/objects/products", object);
+
+        testProductId = object.getProperty("hs_object_id");
     }
 
 
@@ -51,6 +55,10 @@ public class HSDealServiceIT {
     public void tearDown() throws Exception {
         if (createdDealId != null) {
             hubSpot.deal().delete(createdDealId);
+        }
+        if (testProductId != null) {
+            hubSpot.hsService().deleteHSObject("/crm/v3/objects/products/" + testProductId);
+            testProductId = null;
         }
         // add sleep to avoid "Too many requests" error
         sleep(100);
@@ -254,6 +262,40 @@ public class HSDealServiceIT {
         hubSpot.deal().delete(deal);
     }
 
+
+    @Test
+    public void getDealListByIdAndProperties_Test() throws Exception {
+        HSDeal deal = new HSDeal();
+        HSDeal deal2 = new HSDeal();
+        HSDeal deal3 = new HSDeal();
+        HSDeal deal4 = new HSDeal();
+        HSDeal deal5 = new HSDeal();
+        try {
+            deal = getNewTestDeal();
+            deal2 = getNewTestDeal();
+            deal3 = getNewTestDeal();
+            deal4 = getNewTestDeal();
+            deal5 = getNewTestDeal();
+
+            List<String> properties = Arrays.asList("id", "name");
+
+            List<HSDeal> deals = hubSpot.deal().getDealListByIdAndProperties(List.of(deal.getId(), deal2.getId(), deal3.getId(), deal4.getId(), deal5.getId()),
+                    properties);
+
+            assertNotNull(deals);
+            assertEquals(5, deals.size());
+
+            assertEquals(deals.get(0).getId(), deals.get(0).getId());
+            assertEquals(deals.get(1).getId(), deals.get(1).getId());
+        } finally {
+            hubSpot.deal().delete(deal.getId());
+            hubSpot.deal().delete(deal2.getId());
+            hubSpot.deal().delete(deal3.getId());
+            hubSpot.deal().delete(deal4.getId());
+            hubSpot.deal().delete(deal5.getId());
+        }
+    }
+
     @Test
     public void getAssociatedCompanies_Tests() throws Exception {
         Map<Long, List<Long>> savedDealsAndCompanies = new HashMap<>();
@@ -281,9 +323,9 @@ public class HSDealServiceIT {
             savedDealsAndCompanies.forEach((key, value) -> {
                 try {
                     hubSpot.deal().delete(key);
-                    value.forEach(dealId -> {
+                    value.forEach(companyIds -> {
                         try {
-                            hubSpot.company().delete(dealId);
+                            hubSpot.company().delete(companyIds);
                         } catch (HubSpotException e) {
                             // do nothing
                         }
@@ -322,9 +364,50 @@ public class HSDealServiceIT {
             savedDealsAndContacts.forEach((key, value) -> {
                 try {
                     hubSpot.deal().delete(key);
-                    value.forEach(dealId -> {
+                    value.forEach(contactId -> {
                         try {
-                            hubSpot.contact().delete(dealId);
+                            hubSpot.contact().delete(contactId);
+                        } catch (HubSpotException e) {
+                            // do nothing
+                        }
+                    });
+                } catch (HubSpotException e) {
+                    // do nothing
+                }
+            });
+        }
+    }
+
+    @Test
+    public void getAssociatedLineItems_Tests() throws Exception {
+        Map<Long, List<Long>> savedDealsAndLineItems = new HashMap<>();
+        for (int i = 0; i < 3; i++) {
+            HSDeal deal = getNewTestDeal();
+            List<Long> lineItems = new ArrayList<>();
+            for (int j = 0; j < 4; j++) {
+                HSLineItem lineItem = hubSpot.lineItem().create(new HSLineItem(testProductId, 1));
+                hubSpot.association().dealToLineItem(deal.getId(), lineItem.getId());
+                lineItems.add(lineItem.getId());
+            }
+            savedDealsAndLineItems.put(deal.getId(), lineItems);
+        }
+
+        try {
+            Map<Long, List<Long>> dealsLineItems = hubSpot.deal().getAssociatedLineItemIds(new ArrayList<>(savedDealsAndLineItems.keySet()));
+
+            assertNotNull(dealsLineItems);
+            assertFalse(dealsLineItems.isEmpty());
+            dealsLineItems.keySet().forEach(resDealId -> {
+                assertEquals(dealsLineItems.get(resDealId).size(), savedDealsAndLineItems.get(resDealId).size());
+                assertTrue(dealsLineItems.get(resDealId).containsAll(savedDealsAndLineItems.get(resDealId)));
+            });
+        } finally {
+            savedDealsAndLineItems.forEach((key, value) -> {
+                try {
+                    hubSpot.deal().delete(key);
+                    value.forEach(lineItemId -> {
+                        try {
+                            hubSpot.lineItem().delete(lineItemId);
                         } catch (HubSpotException e) {
                             // do nothing
                         }
