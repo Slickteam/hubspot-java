@@ -29,6 +29,7 @@ public class HSDealService {
 
     private final HttpService httpService;
     private final HSService hsService;
+    private final HSAssociationService associationService;
 
     /**
      * Constructor with HTTPService injected
@@ -38,6 +39,7 @@ public class HSDealService {
     public HSDealService(HttpService httpService) {
         this.httpService = httpService;
         hsService = new HSService(httpService);
+        associationService = new HSAssociationService(httpService);
     }
 
     /**
@@ -204,6 +206,64 @@ public class HSDealService {
         String url = DEAL_URL + id;
 
         httpService.deleteRequest(url);
+    }
+
+    /**
+     * Get HubSpot associated companies for a list of deal IDs.
+     *
+     * @param dealIds - IDs of deals
+     * @return A map containing for each deal ID a list of company IDs
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public Map<Long, List<Long>> getAssociatedCompanyIds(List<Long> dealIds) throws HubSpotException {
+        log.log(DEBUG, "getAssociatedCompanyIds - dealIds : " + dealIds);
+        List<JSONObject> associationList = associationService.dealsToCompanies(dealIds);
+        Map<Long, List<Long>> associatedDeals = new HashMap<>();
+
+        for (JSONObject associationsByDeal : associationList) {
+            // Initiate associated deal parameters
+            Long dealId = Long.parseLong(associationsByDeal.getJSONObject("from").get("id").toString());
+            JSONArray companies = associationsByDeal.getJSONArray("to");
+
+            List<Long> companyIds = new ArrayList<>();
+
+            for (int i = 0, max = companies.length(); i < max; i++) {
+                companyIds.add(Long.parseLong(companies.getJSONObject(i).get("toObjectId").toString()));
+            }
+
+            associatedDeals.put(dealId, companyIds);
+        }
+
+        return associatedDeals;
+    }
+
+    /**
+     * Get HubSpot associated contacts for a list of deal IDs.
+     *
+     * @param dealIds - IDs of deals
+     * @return A map containing for each deal ID a list of contact IDs
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public Map<Long, List<Long>> getAssociatedContactIds(List<Long> dealIds) throws HubSpotException {
+        log.log(DEBUG, "getAssociatedContactIds - dealIds : " + dealIds);
+        List<JSONObject> associationList = associationService.dealsToContacts(dealIds);
+        Map<Long, List<Long>> associatedDeals = new HashMap<>();
+
+        for (JSONObject associationsByDeal : associationList) {
+            // Initiate associated deal parameters
+            Long dealId = Long.parseLong(associationsByDeal.getJSONObject("from").get("id").toString());
+            JSONArray contacts = associationsByDeal.getJSONArray("to");
+
+            List<Long> contactIds = new ArrayList<>();
+
+            for (int i = 0, max = contacts.length(); i < max; i++) {
+                contactIds.add(Long.parseLong(contacts.getJSONObject(i).get("toObjectId").toString()));
+            }
+
+            associatedDeals.put(dealId, contactIds);
+        }
+
+        return associatedDeals;
     }
 
 }
