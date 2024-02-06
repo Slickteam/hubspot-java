@@ -583,4 +583,33 @@ public class HSCompanyService {
                 .orElse(null);
     }
 
+    /**
+     * Get HubSpot associated deals for a list of company ID.
+     *
+     * @param companyIds - IDs of companies
+     * @return A map containing for each company ID a list of deal IDs
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public Map<Long, List<Long>> getAssociatedDealIds(List<Long> companyIds) throws HubSpotException {
+        log.log(DEBUG, "getAssociatedDealIds - companyIds : " + companyIds);
+        List<JSONObject> associationList = associationService.companiesToDeals(companyIds);
+        Map<Long, List<Long>> associatedDeals = new HashMap<>();
+
+        for (JSONObject associationsByCompany : associationList) {
+            // Initiate associated company parameters
+            Long companyId = Long.parseLong(associationsByCompany.getJSONObject("from").get("id").toString());
+            JSONArray deals = associationsByCompany.getJSONArray("to");
+
+            List<Long> dealIds = new ArrayList<>();
+
+            for (int i = 0, max = deals.length(); i < max; i++) {
+                dealIds.add(Long.parseLong(deals.getJSONObject(i).get("toObjectId").toString()));
+            }
+
+            associatedDeals.put(companyId, dealIds);
+        }
+
+        return associatedDeals;
+    }
+
 }

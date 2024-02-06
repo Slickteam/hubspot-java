@@ -1,5 +1,7 @@
 package fr.slickteam.hubspot.api.integration;
 
+import fr.slickteam.hubspot.api.domain.HSCompany;
+import fr.slickteam.hubspot.api.domain.HSContact;
 import fr.slickteam.hubspot.api.domain.HSDeal;
 import fr.slickteam.hubspot.api.service.HSDealService;
 import fr.slickteam.hubspot.api.service.HubSpot;
@@ -16,10 +18,7 @@ import org.mockito.Mockito;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static java.lang.Thread.sleep;
 import static org.junit.Assert.*;
@@ -253,5 +252,105 @@ public class HSDealServiceIT {
         exception.expect(HubSpotException.class);
         exception.expectMessage(StringContains.containsString("Deal ID must be provided"));
         hubSpot.deal().delete(deal);
+    }
+
+    @Test
+    public void getAssociatedCompanies_Tests() throws Exception {
+        Map<Long, List<Long>> savedDealsAndCompanies = new HashMap<>();
+        for (int i = 0; i < 3; i++) {
+            HSDeal deal = getNewTestDeal();
+            List<Long> companies = new ArrayList<>();
+            for (int j = 0; j < 4; j++) {
+                HSCompany company = getNewTestCompany();
+                hubSpot.association().dealToCompany(deal.getId(), company.getId());
+                companies.add(company.getId());
+            }
+            savedDealsAndCompanies.put(deal.getId(), companies);
+        }
+
+        try {
+            Map<Long, List<Long>> dealsCompanies = hubSpot.deal().getAssociatedCompanyIds(new ArrayList<>(savedDealsAndCompanies.keySet()));
+
+            assertNotNull(dealsCompanies);
+            assertFalse(dealsCompanies.isEmpty());
+            dealsCompanies.keySet().forEach(resDealId -> {
+                assertEquals(dealsCompanies.get(resDealId).size(), savedDealsAndCompanies.get(resDealId).size());
+                assertTrue(dealsCompanies.get(resDealId).containsAll(savedDealsAndCompanies.get(resDealId)));
+            });
+        } finally {
+            savedDealsAndCompanies.forEach((key, value) -> {
+                try {
+                    hubSpot.deal().delete(key);
+                    value.forEach(dealId -> {
+                        try {
+                            hubSpot.company().delete(dealId);
+                        } catch (HubSpotException e) {
+                            // do nothing
+                        }
+                    });
+                } catch (HubSpotException e) {
+                    // do nothing
+                }
+            });
+        }
+    }
+
+    @Test
+    public void getAssociatedContacts_Tests() throws Exception {
+        Map<Long, List<Long>> savedDealsAndContacts = new HashMap<>();
+        for (int i = 0; i < 3; i++) {
+            HSDeal deal = getNewTestDeal();
+            List<Long> contacts = new ArrayList<>();
+            for (int j = 0; j < 4; j++) {
+                HSContact contact = getNewTestContact();
+                hubSpot.association().dealToContact(deal.getId(), contact.getId());
+                contacts.add(contact.getId());
+            }
+            savedDealsAndContacts.put(deal.getId(), contacts);
+        }
+
+        try {
+            Map<Long, List<Long>> dealsContacts = hubSpot.deal().getAssociatedContactIds(new ArrayList<>(savedDealsAndContacts.keySet()));
+
+            assertNotNull(dealsContacts);
+            assertFalse(dealsContacts.isEmpty());
+            dealsContacts.keySet().forEach(resDealId -> {
+                assertEquals(dealsContacts.get(resDealId).size(), savedDealsAndContacts.get(resDealId).size());
+                assertTrue(dealsContacts.get(resDealId).containsAll(savedDealsAndContacts.get(resDealId)));
+            });
+        } finally {
+            savedDealsAndContacts.forEach((key, value) -> {
+                try {
+                    hubSpot.deal().delete(key);
+                    value.forEach(dealId -> {
+                        try {
+                            hubSpot.contact().delete(dealId);
+                        } catch (HubSpotException e) {
+                            // do nothing
+                        }
+                    });
+                } catch (HubSpotException e) {
+                    // do nothing
+                }
+            });
+        }
+    }
+
+    private HSCompany getNewTestCompany() throws HubSpotException {
+        return hubSpot.company().create(new HSCompany("TestCompany" + Instant.now().getEpochSecond(), "+33645218", "address", "10000", "city", "country", "description", "www.website.com"));
+    }
+
+    private HSDeal getNewTestDeal() throws HubSpotException {
+        BigDecimal testDealAmount = BigDecimal.valueOf(120);
+        LocalDate testDealContractStart = LocalDate.now();
+        LocalDate testDealContractEnd = LocalDate.now();
+        Map<String, String> contractDates = new HashMap<>();
+        contractDates.put("date_debut_contrat", testDealContractStart.toString());
+        contractDates.put("date_fin_contrat", testDealContractEnd.toString());
+        return hubSpot.deal().create(new HSDeal("TestDeal" + Instant.now().getEpochSecond(), "4245948", "4245946", testDealAmount, contractDates));
+    }
+
+    private HSContact getNewTestContact() throws HubSpotException {
+        return hubSpot.contact().create(new HSContact(UUID.randomUUID()+"@test.fr", "firstname", "IT", "02355", "customer"));
     }
 }

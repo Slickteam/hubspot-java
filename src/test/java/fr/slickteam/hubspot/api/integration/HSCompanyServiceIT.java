@@ -487,6 +487,47 @@ public class HSCompanyServiceIT {
         hubSpot.company().delete(company.getId());
     }
 
+    @Test
+    public void getAssociatedDeals_Tests() throws Exception {
+        Map<Long, List<Long>> savedCompaniesAndDeals = new HashMap<>();
+        for (int i = 0; i < 3; i++) {
+            HSCompany company = getNewTestCompany();
+            List<Long> deals = new ArrayList<>();
+            for (int j = 0; j < 4; j++) {
+                HSDeal deal = getNewTestDeal();
+                hubSpot.association().dealToCompany(deal.getId(), company.getId());
+                deals.add(deal.getId());
+            }
+            savedCompaniesAndDeals.put(company.getId(), deals);
+        }
+
+        try {
+            Map<Long, List<Long>> companiesDeals = hubSpot.company().getAssociatedDealIds(new ArrayList<>(savedCompaniesAndDeals.keySet()));
+
+            assertNotNull(companiesDeals);
+            assertFalse(companiesDeals.isEmpty());
+            companiesDeals.keySet().forEach(resCompanyId -> {
+                assertEquals(companiesDeals.get(resCompanyId).size(), savedCompaniesAndDeals.get(resCompanyId).size());
+                assertTrue(companiesDeals.get(resCompanyId).containsAll(savedCompaniesAndDeals.get(resCompanyId)));
+            });
+        } finally {
+            savedCompaniesAndDeals.forEach((key, value) -> {
+                try {
+                    hubSpot.company().delete(key);
+                    value.forEach(dealId -> {
+                        try {
+                            hubSpot.deal().delete(dealId);
+                        } catch (HubSpotException e) {
+                            // do nothing
+                        }
+                    });
+                } catch (HubSpotException e) {
+                    // do nothing
+                }
+            });
+        }
+    }
+
     private HSCompany getNewTestCompany() throws HubSpotException {
         return hubSpot.company().create(new HSCompany("TestCompany" + Instant.now().getEpochSecond(), testPhoneNumber, "address", "10000", "city", "country", "description", "www.website.com"));
     }
