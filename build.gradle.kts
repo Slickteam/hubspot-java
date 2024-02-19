@@ -11,7 +11,7 @@ repositories {
 }
 
 group = "fr.slickteam.hubspot.api"
-version = "2.1.8-SNAPSHOT"
+version = "2.2.0-SNAPSHOT"
 description = "Java Wrapper for HubSpot API"
 
 java {
@@ -27,7 +27,7 @@ jacoco {
 }
 
 dependencies {
-    implementation("com.google.guava:guava:31.1-jre")
+    implementation("com.google.guava:guava:33.0.0-jre")
     implementation("com.konghq:unirest-java:3.13.11")
     implementation("commons-codec:commons-codec:1.16.0")
     testImplementation ("junit:junit:4.13.2")
