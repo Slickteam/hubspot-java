@@ -73,17 +73,17 @@ public class DealAssociationChangedEvent extends HSWebHookObject {
      */
     public static DealAssociationChangedEvent mapFromLinkedHashMap(Map<String, Object> object) {
         return new DealAssociationChangedEvent(
-                Long.getLong(object.get(APP_ID) + ""),
-                Long.getLong(object.get(EVENT_ID) + ""),
-                Long.getLong(object.get(SUBSCRIPTION_ID) + ""),
-                Long.getLong(object.get(PORTAL_ID) + ""),
-                Long.getLong(object.get(OCCURRED_AT) + ""),
+                Long.parseLong(object.get(APP_ID).toString()),
+                Long.parseLong(object.get(EVENT_ID).toString()),
+                Long.parseLong(object.get(SUBSCRIPTION_ID).toString()),
+                Long.parseLong(object.get(PORTAL_ID).toString()),
+                Long.parseLong(object.get(OCCURRED_AT).toString()),
                 (String) object.get(SUBSCRIPTION_TYPE),
-                Long.getLong(object.get(ATTEMPT_NUMBER) + ""),
+                Long.parseLong(object.get(ATTEMPT_NUMBER).toString()),
                 (String) object.get(CHANGE_SOURCE),
                 (String) object.get(ASSOCIATION_TYPE),
-                Long.getLong(object.get(FROM_OBJECT_ID) + ""),
-                Long.getLong(object.get(TO_OBJECT_ID) + ""),
+                Long.parseLong(object.get(FROM_OBJECT_ID).toString()),
+                Long.parseLong(object.get(TO_OBJECT_ID).toString()),
                 (boolean) object.get(ASSOCIATION_REMOVED),
                 (boolean) object.get(IS_PRIMARY_ASSOCIATION)
         );

@@ -61,15 +61,15 @@ public class DealPropertyChangedEvent extends HSWebHookObject {
      */
     public static DealPropertyChangedEvent mapFromLinkedHashMap(Map<String, Object> object) {
         return new DealPropertyChangedEvent(
-                Long.getLong(object.get(APP_ID) + ""),
-                Long.getLong(object.get(EVENT_ID) + ""),
-                Long.getLong(object.get(SUBSCRIPTION_ID) + ""),
-                Long.getLong(object.get(PORTAL_ID) + ""),
-                Long.getLong(object.get(OCCURRED_AT) + ""),
+                Long.parseLong(object.get(APP_ID).toString()),
+                Long.parseLong(object.get(EVENT_ID).toString()),
+                Long.parseLong(object.get(SUBSCRIPTION_ID).toString()),
+                Long.parseLong(object.get(PORTAL_ID).toString()),
+                Long.parseLong(object.get(OCCURRED_AT).toString()),
                 (String) object.get(SUBSCRIPTION_TYPE),
-                Long.getLong(object.get(ATTEMPT_NUMBER) + ""),
+                Long.parseLong(object.get(ATTEMPT_NUMBER).toString()),
                 (String) object.get(CHANGE_SOURCE),
-                Long.getLong(object.get(OBJECT_ID) + ""),
+                Long.parseLong(object.get(OBJECT_ID).toString()),
                 (String) object.get(PROPERTY_NAME),
                 (String) object.get(PROPERTY_VALUE)
         );

@@ -82,13 +82,13 @@ public class HSWebHookObject extends LinkedHashMap<String, Object> implements Se
      */
     public static HSWebHookObject mapFromLinkedHashMap(Map<String, Object> object) {
         return new HSWebHookObject(
-                Long.getLong(object.get(APP_ID) + ""),
-                Long.getLong(object.get(EVENT_ID) + ""),
-                Long.getLong(object.get(SUBSCRIPTION_ID) + ""),
-                Long.getLong(object.get(PORTAL_ID) + ""),
-                Long.getLong(object.get(OCCURRED_AT) + ""),
+                Long.parseLong(object.get(APP_ID).toString()),
+                Long.parseLong(object.get(EVENT_ID).toString()),
+                Long.parseLong(object.get(SUBSCRIPTION_ID).toString()),
+                Long.parseLong(object.get(PORTAL_ID).toString()),
+                Long.parseLong(object.get(OCCURRED_AT).toString()),
                 (String) object.get(SUBSCRIPTION_TYPE),
-                Long.getLong(object.get(ATTEMPT_NUMBER) + ""),
+                Long.parseLong(object.get(ATTEMPT_NUMBER).toString()),
                 (String) object.get(CHANGE_SOURCE)
         );
     }
