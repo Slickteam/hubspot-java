@@ -103,15 +103,6 @@ publishing {
     }
 }
 
-signing {
-    val signingKey = System.getenv("GPG_SIGNING_KEY")
-    val signingPassphrase = System.getenv("GPG_SIGNING_PASSPHRASE")
-    useInMemoryPgpKeys(signingKey, signingPassphrase)
-    val extension = extensions
-        .getByName("publishing") as PublishingExtension
-    sign(extension.publications)
-}
-
 jreleaser {
     gitRootSearch = true
 
