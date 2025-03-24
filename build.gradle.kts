@@ -4,6 +4,7 @@ plugins {
     signing
     id("org.sonarqube") version "6.0.1.5171"
     id("jacoco")
+    id("org.jreleaser") version "1.17.0"
 }
 
 repositories {
@@ -109,4 +110,42 @@ signing {
     val extension = extensions
         .getByName("publishing") as PublishingExtension
     sign(extension.publications)
+}
+
+jreleaser {
+    gitRootSearch = true
+
+    project {
+        description = "Java Wrapper for HubSpot API"
+        license = "GNU GENERAL PUBLIC LICENSE, Version 3, 29 June 2007"
+    }
+
+    signing {
+        setActive("ALWAYS")
+        armored = true
+
+    }
+    deploy {
+        setActive("ALWAYS")
+        maven {
+            setActive("ALWAYS")
+            mavenCentral {
+                setActive("ALWAYS")
+                create("sonatype") {
+                    setActive("ALWAYS")
+                    url = "https://central.sonatype.com/api/v1/publisher"
+                    stagingRepository("build/staging-deploy")
+                }
+            }
+        }
+    }
+
+    release {
+        github {
+            skipRelease = true
+            skipTag = true
+            overwrite = false
+            token = "none"
+        }
+    }
 }
