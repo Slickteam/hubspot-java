@@ -2,7 +2,7 @@ plugins {
     `java-library`
     `maven-publish`
     signing
-    id("org.sonarqube") version "4.4.1.3373"
+    id("org.sonarqube") version "6.0.1.5171"
     id("jacoco")
 }
 
@@ -11,7 +11,7 @@ repositories {
 }
 
 group = "fr.slickteam.hubspot.api"
-version = "2.2.1-SNAPSHOT"
+version = "2.2.2-SNAPSHOT"
 description = "Java Wrapper for HubSpot API"
 
 java {
@@ -23,13 +23,13 @@ java {
 }
 
 jacoco {
-    toolVersion = "0.8.9"
+    toolVersion = "0.8.12"
 }
 
 dependencies {
-    implementation("com.google.guava:guava:33.0.0-jre")
-    implementation("com.konghq:unirest-java:3.13.11")
-    implementation("commons-codec:commons-codec:1.16.0")
+    implementation("com.google.guava:guava:33.4.5-jre")
+    implementation("com.konghq:unirest-java:3.14.5")
+    implementation("commons-codec:commons-codec:1.18.0")
     testImplementation ("junit:junit:4.13.2")
     testImplementation("org.mockito:mockito-core:3.4.6")
 }
@@ -107,6 +107,6 @@ signing {
     val signingPassphrase = System.getenv("GPG_SIGNING_PASSPHRASE")
     useInMemoryPgpKeys(signingKey, signingPassphrase)
     val extension = extensions
-            .getByName("publishing") as PublishingExtension
+        .getByName("publishing") as PublishingExtension
     sign(extension.publications)
 }
