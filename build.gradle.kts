@@ -12,7 +12,7 @@ repositories {
 }
 
 group = "fr.slickteam.hubspot.api"
-version = "2.2.3"
+version = "2.2.5"
 description = "Java Wrapper for HubSpot API"
 
 java {
@@ -120,12 +120,10 @@ jreleaser {
         setActive("ALWAYS")
         maven {
             setActive("ALWAYS")
-            nexus2 {
-                create("maven-central") {
+            mavenCentral {
+                create("sonatype") {
                     setActive("ALWAYS")
-                    url.set("https://s01.oss.sonatype.org/service/local")
-                    closeRepository.set(false)
-                    releaseRepository.set(false)
+                    url.set("https://central.sonatype.com/api/v1/publisher")
                     stagingRepositories.add("build/staging-deploy")
                 }
             }
