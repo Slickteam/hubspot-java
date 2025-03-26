@@ -217,7 +217,7 @@ public class HSLineItemServiceIT {
 
         hubSpot.association().dealToLineItem(deal.getId(), lineItem.getId());
 
-        sleep(5000);
+        sleep(8000);
         List<HSLineItem> results = hubSpot.deal().getHSLineItemsForHSDeal(deal);
 
         assertFalse(results.isEmpty());
