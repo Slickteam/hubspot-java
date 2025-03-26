@@ -12,9 +12,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * The type Hs object.
+ * Base type for all HubSpot Object managed through the API.
+ * All the properties are saved in a map.
  */
 public class HSObject implements Serializable {
+
     /**
      * The Properties.
      */
@@ -169,5 +171,12 @@ public class HSObject implements Serializable {
         properties.remove("vid");
 
         return HubSpotHelper.mapPropertiesToJson(properties);
+    }
+
+    @Override
+    public String toString() {
+        return "HSObject{" +
+                "properties=" + properties +
+                '}';
     }
 }
