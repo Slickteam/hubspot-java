@@ -120,12 +120,13 @@ jreleaser {
         setActive("ALWAYS")
         maven {
             setActive("ALWAYS")
-            mavenCentral {
-                setActive("ALWAYS")
-                create("sonatype") {
+            nexus2 {
+                create("maven-central") {
                     setActive("ALWAYS")
-                    url = "https://central.sonatype.com/api/v1/publisher"
-                    stagingRepository("build/staging-deploy")
+                    url.set("https://s01.oss.sonatype.org/service/local")
+                    closeRepository.set(false)
+                    releaseRepository.set(false)
+                    stagingRepositories.add("build/staging-deploy")
                 }
             }
         }
