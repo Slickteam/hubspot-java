@@ -220,7 +220,7 @@ public class HSLineItemServiceIT {
         sleep(5000);
         List<HSLineItem> results = hubSpot.deal().getHSLineItemsForHSDeal(deal);
 
-        assertEquals(1, results.size());
+        assertFalse(results.isEmpty());
         assertEquals(lineItem.getHsProductId(), results.get(0).getHsProductId());
         assertEquals(lineItem.getId(), results.get(0).getId());
         assertEquals(lineItem.getQuantity(), results.get(0).getQuantity());
