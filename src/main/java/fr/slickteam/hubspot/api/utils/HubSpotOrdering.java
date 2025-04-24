@@ -1,5 +1,15 @@
 package fr.slickteam.hubspot.api.utils;
 
+/**
+ * Enum for ordering direction
+ */
 public enum HubSpotOrdering {
-    DESCENDING, ASCENDING
+    /**
+     * Descending order
+     */
+    DESCENDING,
+    /**
+     * Ascending order
+     */
+    ASCENDING
 }
