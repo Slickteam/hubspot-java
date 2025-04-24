@@ -4,6 +4,7 @@ import fr.slickteam.hubspot.api.domain.*;
 import fr.slickteam.hubspot.api.service.HubSpot;
 import fr.slickteam.hubspot.api.utils.Helper;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
+import fr.slickteam.hubspot.api.utils.HubSpotOrdering;
 import org.hamcrest.core.StringContains;
 import org.junit.*;
 import org.junit.rules.ExpectedException;
@@ -239,6 +240,43 @@ public class HSCompanyServiceIT {
             assertTrue(hubSpot.company().searchFilteredByProperties(properties, responseProperties, 10).size() >= 4);
             assertTrue(hubSpot.company().searchFilteredByProperties(properties2, responseProperties, 10).size() >= 4);
             assertTrue(hubSpot.company().searchFilteredByProperties(properties3, responseProperties, 10).size() >= 4);
+
+        } finally {
+            hubSpot.company().delete(company.getId());
+            hubSpot.company().delete(company2.getId());
+            hubSpot.company().delete(company3.getId());
+            hubSpot.company().delete(company4.getId());
+        }
+    }
+
+    @Test
+    public void searchSortedFilteredByProperties_Test() throws Exception {
+        HSCompany company = new HSCompany();
+        HSCompany company2 = new HSCompany();
+        HSCompany company3 = new HSCompany();
+        HSCompany company4 = new HSCompany();
+        Map<String, String> properties = new HashMap<>();
+        properties.put("zip", "10000");
+        properties.put("name", "001");
+
+        List<String> responseProperties = Arrays.asList("id", "hs_parent_company_id", "name", "city", "zip");
+
+        try {
+            company = getNewTestCompany("0");
+            company2 = getNewTestCompany("001");
+            company3 = getNewTestCompany("003");
+            company4 = getNewTestCompany("002");
+
+            List<HSCompany> results = hubSpot.company()
+                    .searchSortedFilteredByProperties(properties,
+                            responseProperties,
+                            List.of(new HSSortOrder("hs_lastmodifieddate", HubSpotOrdering.DESCENDING)),
+                            10);
+            assertTrue(results.size() >= 4);
+            assertEquals("003", results.get(0).getName());
+            assertEquals("002", results.get(1).getName());
+            assertEquals("001", results.get(2).getName());
+            assertEquals("0", results.get(3).getName());
 
         } finally {
             hubSpot.company().delete(company.getId());
@@ -530,6 +568,10 @@ public class HSCompanyServiceIT {
 
     private HSCompany getNewTestCompany() throws HubSpotException {
         return hubSpot.company().create(new HSCompany("TestCompany" + Instant.now().getEpochSecond(), testPhoneNumber, "address", "10000", "city", "country", "description", "www.website.com"));
+    }
+
+    private HSCompany getNewTestCompany(String name) throws HubSpotException {
+        return hubSpot.company().create(new HSCompany(name, testPhoneNumber, "address", "10000", "city", "country", "description", "www.website.com"));
     }
 
     private HSDeal getNewTestDeal() throws HubSpotException {
