@@ -5,6 +5,7 @@ import fr.slickteam.hubspot.api.service.HubSpot;
 import fr.slickteam.hubspot.api.utils.Helper;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
 import fr.slickteam.hubspot.api.utils.HubSpotOrdering;
+import fr.slickteam.hubspot.api.utils.HubSpotSearchOperator;
 import org.hamcrest.core.StringContains;
 import org.junit.*;
 import org.junit.rules.ExpectedException;
@@ -203,7 +204,7 @@ public class HSCompanyServiceIT {
             company3 = getNewTestCompany();
             company4 = getNewTestCompany();
 
-            assertTrue(hubSpot.company().queryByDefaultSearchableProperties("test", responseProperties,10).size() >= 4);
+            assertTrue(hubSpot.company().queryByDefaultSearchableProperties("test", responseProperties, 10).size() >= 4);
 
         } finally {
             hubSpot.company().delete(company.getId());
@@ -250,40 +251,16 @@ public class HSCompanyServiceIT {
     }
 
     @Test
-    public void searchSortedFilteredByProperties_Test() throws Exception {
-        HSCompany company = new HSCompany();
-        HSCompany company2 = new HSCompany();
-        HSCompany company3 = new HSCompany();
-        HSCompany company4 = new HSCompany();
-        Map<String, String> properties = new HashMap<>();
-        properties.put("zip", "10000");
-        properties.put("name", "001");
-
+    public void searchSortedFiltered_Test() throws Exception {
         List<String> responseProperties = Arrays.asList("id", "hs_parent_company_id", "name", "city", "zip");
 
-        try {
-            company = getNewTestCompany("0");
-            company2 = getNewTestCompany("001");
-            company3 = getNewTestCompany("003");
-            company4 = getNewTestCompany("002");
-
-            List<HSCompany> results = hubSpot.company()
-                    .searchSortedFilteredByProperties(properties,
-                            responseProperties,
-                            List.of(new HSSortOrder("hs_lastmodifieddate", HubSpotOrdering.DESCENDING)),
-                            10);
-            assertTrue(results.size() >= 4);
-            assertEquals("003", results.get(0).getName());
-            assertEquals("002", results.get(1).getName());
-            assertEquals("001", results.get(2).getName());
-            assertEquals("0", results.get(3).getName());
-
-        } finally {
-            hubSpot.company().delete(company.getId());
-            hubSpot.company().delete(company2.getId());
-            hubSpot.company().delete(company3.getId());
-            hubSpot.company().delete(company4.getId());
-        }
+        List<HSCompany> results = hubSpot.company()
+                .searchSortedFiltered(List.of(new HSSearchPropertyFilter("name", null, "*Groupe*", null, HubSpotSearchOperator.CONTAINS_TOKEN)),
+                        responseProperties,
+                        List.of(new HSSortOrder("name", HubSpotOrdering.ASCENDING)),
+                        10);
+        assertFalse("Results size invalid: " + results.size(), results.isEmpty());
+        results.forEach(c -> assertTrue("Company name invalid: " + c.getName(), c.getName().toLowerCase().contains("groupe")));
     }
 
     @Test

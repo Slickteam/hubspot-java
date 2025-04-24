@@ -3,6 +3,7 @@ package fr.slickteam.hubspot.api.service;
 import fr.slickteam.hubspot.api.domain.*;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
 import fr.slickteam.hubspot.api.utils.HubSpotOrdering;
+import fr.slickteam.hubspot.api.utils.HubSpotSearchOperator;
 import kong.unirest.json.JSONArray;
 import kong.unirest.json.JSONObject;
 
@@ -434,20 +435,37 @@ public class HSCompanyService {
                                                             List<HSSortOrder> sortOrders,
                                                             int limit) throws HubSpotException {
         log.log(DEBUG, "searchSortedFilteredByProperties");
+
+        List<HSSearchPropertyFilter> filtersPropertyList = propertiesAndValuesFilters.entrySet().stream()
+                .map(entry -> new HSSearchPropertyFilter(entry.getKey(),
+                        null,
+                        entry.getValue(),
+                        null,
+                        HubSpotSearchOperator.EQ))
+                .collect(Collectors.toList());
+
+        return searchSortedFiltered(filtersPropertyList, responseProperties, sortOrders, limit);
+    }
+
+    /**
+     * Search HubSpot companies filtered by properties
+     *
+     * @param propertiesFilters  - list of properties, operator and values to filter
+     * @param responseProperties - list of properties to return
+     * @param sortOrders         - list of sort orders to apply to the search results
+     * @param limit              - size of the page
+     * @return a company list filtered
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public List<HSCompany> searchSortedFiltered(List<HSSearchPropertyFilter> propertiesFilters,
+                                                List<String> responseProperties,
+                                                List<HSSortOrder> sortOrders,
+                                                int limit) throws HubSpotException {
+        log.log(DEBUG, "searchSortedFiltered");
         String url = COMPANY_URL_V3 + SEARCH;
 
-        String filtersPropertyList = propertiesAndValuesFilters.entrySet().stream()
-                .map(entry ->
-                        " {\n" +
-                                "      \"filters\": [\n" +
-                                "        {\n" +
-                                "          \"propertyName\": \"" + entry.getKey() + "\",\n" +
-                                "          \"value\": \"" + entry.getValue() + "\",\n" +
-                                "          \"operator\": \"EQ\"\n" +
-                                "        }" +
-                                "      ]\n" +
-                                "    }\n"
-                )
+        String filtersPropertyList = propertiesFilters.stream()
+                .map(HSCompanyService::buildFilter)
                 .collect(Collectors.joining(",\n"));
 
         String responsePropertiesList = responseProperties.stream()
@@ -471,6 +489,40 @@ public class HSCompanyService {
                         "}";
 
         return sendCompanySearchRequest(url, filterGroupsProperties);
+    }
+
+    private static String buildFilter(HSSearchPropertyFilter propertyFilter) {
+        String filter = " {\n" +
+                "      \"filters\": [\n" +
+                "        {\n" +
+                "          \"propertyName\": \"" + propertyFilter.getPropertyName() + "\",\n" +
+                "          \"operator\": \"" + propertyFilter.getOperator().name() + "\",\n";
+
+        switch (propertyFilter.getOperator()) {
+            case IN:
+            case NOT_IN:
+                filter += "          \"values\": \"[" + propertyFilter.getValues()
+                        .stream()
+                        .map(val -> "\"" + val + "\"")
+                        .collect(Collectors.joining(",")) + "]\"\n";
+                break;
+            case BETWEEN:
+                filter += "          \"highValue\": \"" + propertyFilter.getHighValue() + "\",\n";
+                filter += "          \"value\": \"" + propertyFilter.getValue() + "\"\n";
+                break;
+            case HAS_PROPERTY:
+            case NOT_HAS_PROPERTY:
+                filter += "          \"value\": \"\"\n";
+                break;
+            default:
+                filter += "          \"value\": \"" + propertyFilter.getValue() + "\"\n";
+                break;
+        }
+
+        filter += "        }" +
+                "      ]\n" +
+                "    }\n";
+        return filter;
     }
 
 

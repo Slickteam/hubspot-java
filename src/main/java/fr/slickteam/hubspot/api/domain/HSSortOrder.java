@@ -2,6 +2,9 @@ package fr.slickteam.hubspot.api.domain;
 
 import fr.slickteam.hubspot.api.utils.HubSpotOrdering;
 
+/**
+ * Model class for Sort Order parameter in search request
+ */
 public class HSSortOrder {
     private final String property;
     private final HubSpotOrdering ordering;
