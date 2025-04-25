@@ -2,8 +2,11 @@ package fr.slickteam.hubspot.api.service;
 
 import fr.slickteam.hubspot.api.domain.*;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
+import fr.slickteam.hubspot.api.utils.HubSpotOrdering;
+import fr.slickteam.hubspot.api.utils.HubSpotSearchOperator;
 import kong.unirest.json.JSONArray;
 import kong.unirest.json.JSONObject;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -319,7 +322,7 @@ public class HSCompanyService {
             }
             String nextPageToken = null;
             if (response.has(PAGING) && ((JSONObject) response.get(PAGING)).has("next")) {
-                nextPageToken = ((JSONObject)((JSONObject) response.get(PAGING)).get("next")).getString("after");
+                nextPageToken = ((JSONObject) ((JSONObject) response.get(PAGING)).get("next")).getString("after");
             }
             return new PagedHSCompanyList(companies, nextPageToken);
         } catch (HubSpotException e) {
@@ -341,41 +344,41 @@ public class HSCompanyService {
         log.log(DEBUG, "getTotalNumberOfCompanies");
         String url = COMPANY_URL_V3 + SEARCH;
         String searchProperties = "{\n" +
-                                  "  \"filterGroups\": [\n" +
-                                  "    {\n" +
-                                  "      \"filters\": [\n" +
-                                  "        {\n" +
-                                  "          \"propertyName\": \"hs_object_id\",\n" +
-                                  "          \"operator\": \"HAS_PROPERTY\"\n" +
-                                  "        },\n" +
-                                  "        {\n" +
-                                  "          \"propertyName\": \"hs_parent_company_id\",\n" +
-                                  "          \"operator\": \"HAS_PROPERTY\"\n" +
-                                  "        }\n" +
-                                  "      ]\n" +
-                                  "    }\n" +
-                                  "  ],\n" +
-                                  "  \"sorts\": [\n" +
-                                  "    \"name\"\n" +
-                                  "  ],\n" +
-                                  "  \"properties\": [\n" +
-                                  "    \"name\"\n" +
-                                  "  ],\n" +
-                                  "  \"limit\": 0,\n" +
-                                  "  \"after\": 0\n" +
-                                  "}";
+                "  \"filterGroups\": [\n" +
+                "    {\n" +
+                "      \"filters\": [\n" +
+                "        {\n" +
+                "          \"propertyName\": \"hs_object_id\",\n" +
+                "          \"operator\": \"HAS_PROPERTY\"\n" +
+                "        },\n" +
+                "        {\n" +
+                "          \"propertyName\": \"hs_parent_company_id\",\n" +
+                "          \"operator\": \"HAS_PROPERTY\"\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ],\n" +
+                "  \"sorts\": [\n" +
+                "    \"name\"\n" +
+                "  ],\n" +
+                "  \"properties\": [\n" +
+                "    \"name\"\n" +
+                "  ],\n" +
+                "  \"limit\": 0,\n" +
+                "  \"after\": 0\n" +
+                "}";
 
         JSONObject response = (JSONObject) httpService.postRequest(url, searchProperties);
-        return Long.parseLong(response.get("total")+"");
+        return Long.parseLong(response.get("total") + "");
     }
 
     /**
      * Query HubSpot companies with default searchable properties : website, phone, name and domain
      *
-     * @param input      - string to query in company website, phone, name and domain
+     * @param input              - string to query in company website, phone, name and domain
      * @param responseProperties - list of properties to return
-     * @param limit      - size of the page
-     * @return  a company list filtered
+     * @param limit              - size of the page
+     * @return a company list filtered
      * @throws HubSpotException - if HTTP call fails
      */
     public List<HSCompany> queryByDefaultSearchableProperties(String input, List<String> responseProperties, int limit) throws HubSpotException {
@@ -387,11 +390,11 @@ public class HSCompanyService {
                 .collect(Collectors.joining(",\n"));
 
         String queryProperties = "{\n" +
-                "  \"query\": \""+ input +"\"," +
+                "  \"query\": \"" + input + "\"," +
                 "  \"properties\": [\n" +
                 responsePropertiesList +
                 "  ],\n" +
-                "  \"limit\": "+ limit +",\n" +
+                "  \"limit\": " + limit + ",\n" +
                 "  \"after\": 0\n" +
                 "}";
 
@@ -402,55 +405,133 @@ public class HSCompanyService {
      * Search HubSpot companies filtered by properties
      *
      * @param propertiesAndValuesFilters - map of properties and values to filter
-     * @param responseProperties - list of properties to return
-     * @param limit - size of the page
-     * @return  a company list filtered
+     * @param responseProperties         - list of properties to return
+     * @param limit                      - size of the page
+     * @return a company list filtered
      * @throws HubSpotException - if HTTP call fails
      */
-    public List<HSCompany> searchFilteredByProperties(Map<String, String> propertiesAndValuesFilters, List<String> responseProperties, int limit) throws HubSpotException {
+    public List<HSCompany> searchFilteredByProperties(Map<String, String> propertiesAndValuesFilters,
+                                                      List<String> responseProperties,
+                                                      int limit) throws HubSpotException {
         log.log(DEBUG, "searchFilteredByProperties");
+        return searchSortedFilteredByProperties(propertiesAndValuesFilters,
+                responseProperties,
+                List.of(new HSSortOrder("name", HubSpotOrdering.DESCENDING)),
+                limit);
+    }
+
+    /**
+     * Search HubSpot companies filtered by properties
+     *
+     * @param propertiesAndValuesFilters - map of properties and values to filter
+     * @param responseProperties         - list of properties to return
+     * @param sortOrders                 - list of sort orders to apply to the search results
+     * @param limit                      - size of the page
+     * @return a company list filtered
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public List<HSCompany> searchSortedFilteredByProperties(Map<String, String> propertiesAndValuesFilters,
+                                                            List<String> responseProperties,
+                                                            List<HSSortOrder> sortOrders,
+                                                            int limit) throws HubSpotException {
+        log.log(DEBUG, "searchSortedFilteredByProperties");
+
+        List<HSSearchPropertyFilter> filtersPropertyList = propertiesAndValuesFilters.entrySet().stream()
+                .map(entry -> new HSSearchPropertyFilter(entry.getKey(),
+                        null,
+                        entry.getValue(),
+                        null,
+                        HubSpotSearchOperator.EQ))
+                .collect(Collectors.toList());
+
+        return searchSortedFiltered(filtersPropertyList, responseProperties, sortOrders, limit);
+    }
+
+    /**
+     * Search HubSpot companies filtered by properties
+     *
+     * @param propertiesFilters  - list of properties, operator and values to filter
+     * @param responseProperties - list of properties to return
+     * @param sortOrders         - list of sort orders to apply to the search results
+     * @param limit              - size of the page
+     * @return a company list filtered
+     * @throws HubSpotException - if HTTP call fails
+     */
+    public List<HSCompany> searchSortedFiltered(List<HSSearchPropertyFilter> propertiesFilters,
+                                                List<String> responseProperties,
+                                                List<HSSortOrder> sortOrders,
+                                                int limit) throws HubSpotException {
+        log.log(DEBUG, "searchSortedFiltered");
         String url = COMPANY_URL_V3 + SEARCH;
 
-        String filtersPropertyList = propertiesAndValuesFilters.entrySet().stream()
-                .map(entry ->
-                        " {\n" +
-                        "      \"filters\": [\n" +
-                        "        {\n" +
-                        "          \"propertyName\": \"" + entry.getKey() + "\",\n" +
-                        "          \"value\": \"" + entry.getValue() + "\",\n" +
-                        "          \"operator\": \"EQ\"\n" +
-                        "        }" +
-                        "      ]\n" +
-                        "    }\n"
-                )
+        String filtersPropertyList = propertiesFilters.stream()
+                .map(HSCompanyService::buildFilter)
                 .collect(Collectors.joining(",\n"));
 
         String responsePropertiesList = responseProperties.stream()
                 .map(property -> "    \"" + property + "\"")
                 .collect(Collectors.joining(",\n"));
 
+        String sorts = sortOrders.stream()
+                .map(so -> "   {\n\"propertyName\" : \"" + so.getProperty() + "\",\n" +
+                        "   \"direction\": \"" + so.getOrdering().name() + "\"}\n")
+                .collect(Collectors.joining(",\n"));
+
         String filterGroupsProperties =
-                        "{\n" +
+                "{\n" +
                         "  \"filterGroups\": [\n" + filtersPropertyList +
                         "  ],\n" +
-                        "  \"sorts\": [\n" +
-                        "    \"name\"\n" +
+                        "  \"sorts\": [\n" + sorts +
                         "  ],\n" +
                         "  \"properties\": [\n" + responsePropertiesList +
                         "  ],\n" +
-                        "  \"limit\": "+ limit +"\n" +
+                        "  \"limit\": " + limit + "\n" +
                         "}";
 
         return sendCompanySearchRequest(url, filterGroupsProperties);
+    }
+
+    private static String buildFilter(HSSearchPropertyFilter propertyFilter) {
+        String filter = " {\n" +
+                "      \"filters\": [\n" +
+                "        {\n" +
+                "          \"propertyName\": \"" + propertyFilter.getPropertyName() + "\",\n" +
+                "          \"operator\": \"" + propertyFilter.getOperator().name() + "\",\n";
+
+        switch (propertyFilter.getOperator()) {
+            case IN:
+            case NOT_IN:
+                filter += "          \"values\": \"[" + propertyFilter.getValues()
+                        .stream()
+                        .map(val -> "\"" + val + "\"")
+                        .collect(Collectors.joining(",")) + "]\"\n";
+                break;
+            case BETWEEN:
+                filter += "          \"highValue\": \"" + propertyFilter.getHighValue() + "\",\n";
+                filter += "          \"value\": \"" + propertyFilter.getValue() + "\"\n";
+                break;
+            case HAS_PROPERTY:
+            case NOT_HAS_PROPERTY:
+                filter += "          \"value\": \"\"\n";
+                break;
+            default:
+                filter += "          \"value\": \"" + propertyFilter.getValue() + "\"\n";
+                break;
+        }
+
+        filter += "        }" +
+                "      ]\n" +
+                "    }\n";
+        return filter;
     }
 
 
     /**
      * Send HubSpot companies request with properties to query or filter
      *
-     * @param url - url to send the request
+     * @param url        - url to send the request
      * @param properties - properties to query or filter
-     * @return  a company list filtered
+     * @return a company list filtered
      * @throws HubSpotException - if HTTP call fails
      */
     public List<HSCompany> sendCompanySearchRequest(String url, String properties) throws HubSpotException {
