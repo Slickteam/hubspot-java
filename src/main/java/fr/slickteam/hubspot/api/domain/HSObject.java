@@ -1,8 +1,10 @@
 package fr.slickteam.hubspot.api.domain;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Strings;
+import fr.slickteam.hubspot.api.utils.HubSpotException;
 import fr.slickteam.hubspot.api.utils.HubSpotHelper;
-import kong.unirest.json.JSONObject;
+import fr.slickteam.hubspot.api.utils.JsonUtils;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -155,18 +157,18 @@ public class HSObject implements Serializable {
      * To json string string.
      *
      * @return the string
+     * @throws HubSpotException if JSON conversion fails
      */
-    public String toJsonString() {
-        return toJson().toString();
+    public String toJsonString() throws HubSpotException {
+        return JsonUtils.toJson(toJson());
     }
 
     /**
-     * To json json object.
+     * To json object node.
      *
-     * @return the json object
+     * @return the object node
      */
-    public JSONObject toJson() {
-
+    public ObjectNode toJson() {
         Map<String, String> properties = new HashMap<>(getProperties());
         properties.remove("vid");
 

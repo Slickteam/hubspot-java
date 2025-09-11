@@ -1,5 +1,6 @@
 package fr.slickteam.hubspot.api.domain;
-import kong.unirest.json.JSONObject;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import fr.slickteam.hubspot.api.utils.JsonUtils;
 
 
 /**
@@ -45,12 +46,13 @@ public class HSAssocationTypeInput extends HSObject {
     }
 
     /**
-     * Get json association type json object.
+     * Get json association type as ObjectNode.
      *
-     * @return the json object
+     * @return the ObjectNode
      */
-    public JSONObject getJsonAssociationType (){
-        return (JSONObject) new JSONObject(this).get("properties");
+    public ObjectNode getJsonAssociationType() {
+        ObjectNode node = JsonUtils.createObjectNode();
+        getProperties().forEach(node::put);
+        return node;
     }
-
 }

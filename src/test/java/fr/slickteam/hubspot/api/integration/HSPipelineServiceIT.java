@@ -80,7 +80,13 @@ public class HSPipelineServiceIT {
 
     public HSPipeline findPipelineWithStage(List<HSPipeline> pipelineList) {
         Optional<HSPipeline> firstPipeline = pipelineList.stream()
-                .filter(pipeline -> !pipeline.getStages().isEmpty())
+                .filter(pipeline -> {
+                    try {
+                        return !pipeline.getStages().isEmpty();
+                    } catch (HubSpotException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
                 .findFirst();
 
         return firstPipeline.orElse(null);

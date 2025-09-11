@@ -1,9 +1,8 @@
 package fr.slickteam.hubspot.api.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import fr.slickteam.hubspot.api.domain.HSQuote;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
-import kong.unirest.json.JSONArray;
-import kong.unirest.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,7 +73,7 @@ public class HSQuoteService {
         String propertiesUrl = String.join(",", properties);
         String url = QUOTE_URL + "?properties=" + propertiesUrl;
         try {
-            return parseQuoteDataList((JSONObject) httpService.getRequest(url));
+            return parseQuoteDataList((JsonNode) httpService.getRequest(url));
         } catch (HubSpotException e) {
             if (e.getMessage().equals("Not Found")) {
                 return new ArrayList<>();
@@ -84,16 +83,16 @@ public class HSQuoteService {
         }
     }
 
-    private List<HSQuote> parseQuoteDataList(JSONObject jsonObject) {
+    private List<HSQuote> parseQuoteDataList(JsonNode jsonNode) {
         List<HSQuote> quotes = new ArrayList<>();
-        JSONArray jsonQuotes = jsonObject.getJSONArray("results");
-        jsonQuotes.forEach(jsonQuote -> quotes.add(parseQuoteData((JSONObject) jsonQuote)));
+        JsonNode jsonQuotes = jsonNode.path("results");
+        jsonQuotes.forEach(jsonQuote -> quotes.add(parseQuoteData(jsonQuote)));
         return quotes;
     }
 
     private HSQuote getQuote(String url) throws HubSpotException {
         try {
-            return parseQuoteData((JSONObject) httpService.getRequest(url));
+            return parseQuoteData((JsonNode) httpService.getRequest(url));
         } catch (HubSpotException e) {
             if (e.getMessage().equals("Not Found")) {
                 return null;
@@ -112,9 +111,9 @@ public class HSQuoteService {
      */
     public HSQuote create(HSQuote hsQuote) throws HubSpotException {
         log.log(DEBUG, "create - hsQuote : " + hsQuote);
-        JSONObject jsonObject = (JSONObject) httpService.postRequest(QUOTE_URL, hsQuote.toJsonString());
+        JsonNode jsonNode = (JsonNode) httpService.postRequest(QUOTE_URL, hsQuote.toJsonString());
 
-        return parseQuoteData(jsonObject);
+        return parseQuoteData(jsonNode);
     }
 
     /**
@@ -123,10 +122,10 @@ public class HSQuoteService {
      * @param jsonBody - body from HubSpot API response
      * @return the company
      */
-    public HSQuote parseQuoteData(JSONObject jsonBody) {
+    public HSQuote parseQuoteData(JsonNode jsonBody) {
         HSQuote quote = new HSQuote();
 
-        quote.setId(jsonBody.getLong("id"));
+        quote.setId(jsonBody.path("id").asLong());
 
         hsService.parseJSONData(jsonBody, quote);
         return quote;

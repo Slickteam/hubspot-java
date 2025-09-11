@@ -1,15 +1,18 @@
 package fr.slickteam.hubspot.api.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import fr.slickteam.hubspot.api.domain.HSObject;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
-import kong.unirest.json.JSONArray;
-import kong.unirest.json.JSONObject;
+import fr.slickteam.hubspot.api.utils.JsonUtils;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.StreamSupport;
 
 /**
  * The type Hs service.
@@ -34,26 +37,23 @@ public class HSService {
      * @param hsObject the hs object
      * @return the hs object
      */
-    public HSObject parseJSONData(JSONObject jsonBody, HSObject hsObject) {
-        JSONObject jsonProperties;
+    public HSObject parseJSONData(JsonNode jsonBody, HSObject hsObject) {
+        JsonNode jsonProperties;
         if(jsonBody.has("properties")) {
-            jsonProperties = jsonBody.getJSONObject("properties");
+            jsonProperties = jsonBody.path("properties");
         } else {
             jsonProperties = jsonBody;
         }
 
-        Set<String> keys = jsonProperties.keySet();
-
-        keys.forEach(key ->
-                hsObject.setProperty(key,
-                        jsonProperties.get(key) instanceof JSONObject && ((JSONObject) jsonProperties.get(key)).has("value")?
-                                ((JSONObject) jsonProperties.get(key)).getString(
-                                        "value") :
-                                Optional.ofNullable(jsonProperties.get(key))
-                                        .map(Object::toString)
-                                        .orElse(null)
-                )
-        );
+        jsonProperties.fieldNames().forEachRemaining(key -> {
+            JsonNode value = jsonProperties.path(key);
+            if (value.isObject() && value.has("value")) {
+                hsObject.setProperty(key, value.path("value").asText());
+            } else {
+                hsObject.setProperty(key, value.isNull() ? null : value.asText());
+            }
+        });
+        
         return hsObject;
     }
 
@@ -66,12 +66,11 @@ public class HSService {
      * @throws HubSpotException the hub spot exception
      */
     public List<Long> parseJsonObjectToIdList(String url) throws HubSpotException {
-        JSONObject requestResponse = (JSONObject) httpService.getRequest(url);
-        JSONArray results = (JSONArray) requestResponse.get("results");
+        JsonNode requestResponse = (JsonNode) httpService.getRequest(url);
+        JsonNode results = requestResponse.path("results");
 
-        return IntStream.range(0, results.length())
-                .mapToObj(results::getJSONObject)
-                .map(resultObj -> Long.valueOf(resultObj.get("toObjectId").toString()))
+        return StreamSupport.stream(results.spliterator(), false)
+                .map(resultObj -> Long.valueOf(resultObj.path("toObjectId").asText()))
                 .collect(Collectors.toList());
     }
 
@@ -82,11 +81,10 @@ public class HSService {
      * @return the list
      * @throws HubSpotException the hub spot exception
      */
-    public List<JSONObject> parseJsonResultToList (String url) throws HubSpotException {
-        JSONObject requestResponse = (JSONObject) httpService.getRequest(url);
-        JSONArray results = (JSONArray) requestResponse.get("results");
-        return IntStream.range(0, results.length())
-                .mapToObj(results::getJSONObject)
+    public List<JsonNode> parseJsonResultToList (String url) throws HubSpotException {
+        JsonNode requestResponse = (JsonNode) httpService.getRequest(url);
+        JsonNode results = requestResponse.path("results");
+        return StreamSupport.stream(results.spliterator(), false)
                 .collect(Collectors.toList());
     }
 
@@ -98,11 +96,10 @@ public class HSService {
      * @return the list
      * @throws HubSpotException the hub spot exception
      */
-    public List<JSONObject> parsePostJsonResultToList (String url, String body) throws HubSpotException {
-        JSONObject requestResponse = (JSONObject) httpService.postRequest(url, body);
-        JSONArray results = (JSONArray) requestResponse.get("results");
-        return IntStream.range(0, results.length())
-                .mapToObj(results::getJSONObject)
+    public List<JsonNode> parsePostJsonResultToList (String url, String body) throws HubSpotException {
+        JsonNode requestResponse = (JsonNode) httpService.postRequest(url, body);
+        JsonNode results = requestResponse.path("results");
+        return StreamSupport.stream(results.spliterator(), false)
                 .collect(Collectors.toList());
     }
 
@@ -116,7 +113,7 @@ public class HSService {
     public HSObject getHSObject(String url) throws HubSpotException {
         try {
             HSObject object = new HSObject();
-            parseJSONData((JSONObject) httpService.getRequest(url), object);
+            parseJSONData((JsonNode) httpService.getRequest(url), object);
             return object;
         } catch (HubSpotException e) {
             if (e.getMessage().equals("Not Found")) {
@@ -137,8 +134,8 @@ public class HSService {
      */
     public HSObject createHSObject(String url, HSObject hsObject) throws HubSpotException {
         HSObject result = new HSObject();
-        JSONObject jsonObject = (JSONObject) httpService.postRequest(url, hsObject.toJsonString());
-        parseJSONData(jsonObject, result);
+        JsonNode jsonNode = (JsonNode) httpService.postRequest(url, hsObject.toJsonString());
+        parseJSONData(jsonNode, result);
 
         return result;
     }
@@ -156,8 +153,8 @@ public class HSService {
 
         try {
             HSObject result = new HSObject();
-            JSONObject jsonObject = (JSONObject) httpService.patchRequest(url, properties);
-            parseJSONData(jsonObject, result);
+            JsonNode jsonNode = (JsonNode) httpService.patchRequest(url, properties);
+            parseJSONData(jsonNode, result);
 
             return result;
         } catch (HubSpotException e) {
@@ -173,5 +170,15 @@ public class HSService {
      */
     public void deleteHSObject(String url) throws HubSpotException {
         httpService.deleteRequest(url);
+    }
+
+    public List<JsonNode> parseJSONResults(JsonNode response, String results) {
+        JsonNode resultsNode = response.path(results);
+        if (resultsNode.isArray()) {
+            return StreamSupport.stream(resultsNode.spliterator(), false)
+                    .collect(Collectors.toList());
+        } else {
+            return List.of(resultsNode);
+        }
     }
 }

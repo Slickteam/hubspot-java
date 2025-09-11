@@ -1,8 +1,8 @@
 package fr.slickteam.hubspot.api.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import fr.slickteam.hubspot.api.domain.HSStage;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
-import kong.unirest.json.JSONObject;
 
 import static java.lang.System.Logger.Level.DEBUG;
 
@@ -38,8 +38,8 @@ public class HSStageService {
      */
     public HSStage create(String pipelineId, HSStage hsStage) throws HubSpotException {
         log.log(DEBUG, "create - pipelineId : " + pipelineId + " | hsStage : " + hsStage);
-        JSONObject jsonObject = (JSONObject) httpService.postRequest(PIPELINE_URL + DEALS + pipelineId + "/" + STAGES, hsStage.toJsonString());
-        hsStage.setId(jsonObject.getString("id"));
+        JsonNode jsonNode = (JsonNode) httpService.postRequest(PIPELINE_URL + DEALS + pipelineId + "/" + STAGES, hsStage.toJsonString());
+        hsStage.setId(jsonNode.path("id").asText());
         return hsStage;
     }
 
@@ -91,7 +91,7 @@ public class HSStageService {
 
     private HSStage getStage(String url) throws HubSpotException {
         try {
-            return parseStageData((JSONObject) httpService.getRequest(url));
+            return parseStageData((JsonNode) httpService.getRequest(url));
         } catch (HubSpotException e) {
             if (e.getMessage().equals("Not Found")) {
                 return null;
@@ -107,7 +107,7 @@ public class HSStageService {
      * @param jsonBody - body from HubSpot API response
      * @return a stage
      */
-    public HSStage parseStageData(JSONObject jsonBody) {
+    public HSStage parseStageData(JsonNode jsonBody) {
         HSStage stage = new HSStage();
         hsService.parseJSONData(jsonBody, stage);
         return stage;

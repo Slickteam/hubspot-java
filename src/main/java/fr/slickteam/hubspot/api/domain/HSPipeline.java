@@ -1,7 +1,10 @@
 package fr.slickteam.hubspot.api.domain;
 
-import kong.unirest.json.JSONArray;
-import kong.unirest.json.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import fr.slickteam.hubspot.api.utils.HubSpotException;
+import fr.slickteam.hubspot.api.utils.JsonUtils;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -11,7 +14,7 @@ import java.util.Map;
 /**
  * The type Hs pipeline.
  */
-public class HSPipeline extends HSObject{
+public class HSPipeline extends HSObject {
 
     private static final String ID = "id";
     private static final String LABEL = "label";
@@ -59,7 +62,7 @@ public class HSPipeline extends HSObject{
      */
     public HSPipeline(String label, int displayOrder, List<HSStage> stages, Instant createdAt, Instant updatedAt, boolean archived, Map<String, String> properties) {
         super(properties);
-        this.setLabel(label);
+        setProperty(LABEL, label);
         this.setDisplayOrder(displayOrder);
         this.setStages(stages);
         this.setCreatedAt(createdAt);
@@ -132,9 +135,9 @@ public class HSPipeline extends HSObject{
      *
      * @return the stages
      */
-    public List<HSStage> getStages() {
-        JSONArray jsonArray = new JSONArray(getProperty(STAGES));
-        return getStagesProperties(jsonArray);
+    public List<HSStage> getStages() throws HubSpotException {
+        JsonNode jsonNode = JsonUtils.parseJson(getProperty(STAGES));
+        return getStagesProperties((ArrayNode) jsonNode);
     }
 
     /**
@@ -144,9 +147,9 @@ public class HSPipeline extends HSObject{
      * @return the stages
      */
     public HSPipeline setStages(List<HSStage> stages) {
-        JSONArray jsonArray = new JSONArray();
-        stages.forEach(stage -> jsonArray.put(stageToJson(stage)));
-        setProperty(STAGES, jsonArray.toString());
+        ArrayNode arrayNode = JsonUtils.createArrayNode();
+        stages.forEach(stage -> arrayNode.add(stageToJson(stage)));
+        setProperty(STAGES, arrayNode.toString());
         return this;
     }
 
@@ -210,32 +213,33 @@ public class HSPipeline extends HSObject{
         return this;
     }
 
-    private List<HSStage> getStagesProperties(JSONArray jsonArray) {
+    private List<HSStage> getStagesProperties(ArrayNode arrayNode) {
         List<HSStage> stages = new ArrayList<>();
-        for (int i = 0; i < jsonArray.length(); i++) {
+        for (int i = 0; i < arrayNode.size(); i++) {
             HSStage stage = new HSStage();
-            JSONObject jsonStage = jsonArray.getJSONObject(i);
-            stage.setId((String) jsonStage.get(ID));
-            stage.setLabel((String) jsonStage.get(LABEL));
-            stage.setDisplayOrder(((int) jsonStage.get(DISPLAY_ORDER)));
-            stage.setMetadata(String.valueOf(jsonStage.get("metadata")));
-            stage.setCreatedAt(Instant.parse((String) jsonStage.get(CREATED_AT)));
-            stage.setUpdateAt(Instant.parse((String) jsonStage.get(UPDATED_AT)));
-            stage.setArchived((Boolean) jsonStage.get(ARCHIVED));
+            JsonNode jsonStage = arrayNode.get(i);
+            stage.setId(jsonStage.path(ID).asText());
+            stage.setLabel(jsonStage.path(LABEL).asText());
+            stage.setDisplayOrder(jsonStage.path(DISPLAY_ORDER).asInt());
+            stage.setMetadata(jsonStage.path("metadata").toString());
+            stage.setCreatedAt(Instant.parse(jsonStage.path(CREATED_AT).asText()));
+            stage.setUpdateAt(Instant.parse(jsonStage.path(UPDATED_AT).asText()));
+            stage.setArchived(jsonStage.path(ARCHIVED).asBoolean());
             stages.add(stage);
         }
         return stages;
     }
 
-    private JSONObject stageToJson(HSStage stage) {
-        JSONObject jsonStage = new JSONObject();
+    private ObjectNode stageToJson(HSStage stage) {
+        ObjectNode jsonStage = JsonUtils.createObjectNode();
         jsonStage.put(ID, stage.getId());
         jsonStage.put(LABEL, stage.getLabel());
         jsonStage.put(DISPLAY_ORDER, stage.getDisplayOrder());
         jsonStage.put("metadata", stage.getMetadata());
-        jsonStage.put(CREATED_AT, stage.getCreatedAt()+"");
-        jsonStage.put(UPDATED_AT, stage.getUpdateAt()+"");
+        jsonStage.put(CREATED_AT, stage.getCreatedAt().toString());
+        jsonStage.put(UPDATED_AT, stage.getUpdateAt().toString());
         jsonStage.put(ARCHIVED, stage.getArchived());
         return jsonStage;
     }
+
 }

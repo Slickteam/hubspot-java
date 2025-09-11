@@ -1,10 +1,11 @@
 package fr.slickteam.hubspot.api.unit;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.slickteam.hubspot.api.utils.Helper;
 import fr.slickteam.hubspot.api.domain.HSCompany;
 import fr.slickteam.hubspot.api.service.HSCompanyService;
 import fr.slickteam.hubspot.api.service.HubSpot;
-import kong.unirest.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -22,19 +23,21 @@ public class HSCompanyJSONTest {
     }
 
     @Test
-    public void parseCompanyData_Test() {
+    public void parseCompanyData_Test() throws Exception {
         String inputData = "{\"portalId\": 62515,\"id\": 10444744,\"isDeleted\": false,\"properties\": {\"description\": \"text\"}}";
-        JSONObject jsonObject = new JSONObject(inputData);
-        HSCompany company = service.parseCompanyData(jsonObject);
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode jsonNode = mapper.readTree(inputData);
+        HSCompany company = service.parseCompanyData(jsonNode);
         assertEquals(company.getId(), 10444744);
         assertEquals(company.getProperty("description"), "text");
     }
 
     @Test
-    public void toJson_Test() {
+    public void toJson_Test() throws Exception {
         String inputData = "{\"portalId\": 62515,\"id\": 10444744,\"isDeleted\": false,\"properties\": {\"description\": \"text\"}}";
-        JSONObject jsonObject = new JSONObject(inputData);
-        HSCompany company = service.parseCompanyData(jsonObject);
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode jsonNode = mapper.readTree(inputData);
+        HSCompany company = service.parseCompanyData(jsonNode);
 
         String result = company.toJson().toString();
         assertEquals("{\"properties\":{\"description\":\"text\"}}", result);

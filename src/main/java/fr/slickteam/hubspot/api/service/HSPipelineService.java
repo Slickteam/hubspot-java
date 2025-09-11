@@ -1,8 +1,8 @@
 package fr.slickteam.hubspot.api.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import fr.slickteam.hubspot.api.domain.*;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
-import kong.unirest.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,8 +39,8 @@ public class HSPipelineService {
      */
     public HSPipeline create(HSPipeline hsPipeline) throws HubSpotException {
         log.log(DEBUG, "create - hsPipeline : " + hsPipeline);
-        JSONObject jsonObject = (JSONObject) httpService.postRequest(PIPELINE_URL + DEALS, hsPipeline.toJsonString());
-        hsPipeline.setId(jsonObject.getString("id"));
+        JsonNode jsonNode = (JsonNode) httpService.postRequest(PIPELINE_URL + DEALS, hsPipeline.toJsonString());
+        hsPipeline.setId(jsonNode.path("id").asText());
         return hsPipeline;
     }
 
@@ -81,9 +81,9 @@ public class HSPipelineService {
         log.log(DEBUG, "getPipelines");
         List<HSPipeline> pipelines = new ArrayList<>();
         String url = PIPELINE_URL + DEALS;
-        List<JSONObject> response = hsService.parseJsonResultToList(url);
-        for (JSONObject jsonObject: response) {
-            pipelines.add(parsePipelineData(jsonObject));
+        List<JsonNode> response = hsService.parseJsonResultToList(url);
+        for (JsonNode jsonNode: response) {
+            pipelines.add(parsePipelineData(jsonNode));
         }
         return pipelines;
     }
@@ -104,19 +104,19 @@ public class HSPipelineService {
     /**
      * Parse pipeline data from HubSpot API response
      *
-     * @param jsonObject - body from HubSpot API response
+     * @param jsonNode - body from HubSpot API response
      * @return The pipeline
      */
-    public HSPipeline parsePipelineData(JSONObject jsonObject) {
+    public HSPipeline parsePipelineData(JsonNode jsonNode) {
         HSPipeline pipeline = new HSPipeline();
-        hsService.parseJSONData(jsonObject, pipeline);
+        hsService.parseJSONData(jsonNode, pipeline);
         return pipeline;
     }
 
 
     private HSPipeline getPipeline(String url) throws HubSpotException {
         try {
-            return parsePipelineData((JSONObject) httpService.getRequest(url));
+            return parsePipelineData((JsonNode) httpService.getRequest(url));
         } catch (HubSpotException e) {
             if (e.getMessage().equals("Not Found")) {
                 return null;

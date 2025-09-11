@@ -1,18 +1,19 @@
 /*
  * Copyright:
  *
- *  developer: Sergei Dubinin
- *  e-mail: sdubininit@gmail.com
- *  date: 14.10.2015 9:58
- *  
- *  copyright (c) integrationagent.com
+ *  developer: Sergei Dubinin
+ *  e-mail: sdubininit@gmail.com
+ *  date: 14.10.2015 9:58
+ *  
+ *  copyright (c) integrationagent.com
  */
 
 package fr.slickteam.hubspot.api.utils;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Strings;
-import kong.unirest.json.JSONArray;
-import kong.unirest.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,45 +25,61 @@ import java.util.Map;
 public class HubSpotHelper {
 
     /**
-     * Gets json object.
+     * Gets json object node.
      *
      * @param property the property
      * @param value    the value
-     * @return the json object
+     * @return the json object node
      */
-    public static JSONObject getJsonObject(String property, Object value) {
-        return new JSONObject()
-                .put("property", property)
-                .put("value", value);
+    public static ObjectNode getJsonObject(String property, Object value) {
+        ObjectNode node = JsonUtils.createObjectNode();
+        node.put("property", property);
+        if (value instanceof String) {
+            node.put("value", (String) value);
+        } else if (value instanceof Number) {
+            node.put("value", value.toString());
+        } else if (value instanceof Boolean) {
+            node.put("value", (Boolean) value);
+        } else if (value != null) {
+            node.put("value", value.toString());
+        }
+        return node;
     }
 
     /**
      * Put json object.
      *
-     * @param ja       the ja
+     * @param array    the array node
      * @param property the property
      * @param value    the value
      */
-    public static void putJsonObject(JSONArray ja, String property, String value) {
+    public static void putJsonObject(ArrayNode array, String property, String value) {
         if (!Strings.isNullOrEmpty(value) && !value.equals("null")) {
-            ja.put(getJsonObject(property, value));
+            array.add(getJsonObject(property, value));
         }
     }
 
     /**
-     * Put json object json object.
+     * Put json object object node.
      *
-     * @param jo       the jo
+     * @param node     the object node
      * @param property the property
      * @param value    the value
-     * @return the json object
+     * @return the object node
      */
-    public static JSONObject putJsonObject(JSONObject jo, String property, Object value) {
+    public static ObjectNode putJsonObject(ObjectNode node, String property, Object value) {
         if (!Strings.isNullOrEmpty(value + "") && !value.equals("null")) {
-            jo.put(property, value);
+            if (value instanceof String) {
+                node.put(property, (String) value);
+            } else if (value instanceof Number) {
+                node.put(property, value.toString());
+            } else if (value instanceof Boolean) {
+                node.put(property, (Boolean) value);
+            } else if (value != null) {
+                node.put(property, value.toString());
+            }
         }
-
-        return jo;
+        return node;
     }
 
     /**
@@ -70,37 +87,42 @@ public class HubSpotHelper {
      *
      * @param map the map
      * @return the string
+     * @throws HubSpotException if JSON conversion fails
      */
-    public static String mapToJsonString(Map<String, String> map) {
-        return mapPropertiesToJson(map).toString();
+    public static String mapToJsonString(Map<String, String> map) throws HubSpotException {
+        return JsonUtils.toJson(mapPropertiesToJson(map));
     }
 
     /**
-     * Map properties to json json object.
+     * Map properties to json object node.
      *
      * @param map the map
-     * @return the json object
+     * @return the object node
      */
-    public static JSONObject mapPropertiesToJson(Map<String, String> map) {
-        JSONObject ja = new JSONObject();
-        map.forEach((key, value) -> putJsonObject(ja, key, value));
+    public static ObjectNode mapPropertiesToJson(Map<String, String> map) {
+        ObjectNode properties = JsonUtils.createObjectNode();
+        map.forEach((key, value) -> putJsonObject(properties, key, value));
 
-        return new JSONObject().put("properties", ja);
+        ObjectNode rootNode = JsonUtils.createObjectNode();
+        rootNode.set("properties", properties);
+        return rootNode;
     }
 
     /**
-     * Map filters to json json object.
+     * Map filters to json object node.
      *
      * @param map the map
-     * @return the json object
+     * @return the object node
      */
-    public static JSONObject mapFiltersToJson(Map<String, String> map) {
-        JSONObject ja = new JSONObject();
-        map.forEach((key, value) -> putJsonObject(ja, key, value));
+    public static ObjectNode mapFiltersToJson(Map<String, String> map) {
+        ObjectNode filterNode = JsonUtils.createObjectNode();
+        map.forEach((key, value) -> putJsonObject(filterNode, key, value));
 
-        List<JSONObject> jsonObjectList = new ArrayList<>();
-        jsonObjectList.add(ja);
+        ArrayNode filtersArray = JsonUtils.createArrayNode();
+        filtersArray.add(filterNode);
 
-        return new JSONObject().put("filters", jsonObjectList);
+        ObjectNode rootNode = JsonUtils.createObjectNode();
+        rootNode.set("filters", filtersArray);
+        return rootNode;
     }
 }

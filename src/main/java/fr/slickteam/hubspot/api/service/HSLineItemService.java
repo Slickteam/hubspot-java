@@ -1,9 +1,8 @@
 package fr.slickteam.hubspot.api.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import fr.slickteam.hubspot.api.domain.HSLineItem;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
-import kong.unirest.json.JSONArray;
-import kong.unirest.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,7 +54,7 @@ public class HSLineItemService {
 
     private HSLineItem getLineItem(String url) throws HubSpotException {
         try {
-            return parseLineItemData((JSONObject) httpService.getRequest(url));
+            return parseLineItemData((JsonNode) httpService.getRequest(url));
         } catch (HubSpotException e) {
             if (e.getMessage().equals("Not Found")) {
                 return null;
@@ -74,9 +73,9 @@ public class HSLineItemService {
      */
     public HSLineItem create(HSLineItem hsLineItem) throws HubSpotException {
         log.log(DEBUG, "create - hsLineItem : " + hsLineItem);
-        JSONObject jsonObject = (JSONObject) httpService.postRequest(LINE_ITEM_URL, hsLineItem.toJsonString());
+        JsonNode jsonNode = (JsonNode) httpService.postRequest(LINE_ITEM_URL, hsLineItem.toJsonString());
 
-        return parseLineItemData(jsonObject);
+        return parseLineItemData(jsonNode);
     }
 
     /**
@@ -85,10 +84,10 @@ public class HSLineItemService {
      * @param jsonBody - body from HubSpot API response
      * @return the company
      */
-    public HSLineItem parseLineItemData(JSONObject jsonBody) {
+    public HSLineItem parseLineItemData(JsonNode jsonBody) {
         HSLineItem line_items = new HSLineItem();
 
-        line_items.setId(jsonBody.getLong("id"));
+        line_items.setId(jsonBody.path("id").asLong());
 
         hsService.parseJSONData(jsonBody, line_items);
         return line_items;
@@ -164,11 +163,11 @@ public class HSLineItemService {
                                        "}";
         String url = LINE_ITEM_URL + BATCH + READ;
         try {
-            JSONObject response = (JSONObject) httpService.postRequest(url, associationProperties);
-            JSONArray jsonList = response.optJSONArray(RESULTS);
-            List<HSLineItem> lineItems = new ArrayList<>(jsonList.length());
-            for (int i = 0; i < jsonList.length(); i++) {
-                lineItems.add(parseLineItemData(jsonList.optJSONObject(i)));
+            JsonNode response = (JsonNode) httpService.postRequest(url, associationProperties);
+            JsonNode jsonList = response.path(RESULTS);
+            List<HSLineItem> lineItems = new ArrayList<>();
+            for (JsonNode item : jsonList) {
+                lineItems.add(parseLineItemData(item));
             }
             return lineItems;
         } catch (HubSpotException e) {

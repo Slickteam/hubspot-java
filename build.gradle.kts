@@ -29,9 +29,12 @@ jacoco {
 
 dependencies {
     implementation("com.google.guava:guava:33.4.8-jre")
-    implementation("com.konghq:unirest-java:3.14.5")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.16.1")
+    implementation("com.fasterxml.jackson.core:jackson-core:2.16.1")
+    implementation("com.fasterxml.jackson.core:jackson-annotations:2.16.1")
+    implementation("org.apache.httpcomponents:httpclient:4.5.14")
     implementation("commons-codec:commons-codec:1.18.0")
-    testImplementation ("junit:junit:4.13.2")
+    testImplementation("junit:junit:4.13.2")
     testImplementation("org.mockito:mockito-core:3.12.4")
 }
 

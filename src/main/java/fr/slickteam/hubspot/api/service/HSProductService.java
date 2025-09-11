@@ -1,8 +1,8 @@
 package fr.slickteam.hubspot.api.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import fr.slickteam.hubspot.api.domain.HSProduct;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
-import kong.unirest.json.JSONObject;
 
 import static java.lang.System.Logger.Level.DEBUG;
 
@@ -52,9 +52,9 @@ public class HSProductService {
      */
     public HSProduct create(HSProduct product) throws HubSpotException {
         log.log(DEBUG, "create - product : " + product);
-        JSONObject jsonObject = (JSONObject) httpService.postRequest(PRODUCT_URL, product.toJsonString());
+        JsonNode jsonNode = (JsonNode) httpService.postRequest(PRODUCT_URL, product.toJsonString());
 
-        return parseProductData(jsonObject);
+        return parseProductData(jsonNode);
     }
 
     /**
@@ -111,10 +111,10 @@ public class HSProductService {
      * @param jsonBody - body from HubSpot API response
      * @return the company
      */
-    public HSProduct parseProductData(JSONObject jsonBody) {
+    public HSProduct parseProductData(JsonNode jsonBody) {
         HSProduct product = new HSProduct();
 
-        product.setId(jsonBody.getLong("id"));
+        product.setId(jsonBody.path("id").asLong());
 
         hsService.parseJSONData(jsonBody, product);
         return product;
@@ -122,7 +122,7 @@ public class HSProductService {
 
     private HSProduct getProduct(String url) throws HubSpotException {
         try {
-            return parseProductData((JSONObject) httpService.getRequest(url));
+            return parseProductData((JsonNode) httpService.getRequest(url));
         } catch (HubSpotException e) {
             if (e.getMessage().equals("Not Found")) {
                 return null;

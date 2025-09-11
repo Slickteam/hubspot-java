@@ -1,9 +1,9 @@
 package fr.slickteam.hubspot.api.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import fr.slickteam.hubspot.api.domain.HSAssocationTypeInput;
 import fr.slickteam.hubspot.api.domain.HSAssociationTypeEnum;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
-import kong.unirest.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -379,7 +379,7 @@ public class HSAssociationService {
      * @return the companies to company
      * @throws HubSpotException - if HTTP call fails
      */
-    public List<JSONObject> getCompaniesToCompany(long companyId) throws HubSpotException {
+    public List<JsonNode> getCompaniesToCompany(long companyId) throws HubSpotException {
         log.log(DEBUG, "getCompaniesToCompany - companyId : " + companyId);
         String url =
                 BasePath.V4_OBJECT + COMPANIES + companyId + "/" + ASSOCIATION + COMPANIES;
@@ -401,7 +401,7 @@ public class HSAssociationService {
      * @return the list
      * @throws HubSpotException - if HTTP call fails
      */
-    public List<JSONObject> companiesToContacts(List<Long> companyIds) throws HubSpotException {
+    public List<JsonNode> companiesToContacts(List<Long> companyIds) throws HubSpotException {
         log.log(DEBUG, "companiesToContacts - companyIds : " + companyIds);
         StringBuilder companyIdList = new StringBuilder("{\n" +
                 "  \"inputs\": [\n");
@@ -563,7 +563,7 @@ public class HSAssociationService {
      * @return the list of associations
      * @throws HubSpotException - if HTTP call fails
      */
-    public List<JSONObject> companiesToDeals(List<Long> companyIds) throws HubSpotException {
+    public List<JsonNode> companiesToDeals(List<Long> companyIds) throws HubSpotException {
         log.log(DEBUG, "companiesToDeals - companyIds : " + companyIds);
         StringBuilder companyIdList = new StringBuilder("{\n" +
                                                         "  \"inputs\": [\n");
@@ -591,7 +591,7 @@ public class HSAssociationService {
      * @return the list of associations
      * @throws HubSpotException - if HTTP call fails
      */
-    public List<JSONObject> dealsToCompanies(List<Long> dealIds) throws HubSpotException {
+    public List<JsonNode> dealsToCompanies(List<Long> dealIds) throws HubSpotException {
         log.log(DEBUG, "dealsToCompanies - dealIds : " + dealIds);
         StringBuilder dealIdList = new StringBuilder("{\n" +
                                                         "  \"inputs\": [\n");
@@ -619,7 +619,7 @@ public class HSAssociationService {
      * @return the list of associations
      * @throws HubSpotException - if HTTP call fails
      */
-    public List<JSONObject> dealsToContacts(List<Long> dealIds) throws HubSpotException {
+    public List<JsonNode> dealsToContacts(List<Long> dealIds) throws HubSpotException {
         log.log(DEBUG, "dealsToContacts - dealIds : " + dealIds);
         StringBuilder dealIdList = new StringBuilder("{\n" +
                                                      "  \"inputs\": [\n");
@@ -647,7 +647,7 @@ public class HSAssociationService {
      * @return the list of associations
      * @throws HubSpotException - if HTTP call fails
      */
-    public List<JSONObject> dealsToLineItems(List<Long> dealIds) throws HubSpotException {
+    public List<JsonNode> dealsToLineItems(List<Long> dealIds) throws HubSpotException {
         log.log(DEBUG, "dealsToLineItems - dealIds : " + dealIds);
         StringBuilder dealIdList = new StringBuilder("{\n" +
                                                      "  \"inputs\": [\n");

@@ -1,12 +1,14 @@
 package fr.slickteam.hubspot.api.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Strings;
 import fr.slickteam.hubspot.api.domain.HSCompany;
 import fr.slickteam.hubspot.api.domain.HSContact;
 import fr.slickteam.hubspot.api.domain.PagedHSContactList;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
-import kong.unirest.json.JSONArray;
-import kong.unirest.json.JSONObject;
+import fr.slickteam.hubspot.api.utils.JsonUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -113,11 +115,11 @@ public class HSContactService {
                                        "}";
         String url = CONTACT_URL + BATCH + READ;
         try {
-            JSONObject response = (JSONObject) httpService.postRequest(url, associationProperties);
-            JSONArray jsonList = response.optJSONArray(RESULTS);
-            List<HSContact> contacts = new ArrayList<>(jsonList.length());
-            for (int i = 0; i < jsonList.length(); i++) {
-                contacts.add(parseContactData(jsonList.optJSONObject(i)));
+            JsonNode response = (JsonNode) httpService.postRequest(url, associationProperties);
+            JsonNode jsonList = response.path(RESULTS);
+            List<HSContact> contacts = new ArrayList<>();
+            for (JsonNode node : jsonList) {
+                contacts.add(parseContactData(node));
             }
             return contacts;
         } catch (HubSpotException e) {
@@ -144,15 +146,15 @@ public class HSContactService {
         String url = CONTACT_URL + "?limit=" + limit + "&after=" + after + "&properties=" + propertiesUrl;
 
         try {
-            JSONObject response = (JSONObject) httpService.getRequest(url);
-            JSONArray jsonList = response.optJSONArray(RESULTS);
-            List<HSContact> contacts = new ArrayList<>(jsonList.length());
-            for (int i = 0; i < jsonList.length(); i++) {
-                contacts.add(parseContactData(jsonList.optJSONObject(i)));
+            JsonNode response = (JsonNode) httpService.getRequest(url);
+            JsonNode jsonList = response.path(RESULTS);
+            List<HSContact> contacts = new ArrayList<>();
+            for (JsonNode node : jsonList) {
+                contacts.add(parseContactData(node));
             }
             String nextPageToken = null;
-            if (response.has(PAGING) && ((JSONObject) response.get(PAGING)).has("next")) {
-                nextPageToken = ((JSONObject) ((JSONObject) response.get(PAGING)).get("next")).getString("after");
+            if (response.has(PAGING) && response.path(PAGING).has("next")) {
+                nextPageToken = response.path(PAGING).path("next").path("after").asText();
             }
             return new PagedHSContactList(contacts, nextPageToken);
         } catch (HubSpotException e) {
@@ -179,7 +181,7 @@ public class HSContactService {
 
     private HSContact getContact(String url) throws HubSpotException {
         try {
-            return parseContactData((JSONObject) httpService.getRequest(url));
+            return parseContactData((JsonNode) httpService.getRequest(url));
         } catch (HubSpotException e) {
             if (e.getMessage().equals("Not Found")) {
                 return null;
@@ -231,8 +233,8 @@ public class HSContactService {
             throw new HubSpotException("User email must be provided");
         }
 
-        JSONObject jsonObject = (JSONObject) httpService.postRequest(CONTACT_URL, hsContact.toJsonString());
-        return parseContactData(jsonObject);
+        JsonNode jsonNode = (JsonNode) httpService.postRequest(CONTACT_URL, hsContact.toJsonString());
+        return parseContactData(jsonNode);
     }
 
     /**
@@ -249,8 +251,8 @@ public class HSContactService {
         }
 
         String url = CONTACT_URL + contact.getId();
-        JSONObject jsonObject = (JSONObject) httpService.patchRequest(url, contact.toJsonString());
-        return parseContactData(jsonObject);
+        JsonNode jsonNode = (JsonNode) httpService.patchRequest(url, contact.toJsonString());
+        return parseContactData(jsonNode);
     }
 
     /**
@@ -283,14 +285,14 @@ public class HSContactService {
     /**
      * Parse contact data from HubSpot API response
      *
-     * @param jsonObject - body from HubSpot API response
+     * @param jsonNode - body from HubSpot API response
      * @return the contact
      */
-    public HSContact parseContactData(JSONObject jsonObject) {
+    public HSContact parseContactData(JsonNode jsonNode) {
         HSContact hsContact = new HSContact();
-        hsContact.setId(jsonObject.getLong("id"));
+        hsContact.setId(jsonNode.path("id").asLong());
 
-        hsService.parseJSONData(jsonObject, hsContact);
+        hsService.parseJSONData(jsonNode, hsContact);
         return hsContact;
     }
 
@@ -338,11 +340,11 @@ public class HSContactService {
         List<HSContact> contacts = Collections.emptyList();
 
         try {
-            JSONObject response = (JSONObject) httpService.postRequest(url, properties);
-            JSONArray jsonList = response.optJSONArray(RESULTS);
-            contacts = new ArrayList<>(jsonList.length());
-            for (int i = 0; i < jsonList.length(); i++) {
-                contacts.add(parseContactData(jsonList.optJSONObject(i)));
+            JsonNode response = (JsonNode) httpService.postRequest(url, properties);
+            JsonNode jsonList = response.path(RESULTS);
+            contacts = new ArrayList<>();
+            for (JsonNode node : jsonList) {
+                contacts.add(parseContactData(node));
             }
         } catch (HubSpotException e) {
             if (e.getMessage().equals("Not Found")) {
