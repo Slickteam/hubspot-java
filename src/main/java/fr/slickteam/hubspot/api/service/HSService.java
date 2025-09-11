@@ -172,6 +172,15 @@ public class HSService {
         httpService.deleteRequest(url);
     }
 
+    /**
+     * Parses a JSON response to extract a list of JSON nodes based on a specified key.
+     * If the specified key points to an array, all elements in the array are returned as a list.
+     * If the specified key points to a single object, that object is returned as a single-element list.
+     *
+     * @param response the JSON response object to be parsed
+     * @param results the key in the JSON response indicating the desired data
+     * @return a list of JSON nodes extracted from the response
+     */
     public List<JsonNode> parseJSONResults(JsonNode response, String results) {
         JsonNode resultsNode = response.path(results);
         if (resultsNode.isArray()) {
