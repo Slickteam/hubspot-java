@@ -329,7 +329,8 @@ public class HSCompanyService {
                 companies.add(parseCompanyData(node));
             }
             String nextPageToken = null;
-            if (jsonNode.has(PAGING) && jsonNode.path(PAGING).has("next")) {
+            if (jsonNode.has(PAGING) && jsonNode.path(PAGING).has("next") &&
+                    jsonNode.path(PAGING).path("next").asText().split("after=").length > 1) {
                 nextPageToken = jsonNode.path(PAGING).path("next").asText().split("after=")[1];
             }
             return new PagedHSCompanyList(companies, nextPageToken);
