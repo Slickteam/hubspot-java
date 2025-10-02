@@ -5,8 +5,9 @@ import fr.slickteam.hubspot.api.service.HSQuoteService;
 import fr.slickteam.hubspot.api.service.HubSpot;
 import fr.slickteam.hubspot.api.utils.Helper;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
-import org.junit.*;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.mockito.Mockito;
 
 import java.time.Instant;
@@ -15,35 +16,29 @@ import java.util.List;
 
 
 import static java.lang.Thread.sleep;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@Ignore("Token issue")
-public class HSQuoteServiceIT {
+@Disabled("Token issue")
+class HSQuoteServiceIT {
 
     private final String testTitle = "test title";
     private final Instant testExpirationDate = Instant.now();
-    private final Instant testCreatedDate = Instant.now();
-    private final Instant testLastModifiedDate = Instant.now();
-    private final String testPdfDownloadLink = "download link";
-    private String testObjectId = null;
     private Long createdQuoteId;
 
 
     private HubSpot hubSpot;
 
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
-
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         hubSpot = new HubSpot(Helper.provideHubspotProperties());
     }
 
 
-    @After
-    public void tearDown() throws Exception {
+    @AfterEach
+    void tearDown() throws Exception {
         if (createdQuoteId != null) {
             hubSpot.quote().delete(createdQuoteId);
         }
@@ -52,8 +47,8 @@ public class HSQuoteServiceIT {
     }
 
 
-    @Test
-    public void createQuote_Test() throws Exception {
+    @org.junit.jupiter.api.Test
+    void createQuote_Test() throws Exception {
         HSQuote quote = new HSQuote();
         quote.setProperty("hs_title", testTitle);
         quote.setProperty("hs_expiration_date", testExpirationDate.toString());
@@ -61,11 +56,11 @@ public class HSQuoteServiceIT {
 
         createdQuoteId = quote.getId();
 
-        assertNotEquals(0L, quote.getId());
+        assertThat(quote.getId()).isNotZero();
     }
 
-    @Test
-    public void createQuote_NetworkError_Test() throws Exception {
+    @org.junit.jupiter.api.Test
+    void createQuote_NetworkError_Test() throws Exception {
         HSQuote quote = new HSQuote();
         quote.setProperty("hs_title", testTitle);
         quote.setProperty("hs_expiration_date", testExpirationDate.toString());
@@ -73,23 +68,23 @@ public class HSQuoteServiceIT {
         Mockito.doThrow(new HubSpotException("Network error")).when(mockHSQuoteService).create(quote);
         HubSpot mockHubSpot = mock(HubSpot.class);
         when(mockHubSpot.quote()).thenReturn(mockHSQuoteService);
-        exception.expect(HubSpotException.class);
-        mockHubSpot.quote().create(quote);
+        assertThatThrownBy(() -> mockHubSpot.quote().create(quote))
+            .isInstanceOf(HubSpotException.class);
     }
 
 
-    @Test
-    public void createQuoteIncorrectProperty_Test() throws Exception {
+    @org.junit.jupiter.api.Test
+    void createQuoteIncorrectProperty_Test() {
         HSQuote quote = new HSQuote();
         quote.setProperty("badpropertyz", "Test value 1");
         quote.setProperty("hs_expiration_date", "2023-12-10");
 
-        exception.expect(HubSpotException.class);
-        hubSpot.quote().create(quote);
+        assertThatThrownBy(() -> hubSpot.quote().create(quote))
+            .isInstanceOf(HubSpotException.class);
     }
 
-    @Test
-    public void getQuote_Id_Test() throws Exception {
+    @org.junit.jupiter.api.Test
+    void getQuote_Id_Test() throws Exception {
         HSQuote newQuote = new HSQuote();
         newQuote.setProperty("hs_title", testTitle);
         newQuote.setProperty("hs_expiration_date", testExpirationDate.toString());
@@ -97,11 +92,11 @@ public class HSQuoteServiceIT {
         HSQuote responseQuote = hubSpot.quote().getByID(newQuote.getId());
 
         createdQuoteId = newQuote.getId();
-        assertEquals(newQuote.getId(), responseQuote.getId());
+        assertThat(responseQuote.getId()).isEqualTo(newQuote.getId());
     }
 
-    @Test
-    public void getQuote_Id_And_Properties_Test() throws Exception {
+    @org.junit.jupiter.api.Test
+    void getQuote_Id_And_Properties_Test() throws Exception {
         HSQuote quote = new HSQuote();
         quote.setProperty("hs_title", testTitle);
         quote.setProperty("hs_expiration_date", testExpirationDate.toString());
@@ -115,20 +110,20 @@ public class HSQuoteServiceIT {
 
         HSQuote responseQuote = hubSpot.quote().getByIdAndProperties(quoteId, properties);
 
-        assertEquals(quoteId, responseQuote.getId());
-        assertEquals(testTitle, responseQuote.getProperties().get("hs_title"));
+        assertThat(responseQuote.getId()).isEqualTo(quoteId);
+        assertThat(responseQuote.getProperties()).containsEntry("hs_title", testTitle);
     }
 
-    @Test
-    public void getQuote_Id_Not_Found_Test() throws Exception {
+    @org.junit.jupiter.api.Test
+    void getQuote_Id_Not_Found_Test() throws Exception {
         long id = -777;
-        assertNull(hubSpot.quote().getByID(id));
-        assertNull(hubSpot.quote().getByID(id));
+        assertThat(hubSpot.quote().getByID(id)).isNull();
+        assertThat(hubSpot.quote().getByID(id)).isNull();
     }
 
 
-    @Test
-    public void patch_status_quote_Test() throws Exception {
+    @org.junit.jupiter.api.Test
+    void patch_status_quote_Test() throws Exception {
         HSQuote newQuote = new HSQuote();
         newQuote.setProperty("hs_title", testTitle);
         newQuote.setProperty("hs_expiration_date", testExpirationDate.toString());
@@ -146,11 +141,11 @@ public class HSQuoteServiceIT {
 
         HSQuote result = hubSpot.quote().patch(editedQuote);
 
-        assertEquals(editedQuote.getProperties().get("hs_status"), result.getProperties().get("hs_status"));
+        assertThat(result.getProperties().get("hs_status")).isEqualTo(editedQuote.getProperties().get("hs_status"));
     }
 
-    @Test
-    public void deleteDeal_by_id_Test() throws Exception {
+    @org.junit.jupiter.api.Test
+    void deleteDeal_by_id_Test() throws Exception {
         HSQuote quote = new HSQuote();
         quote.setProperty("hs_title", testTitle);
         quote.setProperty("hs_expiration_date", testExpirationDate.toString());
@@ -162,7 +157,7 @@ public class HSQuoteServiceIT {
 
         hubSpot.quote().delete(quote.getId());
 
-        assertNull(hubSpot.quote().getByID(quote.getId()));
+        assertThat(hubSpot.quote().getByID(quote.getId())).isNull();
     }
 
 }

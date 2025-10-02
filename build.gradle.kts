@@ -3,6 +3,7 @@ val httpClientVersion: String by project
 val commonsCodecVersion: String by project
 val junitVersion: String by project
 val mockitoVersion: String by project
+val assertJVersion: String by project
 
 plugins {
     `java-library`
@@ -39,8 +40,9 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion")
     implementation("org.apache.httpcomponents.client5:httpclient5:$httpClientVersion")
     implementation("commons-codec:commons-codec:$commonsCodecVersion")
-    testImplementation("junit:junit:$junitVersion")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
     testImplementation("org.mockito:mockito-core:$mockitoVersion")
+    testImplementation("org.assertj:assertj-core:$assertJVersion")
 }
 
 tasks.withType<JavaCompile> {

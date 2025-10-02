@@ -6,24 +6,24 @@ import fr.slickteam.hubspot.api.domain.HSStage;
 import fr.slickteam.hubspot.api.service.HSStageService;
 import fr.slickteam.hubspot.api.service.HubSpot;
 import fr.slickteam.hubspot.api.utils.Helper;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class HSStageJSONTest {
+class HSStageJSONTest {
 
      HSStageService service;
 
-    @Before
-    public void setUp() throws IOException {
+    @BeforeEach
+    void setUp() throws IOException {
         service = new HubSpot(Helper.provideHubspotProperties()).stage();
     }
 
     @Test
-    public void parseStageData_Test() throws Exception {
+    void parseStageData_Test() throws Exception {
         String inputData = "{\"test\":1,\"id\":71}";
         ObjectMapper mapper = new ObjectMapper();
         JsonNode jsonNode = mapper.readTree(inputData);
@@ -34,7 +34,7 @@ public class HSStageJSONTest {
     }
 
     @Test
-    public void toJson_Test() throws Exception {
+    void toJson_Test() throws Exception {
         String inputData = "{\"test\":1, \"test2\":2,\"id\":71}";
         ObjectMapper mapper = new ObjectMapper();
         JsonNode jsonNode = mapper.readTree(inputData);

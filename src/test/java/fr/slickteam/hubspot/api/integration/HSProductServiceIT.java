@@ -5,21 +5,19 @@ import fr.slickteam.hubspot.api.domain.HSProduct;
 import fr.slickteam.hubspot.api.service.HSProductService;
 import fr.slickteam.hubspot.api.service.HubSpot;
 import fr.slickteam.hubspot.api.utils.Helper;
-import org.hamcrest.core.StringContains;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.math.BigDecimal;
 
 import static java.lang.Thread.sleep;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
-public class HSProductServiceIT {
+class HSProductServiceIT {
 
     private final String testProductName = "Test product";
     private final String testProductDescription = "Product for testing";
@@ -29,16 +27,13 @@ public class HSProductServiceIT {
 
     private HubSpot hubSpot;
 
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
-
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         hubSpot = new HubSpot(Helper.provideHubspotProperties());
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @AfterEach
+    void tearDown() throws Exception {
         if (createdProductId != null) {
             hubSpot.product().delete(createdProductId);
         }
@@ -47,39 +42,39 @@ public class HSProductServiceIT {
     }
 
     @Test
-    public void createProduct_Test() throws Exception {
+    void createProduct_Test() throws Exception {
         HSProduct product = new HSProduct(testProductName, testProductDescription, testPrice, testRecurringPeriod);
         product = hubSpot.product().create(product);
 
         createdProductId = product.getId();
 
-        assertNotEquals(0L, product.getId());
-        assertEquals(product.getName(), hubSpot.product().getByID(product.getId()).getName());
+        assertThat(product.getId()).isNotZero();
+        assertThat(product.getName()).isEqualTo(hubSpot.product().getByID(product.getId()).getName());
     }
 
     @Test
-    public void createProduct_NetworkError_Test() throws Exception {
+    void createProduct_NetworkError_Test() throws Exception {
         HSProduct product = new HSProduct(testProductName, testProductDescription, testPrice, testRecurringPeriod);
 
         HSProductService mockHSProductService = mock(HSProductService.class);
         Mockito.doThrow(new HubSpotException("Network error")).when(mockHSProductService).create(product);
         HubSpot mockHubSpot = mock(HubSpot.class);
         when(mockHubSpot.product()).thenReturn(mockHSProductService);
-        exception.expect(HubSpotException.class);
-        mockHubSpot.product().create(product);
+        assertThatThrownBy(() -> mockHubSpot.product().create(product))
+            .isInstanceOf(HubSpotException.class);
     }
 
     @Test
-    public void createProductIncorrectProperty_Test() throws Exception {
+    void createProductIncorrectProperty_Test() {
         HSProduct product = new HSProduct(testProductName, testProductDescription, testPrice, testRecurringPeriod);
         product.setProperty("badpropertyz", "Test value 1");
 
-        exception.expect(HubSpotException.class);
-        hubSpot.product().create(product);
+        assertThatThrownBy(() -> hubSpot.product().create(product))
+            .isInstanceOf(HubSpotException.class);
     }
 
     @Test
-    public void getProduct_Id_Test() throws Exception {
+    void getProduct_Id_Test() throws Exception {
         long productId = hubSpot
                 .product()
                 .create(new HSProduct(testProductName, testProductDescription, testPrice, testRecurringPeriod))
@@ -88,21 +83,21 @@ public class HSProductServiceIT {
 
         HSProduct product = hubSpot.product().getByID(productId);
 
-        assertEquals(productId, product.getId());
-        assertEquals(testProductName, product.getName());
+        assertThat(product.getId()).isEqualTo(productId);
+        assertThat(product.getName()).isEqualTo(testProductName);
     }
 
     @Test
-    public void getProduct_Id_Not_Found_Test() throws Exception {
+    void getProduct_Id_Not_Found_Test() throws Exception {
         long id = -777;
-        assertNull(hubSpot.product().getByID(id));
-        assertNull(hubSpot.product().getByID(id));
+        assertThat(hubSpot.product().getByID(id)).isNull();
+        assertThat(hubSpot.product().getByID(id)).isNull();
     }
 
 
     @Test
-    public void patch_phone_product_Test() throws Exception {
-        String test_value = "new phone number";
+    void patch_phone_product_Test() throws Exception {
+        String testValue = "new phone number";
         HSProduct product = hubSpot
                 .product()
                 .create(new HSProduct(testProductName, testProductDescription, testPrice, testRecurringPeriod));
@@ -110,34 +105,34 @@ public class HSProductServiceIT {
 
         HSProduct editProduct = new HSProduct();
         editProduct.setId(product.getId());
-        editProduct.setName(test_value);
+        editProduct.setName(testValue);
         HSProduct result = hubSpot.product().patch(editProduct);
 
-        assertEquals(editProduct.getName(), result.getName());
+        assertThat(result.getName()).isEqualTo(editProduct.getName());
     }
 
     @Test
-    public void patchProductMissedRequiredProperty_Test() throws Exception {
-        String test_property = "linkedinbio";
-        String test_value = "Test value 1";
+    void patchProductMissedRequiredProperty_Test() throws Exception {
+        String testProperty = "linkedinbio";
+        String testValue = "Test value 1";
         HSProduct product = hubSpot
                 .product()
                 .create(new HSProduct(testProductName, testProductDescription, testPrice, testRecurringPeriod));
         createdProductId = product.getId();
-        product.setProperty(test_property, test_value);
+        product.setProperty(testProperty, testValue);
         HSProduct missedProduct = new HSProduct(product.getName(),
                 product.getDescription(),
                 product.getPrice(),
                 product.getRecurringBillingPeriod());
 
-        exception.expect(HubSpotException.class);
-        hubSpot.product().patch(missedProduct);
+        assertThatThrownBy(() -> hubSpot.product().patch(missedProduct))
+            .isInstanceOf(HubSpotException.class);
     }
 
     @Test
-    public void patchProductIncorrectProperty_Test() throws Exception {
-        String test_property = "badpropertyz";
-        String test_value = "Test value 1";
+    void patchProductIncorrectProperty_Test() throws Exception {
+        String testProperty = "badpropertyz";
+        String testValue = "Test value 1";
         HSProduct product = hubSpot
                 .product()
                 .create(new HSProduct(testProductName, testProductDescription, testPrice, testRecurringPeriod));
@@ -145,56 +140,55 @@ public class HSProductServiceIT {
 
         HSProduct editProduct = new HSProduct();
         editProduct.setId(product.getId());
-        editProduct.setProperty(test_property, test_value);
+        editProduct.setProperty(testProperty, testValue);
 
-        exception.expect(HubSpotException.class);
-        hubSpot.product().patch(editProduct);
+        assertThatThrownBy(() -> hubSpot.product().patch(editProduct))
+            .isInstanceOf(HubSpotException.class);
     }
 
     @Test
-    public void patchProduct_Not_Found_Test() throws Exception {
+    void patchProduct_Not_Found_Test() {
         HSProduct product = new HSProduct(testProductName, testProductDescription, testPrice, testRecurringPeriod).setId(-777);
 
         HSProduct editProduct = new HSProduct();
         editProduct.setId(product.getId());
         editProduct.setName(product.getName());
 
-        exception.expect(HubSpotException.class);
-        exception.expectMessage("Not Found");
-
-        hubSpot.product().patch(editProduct);
+        assertThatThrownBy(() -> hubSpot.product().patch(editProduct))
+            .isInstanceOf(HubSpotException.class)
+            .hasMessageContaining("Not Found");
     }
 
     @Test
-    public void deleteProduct_Test() throws Exception {
+    void deleteProduct_Test() throws Exception {
         HSProduct product = new HSProduct(testProductName, testProductDescription, testPrice, testRecurringPeriod);
         product = hubSpot.product().create(product);
         createdProductId = product.getId();
 
         hubSpot.product().delete(product);
 
-        assertNull(hubSpot.product().getByID(product.getId()));
+        assertThat(hubSpot.product().getByID(product.getId())).isNull();
 
     }
 
     @Test
-    public void deleteProduct_by_id_Test() throws Exception {
+    void deleteProduct_by_id_Test() throws Exception {
         HSProduct product = new HSProduct(testProductName, testProductDescription, testPrice, testRecurringPeriod);
         product = hubSpot.product().create(product);
         createdProductId = product.getId();
 
         hubSpot.product().delete(product.getId());
 
-        assertNull(hubSpot.product().getByID(product.getId()));
+        assertThat(hubSpot.product().getByID(product.getId())).isNull();
 
     }
 
     @Test
-    public void deleteProduct_No_ID_Test() throws Exception {
+    void deleteProduct_No_ID_Test() {
         HSProduct product = new HSProduct().setName(testProductName);
 
-        exception.expect(HubSpotException.class);
-        exception.expectMessage(StringContains.containsString("Product ID must be provided"));
-        hubSpot.product().delete(product);
+        assertThatThrownBy(() -> hubSpot.product().delete(product))
+            .isInstanceOf(HubSpotException.class)
+            .hasMessageContaining("Product ID must be provided");
     }
 }

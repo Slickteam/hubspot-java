@@ -1,13 +1,12 @@
 package fr.slickteam.hubspot.api.integration;
+
 import fr.slickteam.hubspot.api.domain.*;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
 import fr.slickteam.hubspot.api.service.HubSpot;
 import fr.slickteam.hubspot.api.utils.Helper;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -15,10 +14,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static java.lang.Thread.sleep;
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
-public class HSAssociationIT {
+class HSAssociationIT {
     private Long createdContactId;
     private List<Long> createdCompanyIds = new ArrayList<>();
     private Long createdAssociatedCompanyId;
@@ -43,11 +44,8 @@ public class HSAssociationIT {
 
     private HubSpot hubSpot;
 
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
-
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         hubSpot = new HubSpot(Helper.provideHubspotProperties());
         HSObject object = new HSObject();
         object.setProperty("price", Long.toString(75));
@@ -57,8 +55,8 @@ public class HSAssociationIT {
         testEmail1 = "test1" + Instant.now().getEpochSecond() + "@mail.com";
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @AfterEach
+    void tearDown() throws Exception {
         if (createdContactId != null) {
             hubSpot.contact().delete(createdContactId);
         }
@@ -80,7 +78,7 @@ public class HSAssociationIT {
     }
 
     @Test
-    public void associate_contact_to_company_success() throws HubSpotException {
+    void associate_contact_to_company_success() throws Exception {
         HSCompany company = hubSpot.company().create(new HSCompany(testEmail1,
                                                                    testPhoneNumber,
                                                                    testAddress,
@@ -99,7 +97,7 @@ public class HSAssociationIT {
     }
 
     @Test
-    public void associate_contact_to_company_bad_company_id_exception() throws HubSpotException {
+    void associate_contact_to_company_bad_company_id_exception() throws Exception {
         HSCompany company = hubSpot.company().create(new HSCompany(testEmail1,
                                                                    testPhoneNumber,
                                                                    testAddress,
@@ -109,13 +107,13 @@ public class HSAssociationIT {
 
         createdCompanyIds.add(company.getId());
 
-        exception.expect(HubSpotException.class);
-        exception.expectMessage("[-777 is not a valid ID]");
-        hubSpot.association().contactToCompany(-777, company.getId());
+        Throwable exception = assertThrows(HubSpotException.class, () ->
+            hubSpot.association().contactToCompany(-777, company.getId()));
+        assertThat(exception.getMessage()).contains("[-777 is not a valid ID]");
     }
 
     @Test
-    public void associate_contact_to_company_bad_contact_id_exception() throws HubSpotException {
+    void associate_contact_to_company_bad_contact_id_exception() throws Exception {
         HSContact contact = hubSpot.contact().create(new HSContact(testEmail1,
                                                                    testFirstname,
                                                                    testLastname,
@@ -125,13 +123,13 @@ public class HSAssociationIT {
         createdContactId = contact.getId();
 
 
-        exception.expect(HubSpotException.class);
-        exception.expectMessage("[-777 is not a valid ID]");
-        hubSpot.association().contactToCompany(contact.getId(), -777);
+        Throwable exception = assertThrows(HubSpotException.class, () ->
+            hubSpot.association().contactToCompany(contact.getId(), -777));
+        assertThat(exception.getMessage()).contains("[-777 is not a valid ID]");
     }
 
     @Test
-    public void associate_contact_to_companyList_success() throws HubSpotException {
+    void associate_contact_to_companyList_success() throws Exception {
         HSContact contact = hubSpot.contact().create(new HSContact(testEmail1,
                 testFirstname,
                 testLastname,
@@ -160,7 +158,7 @@ public class HSAssociationIT {
     }
 
     @Test
-    public void associate_company_to_company_success() throws HubSpotException {
+    void associate_company_to_company_success() throws Exception {
         HSCompany company = hubSpot.company().create(new HSCompany(testEmail1,
                 testPhoneNumber,
                 testAddress,
@@ -180,7 +178,7 @@ public class HSAssociationIT {
     }
 
     @Test
-    public void associate_company_to_company_bad_company_id_exception() throws HubSpotException {
+    void associate_company_to_company_bad_company_id_exception() throws Exception {
         HSCompany company = hubSpot.company().create(new HSCompany(testEmail1,
                 testPhoneNumber,
                 testAddress,
@@ -196,12 +194,12 @@ public class HSAssociationIT {
 
         createdCompanyIds.add(company.getId());
         createdAssociatedCompanyId = associatedCompany.getId();
-        exception.expect(HubSpotException.class);
-        hubSpot.association().companyToCompany(-777, createdAssociatedCompanyId, HSAssociationTypeEnum.PARENT);
+        assertThrows(HubSpotException.class, () ->
+            hubSpot.association().companyToCompany(-777, createdAssociatedCompanyId, HSAssociationTypeEnum.PARENT));
     }
 
     @Test
-    public void associate_company_to_childCompanyList_success() throws HubSpotException {
+    void associate_company_to_childCompanyList_success() throws Exception {
         HSCompany company = hubSpot.company().create(new HSCompany(testEmail1,
                 testPhoneNumber,
                 testAddress,
@@ -232,7 +230,7 @@ public class HSAssociationIT {
     }
 
     @Test
-    public void remove_association_company_to_childCompanyList_success() throws HubSpotException {
+    void remove_association_company_to_childCompanyList_success() throws Exception {
         HSCompany company = hubSpot.company().create(new HSCompany(testEmail1,
                 testPhoneNumber,
                 testAddress,
@@ -264,7 +262,7 @@ public class HSAssociationIT {
 
 
     @Test
-    public void remove_association_contact_to_company_success() throws HubSpotException {
+    void remove_association_contact_to_company_success() throws Exception {
         HSContact contact = hubSpot.contact().create(new HSContact(testEmail1,
                 testFirstname,
                 testLastname,
@@ -285,7 +283,7 @@ public class HSAssociationIT {
     }
 
     @Test
-    public void remove_association_contact_to_company_list_success() throws HubSpotException {
+    void remove_association_contact_to_company_list_success() throws Exception {
         HSContact contact = hubSpot.contact().create(new HSContact(testEmail1,
                 testFirstname,
                 testLastname,
@@ -317,7 +315,7 @@ public class HSAssociationIT {
 
 
     @Test
-    public void associate_get_contact_company_id_list_success() throws HubSpotException {
+    void associate_get_contact_company_id_list_success() throws Exception {
         HSCompany company = hubSpot.company().create(new HSCompany(testEmail1,
                 testPhoneNumber,
                 testAddress,
@@ -331,7 +329,7 @@ public class HSAssociationIT {
     }
 
     @Test
-    public void associate_get_companies_to_company_success() throws HubSpotException {
+    void associate_get_companies_to_company_success() throws Exception {
         HSCompany company = hubSpot.company().create(new HSCompany(testEmail1,
                 testPhoneNumber,
                 testAddress,
@@ -345,7 +343,7 @@ public class HSAssociationIT {
     }
 
     @Test
-    public void associate_deal_to_contact_success() throws HubSpotException {
+    void associate_deal_to_contact_success() throws Exception {
         HSDeal deal = hubSpot.deal().create(new HSDeal(testDealName, testDealStage, testPipeline, testAmount, testClosedate));
         HSContact contact = hubSpot.contact().create(new HSContact(testEmail1,
                                                                    testFirstname,
@@ -360,18 +358,18 @@ public class HSAssociationIT {
     }
 
     @Test
-    public void associate_deal_to_contact_bad_company_id_exception() throws HubSpotException {
+    void associate_deal_to_contact_bad_company_id_exception() throws Exception {
         HSDeal deal = hubSpot.deal().create(new HSDeal(testDealName, testDealStage, testPipeline, testAmount, testClosedate));
 
         createdDealId = deal.getId();
 
-        exception.expect(HubSpotException.class);
-        exception.expectMessage("Not Found");
-        hubSpot.association().dealToContact(createdDealId, -777);
+        Throwable exception = assertThrows(HubSpotException.class, () ->
+            hubSpot.association().dealToContact(createdDealId, -777));
+        assertThat(exception.getMessage()).contains("Not Found");
     }
 
     @Test
-    public void associate_deal_to_contact_bad_contact_id_exception() throws HubSpotException {
+    void associate_deal_to_contact_bad_contact_id_exception() throws Exception {
         HSContact contact = hubSpot.contact().create(new HSContact(testEmail1,
                                                                    testFirstname,
                                                                    testLastname,
@@ -380,13 +378,13 @@ public class HSAssociationIT {
 
         createdContactId = contact.getId();
 
-        exception.expect(HubSpotException.class);
-        exception.expectMessage("Not Found");
-        hubSpot.association().dealToContact(-777, contact.getId());
+        Throwable exception = assertThrows(HubSpotException.class, () ->
+            hubSpot.association().dealToContact(-777, contact.getId()));
+        assertThat(exception.getMessage()).contains("Not Found");
     }
 
     @Test
-    public void associate_deal_to_line_item_success() throws HubSpotException {
+    void associate_deal_to_line_item_success() throws Exception {
         HSDeal deal = hubSpot.deal().create(new HSDeal(testDealName, testDealStage, testPipeline, testAmount, testClosedate));
         HSLineItem lineItem = hubSpot.lineItem().create(new HSLineItem(testProductId, testQuantity));
 
@@ -397,31 +395,31 @@ public class HSAssociationIT {
     }
 
     @Test
-    public void associate_deal_to_line_item_bad_company_id_exception() throws HubSpotException {
+    void associate_deal_to_line_item_bad_company_id_exception() throws Exception {
         HSDeal deal = hubSpot.deal().create(new HSDeal(testDealName, testDealStage, testPipeline, testAmount, testClosedate));
 
         createdDealId = deal.getId();
 
-        exception.expect(HubSpotException.class);
-        exception.expectMessage("Not Found");
-        hubSpot.association().dealToLineItem(deal.getId(), -777);
+        Throwable exception = assertThrows(HubSpotException.class, () ->
+            hubSpot.association().dealToLineItem(deal.getId(), -777));
+        assertThat(exception.getMessage()).contains("Not Found");
     }
 
     @Test
-    public void associate_deal_to_line_item_bad_contact_id_exception() throws HubSpotException {
+    void associate_deal_to_line_item_bad_contact_id_exception() throws Exception {
         HSLineItem lineItem = hubSpot.lineItem().create(new HSLineItem(testProductId, testQuantity));
 
 
         createdLineItemId = lineItem.getId();
 
 
-        exception.expect(HubSpotException.class);
-        exception.expectMessage("Not Found");
-        hubSpot.association().dealToLineItem(-777, lineItem.getId());
+        Throwable exception = assertThrows(HubSpotException.class, () ->
+            hubSpot.association().dealToLineItem(-777, lineItem.getId()));
+        assertThat(exception.getMessage()).contains("Not Found");
     }
 
     @Test
-    public void get_association_Companies_To_Deal_success() throws HubSpotException {
+    void get_association_Companies_To_Deal_success() throws Exception {
         HSDeal deal = hubSpot.deal().create(new HSDeal(testDealName, testDealStage, testPipeline, testAmount, testClosedate));
         createdDealId = deal.getId();
         HSCompany company = hubSpot.company().create(new HSCompany(testEmail1,
@@ -439,7 +437,7 @@ public class HSAssociationIT {
     }
 
     @Test
-    public void get_association_Contacts_To_Deal_success() throws HubSpotException {
+    void get_association_Contacts_To_Deal_success() throws Exception {
         HSDeal deal = hubSpot.deal().create(new HSDeal(testDealName, testDealStage, testPipeline, testAmount, testClosedate));
         createdDealId = deal.getId();
         HSContact contact = hubSpot.contact().create(new HSContact(testEmail1,
@@ -457,7 +455,7 @@ public class HSAssociationIT {
     }
 
     @Test
-    public void get_association_Line_Items_To_Deal_success() throws HubSpotException {
+    void get_association_Line_Items_To_Deal_success() throws Exception {
         HSDeal deal = hubSpot.deal().create(new HSDeal(testDealName, testDealStage, testPipeline, testAmount, testClosedate));
         HSLineItem lineItem = hubSpot.lineItem().create(new HSLineItem(testProductId, testQuantity));
 

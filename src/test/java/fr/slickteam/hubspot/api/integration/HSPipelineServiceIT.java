@@ -4,30 +4,29 @@ import fr.slickteam.hubspot.api.domain.*;
 import fr.slickteam.hubspot.api.service.HubSpot;
 import fr.slickteam.hubspot.api.utils.Helper;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
-import org.junit.*;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Optional;
 
 import static java.lang.Thread.sleep;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public class HSPipelineServiceIT {
+class HSPipelineServiceIT {
 
     private String createdPipelineId;
     private HubSpot hubSpot;
 
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
-
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         hubSpot = new HubSpot(Helper.provideHubspotProperties());
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @AfterEach
+    void tearDown() throws Exception {
         if (createdPipelineId != null) {
             hubSpot.pipeline().delete(createdPipelineId);
         }
@@ -35,43 +34,44 @@ public class HSPipelineServiceIT {
         sleep(100);
     }
 
-    @Ignore("Required scopes missing")
+    @Disabled("Required scopes missing")
     @Test
-    public void createPipeline_Test() throws Exception {
+    void createPipeline_Test() throws Exception {
         HSPipeline pipeline = getNewTestPipeline();
         pipeline = hubSpot.pipeline().create(pipeline);
         createdPipelineId = pipeline.getId();
 
-        assertNotNull(pipeline.getId());
-        assertNotEquals("", pipeline.getId());
+        assertThat(pipeline.getId()).isNotNull();
+        assertThat(pipeline.getId()).isNotEqualTo("");
     }
 
-    @Ignore("Required scopes missing")
+    @Disabled("Required scopes missing")
     @Test
-    public void deletePipeline_Test() throws Exception {
+    void deletePipeline_Test() throws Exception {
         HSPipeline pipeline = getNewTestPipeline();
         createdPipelineId = pipeline.getId();
 
         hubSpot.pipeline().delete(pipeline);
 
-        assertNull(hubSpot.pipeline().getPipelineById(pipeline.getId()));
+        assertThat(hubSpot.pipeline().getPipelineById(pipeline.getId())).isNull();
 
     }
 
     @Test
-    public void getPipelines_Test() throws HubSpotException {
+    void getPipelines_Test() throws Exception {
         List<HSPipeline> pipelines = hubSpot.pipeline().getPipelines();
 
-        Assert.assertNotNull(pipelines);
-        pipelines.forEach(Assert::assertNotNull);
+        assertThat(pipelines).isNotNull();
+        pipelines.forEach(pipeline -> assertThat(pipeline).isNotNull());
     }
+
     @Test
-    public void getPipelineById_Test() throws HubSpotException {
+    void getPipelineById_Test() throws Exception {
         List<HSPipeline> pipelines = hubSpot.pipeline().getPipelines();
         HSPipeline pipelineTest = findPipelineWithStage(pipelines);
         HSPipeline findPipeline = hubSpot.pipeline().getPipelineById(pipelineTest.getId());
-        Assert.assertNotNull(findPipeline);
-        Assert.assertEquals(pipelineTest.getId(), findPipeline.getId());
+        assertThat(findPipeline).isNotNull();
+        assertThat(findPipeline.getId()).isEqualTo(pipelineTest.getId());
     }
 
     private HSPipeline getNewTestPipeline() throws HubSpotException {
