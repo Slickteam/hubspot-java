@@ -49,6 +49,8 @@ public class HSService {
             JsonNode value = jsonProperties.path(key);
             if (value.isObject() && value.has("value")) {
                 hsObject.setProperty(key, value.path("value").asText());
+            } else if (value.isArray()) {
+                hsObject.setProperty(key, value.toString());
             } else {
                 hsObject.setProperty(key, value.isNull() ? null : value.asText());
             }

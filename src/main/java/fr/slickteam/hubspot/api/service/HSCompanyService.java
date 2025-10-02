@@ -1,13 +1,10 @@
 package fr.slickteam.hubspot.api.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import fr.slickteam.hubspot.api.domain.*;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
 import fr.slickteam.hubspot.api.utils.HubSpotOrdering;
 import fr.slickteam.hubspot.api.utils.HubSpotSearchOperator;
-import fr.slickteam.hubspot.api.utils.JsonUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -28,12 +25,18 @@ public class HSCompanyService {
     private static final String LOG_PROPERTIES = " | properties : ";
     private static final String RESULTS = "results";
     private static final String NOT_FOUND = "Not Found";
+    public static final String AFTER = "after";
     private final HttpService httpService;
     private final HSService hsService;
     private HSContactService contactService;
     private final HSAssociationService associationService;
     private final HSDealService dealService;
-    private static final List<String> DEAL_PROPERTIES = List.of("dealname", "dealstage", "pipeline", "date_debut_contrat", "date_fin_contrat", "amount");
+    private static final List<String> DEAL_PROPERTIES = List.of("dealname",
+                                                                "dealstage",
+                                                                "pipeline",
+                                                                "date_debut_contrat",
+                                                                "date_fin_contrat",
+                                                                "amount");
     private static final String COMPANY_URL_V3 = "/crm/v3/objects/companies/";
     private static final String COMPANY_URL_V4 = "/crm/v4/objects/companies/";
     private static final String BATCH = "batch/";
@@ -330,8 +333,9 @@ public class HSCompanyService {
             }
             String nextPageToken = null;
             if (jsonNode.has(PAGING) && jsonNode.path(PAGING).has("next") &&
-                    jsonNode.path(PAGING).path("next").asText().split("after=").length > 1) {
-                nextPageToken = jsonNode.path(PAGING).path("next").asText().split("after=")[1];
+                    jsonNode.path(PAGING).path("next").path(AFTER) != null &&
+                    jsonNode.path(PAGING).path("next").path(AFTER).asText().length() > 1) {
+                nextPageToken = jsonNode.path(PAGING).path("next").path(AFTER).asText();
             }
             return new PagedHSCompanyList(companies, nextPageToken);
         } catch (HubSpotException e) {
@@ -390,13 +394,14 @@ public class HSCompanyService {
      * @return a company list filtered
      * @throws HubSpotException - if HTTP call fails
      */
-    public List<HSCompany> queryByDefaultSearchableProperties(String input, List<String> responseProperties, int limit) throws HubSpotException {
+    public List<HSCompany> queryByDefaultSearchableProperties(String input, List<String> responseProperties,
+                                                              int limit) throws HubSpotException {
         log.log(DEBUG, "queryByDefaultSearchableProperties");
         String url = COMPANY_URL_V3 + SEARCH;
 
         String responsePropertiesList = responseProperties.stream()
-                .map(property -> "    \"" + property + "\"")
-                .collect(Collectors.joining(",\n"));
+                                                          .map(property -> "    \"" + property + "\"")
+                                                          .collect(Collectors.joining(",\n"));
 
         String queryProperties = "{\n" +
                 "  \"query\": \"" + input + "\"," +
@@ -424,9 +429,9 @@ public class HSCompanyService {
                                                       int limit) throws HubSpotException {
         log.log(DEBUG, "searchFilteredByProperties");
         return searchSortedFilteredByProperties(propertiesAndValuesFilters,
-                responseProperties,
-                List.of(new HSSortOrder("name", HubSpotOrdering.DESCENDING)),
-                limit);
+                                                responseProperties,
+                                                List.of(new HSSortOrder("name", HubSpotOrdering.DESCENDING)),
+                                                limit);
     }
 
     /**
@@ -446,12 +451,13 @@ public class HSCompanyService {
         log.log(DEBUG, "searchSortedFilteredByProperties");
 
         List<HSSearchPropertyFilter> filtersPropertyList = propertiesAndValuesFilters.entrySet().stream()
-                .map(entry -> new HSSearchPropertyFilter(entry.getKey(),
-                        null,
-                        entry.getValue(),
-                        null,
-                        HubSpotSearchOperator.EQ))
-                .collect(Collectors.toList());
+                                                                                     .map(entry -> new HSSearchPropertyFilter(
+                                                                                             entry.getKey(),
+                                                                                             null,
+                                                                                             entry.getValue(),
+                                                                                             null,
+                                                                                             HubSpotSearchOperator.EQ))
+                                                                                     .collect(Collectors.toList());
 
         return searchSortedFiltered(filtersPropertyList, responseProperties, sortOrders, limit);
     }
@@ -474,17 +480,17 @@ public class HSCompanyService {
         String url = COMPANY_URL_V3 + SEARCH;
 
         String filtersPropertyList = propertiesFilters.stream()
-                .map(HSCompanyService::buildFilter)
-                .collect(Collectors.joining(",\n"));
+                                                      .map(HSCompanyService::buildFilter)
+                                                      .collect(Collectors.joining(",\n"));
 
         String responsePropertiesList = responseProperties.stream()
-                .map(property -> "    \"" + property + "\"")
-                .collect(Collectors.joining(",\n"));
+                                                          .map(property -> "    \"" + property + "\"")
+                                                          .collect(Collectors.joining(",\n"));
 
         String sorts = sortOrders.stream()
-                .map(so -> "   {\n\"propertyName\" : \"" + so.getProperty() + "\",\n" +
-                        "   \"direction\": \"" + so.getOrdering().name() + "\"}\n")
-                .collect(Collectors.joining(",\n"));
+                                 .map(so -> "   {\n\"propertyName\" : \"" + so.getProperty() + "\",\n" +
+                                         "   \"direction\": \"" + so.getOrdering().name() + "\"}\n")
+                                 .collect(Collectors.joining(",\n"));
 
         String filterGroupsProperties =
                 "{\n" +
@@ -511,9 +517,9 @@ public class HSCompanyService {
             case IN:
             case NOT_IN:
                 filter += "          \"values\": \"[" + propertyFilter.getValues()
-                        .stream()
-                        .map(val -> "\"" + val + "\"")
-                        .collect(Collectors.joining(",")) + "]\"\n";
+                                                                      .stream()
+                                                                      .map(val -> "\"" + val + "\"")
+                                                                      .collect(Collectors.joining(",")) + "]\"\n";
                 break;
             case BETWEEN:
                 filter += "          \"highValue\": \"" + propertyFilter.getHighValue() + "\",\n";
@@ -623,7 +629,8 @@ public class HSCompanyService {
         try {
             return hsService.parseJsonObjectToIdList(url);
         } catch (HubSpotException e) {
-            throw new HubSpotException("Cannot get company's deals. Company id : " + companyId + ". Reason: " + e.getMessage(), e);
+            throw new HubSpotException("Cannot get company's deals. Company id : " + companyId + ". Reason: " + e.getMessage(),
+                                       e);
         }
     }
 
@@ -669,8 +676,8 @@ public class HSCompanyService {
         }
 
         return dealList.stream()
-                .max(Comparator.comparing(HSDeal::getCreatedDate))
-                .orElse(null);
+                       .max(Comparator.comparing(HSDeal::getCreatedDate))
+                       .orElse(null);
     }
 
     /**
