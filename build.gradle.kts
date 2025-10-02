@@ -1,5 +1,8 @@
 val jacksonVersion: String by project
 val httpClientVersion: String by project
+val commonsCodecVersion: String by project
+val junitVersion: String by project
+val mockitoVersion: String by project
 
 plugins {
     `java-library`
@@ -35,9 +38,9 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-core:$jacksonVersion")
     implementation("com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion")
     implementation("org.apache.httpcomponents.client5:httpclient5:$httpClientVersion")
-    implementation("commons-codec:commons-codec:1.18.0")
-    testImplementation("junit:junit:4.13.2")
-    testImplementation("org.mockito:mockito-core:3.12.4")
+    implementation("commons-codec:commons-codec:$commonsCodecVersion")
+    testImplementation("junit:junit:$junitVersion")
+    testImplementation("org.mockito:mockito-core:$mockitoVersion")
 }
 
 tasks.withType<JavaCompile> {
