@@ -1,3 +1,6 @@
+val jacksonVersion: String by project
+val httpClientVersion: String by project
+
 plugins {
     `java-library`
     `maven-publish`
@@ -12,7 +15,7 @@ repositories {
 }
 
 group = "fr.slickteam.hubspot.api"
-version = "2.3.0"
+version = "3.0.0"
 description = "Java Wrapper for HubSpot API"
 
 java {
@@ -28,11 +31,10 @@ jacoco {
 }
 
 dependencies {
-    implementation("com.google.guava:guava:33.4.8-jre")
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.16.1")
-    implementation("com.fasterxml.jackson.core:jackson-core:2.16.1")
-    implementation("com.fasterxml.jackson.core:jackson-annotations:2.16.1")
-    implementation("org.apache.httpcomponents:httpclient:4.5.14")
+    implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
+    implementation("com.fasterxml.jackson.core:jackson-core:$jacksonVersion")
+    implementation("com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion")
+    implementation("org.apache.httpcomponents.client5:httpclient5:$httpClientVersion")
     implementation("commons-codec:commons-codec:1.18.0")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.mockito:mockito-core:3.12.4")

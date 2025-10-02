@@ -1,10 +1,10 @@
 package fr.slickteam.hubspot.api.domain;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.base.Strings;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
 import fr.slickteam.hubspot.api.utils.HubSpotHelper;
 import fr.slickteam.hubspot.api.utils.JsonUtils;
+import fr.slickteam.hubspot.api.utils.StringUtils;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -102,7 +102,7 @@ public class HSObject implements Serializable {
      * @return the long property
      */
     public long getLongProperty(String property) {
-        return Strings.isNullOrEmpty(getProperty(property)) ? 0 : Long.parseLong(getProperty(property)) ;
+        return StringUtils.isNullOrEmpty(getProperty(property)) ? 0 : Long.parseLong(getProperty(property));
     }
 
     /**
@@ -112,7 +112,8 @@ public class HSObject implements Serializable {
      * @return the big decimal property
      */
     public BigDecimal getBigDecimalProperty(String property) {
-        return Strings.isNullOrEmpty(getProperty(property)) ? BigDecimal.valueOf(0) : new BigDecimal(getProperty(property));
+        return StringUtils.isNullOrEmpty(getProperty(property)) ? BigDecimal.valueOf(0) : new BigDecimal(getProperty(
+                property));
     }
 
     /**
@@ -132,7 +133,7 @@ public class HSObject implements Serializable {
      * @return the boolean property
      */
     public boolean getBooleanProperty(String property) {
-        return !Strings.isNullOrEmpty(getProperty(property)) && Boolean.parseBoolean(getProperty(property));
+        return !StringUtils.isNullOrEmpty(getProperty(property)) && Boolean.parseBoolean(getProperty(property));
     }
 
     /**
@@ -142,7 +143,7 @@ public class HSObject implements Serializable {
      * @return the date property
      */
     public Instant getDateProperty(String property) {
-        if (Strings.isNullOrEmpty(getProperty(property))) {
+        if (StringUtils.isNullOrEmpty(getProperty(property))) {
             return Instant.now();
         } else {
             try {

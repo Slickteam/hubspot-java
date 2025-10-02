@@ -4,19 +4,15 @@
  *  developer: Sergei Dubinin
  *  e-mail: sdubininit@gmail.com
  *  date: 14.10.2015 9:58
- *  
+ *
  *  copyright (c) integrationagent.com
  */
 
 package fr.slickteam.hubspot.api.utils;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.base.Strings;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -54,7 +50,7 @@ public class HubSpotHelper {
      * @param value    the value
      */
     public static void putJsonObject(ArrayNode array, String property, String value) {
-        if (!Strings.isNullOrEmpty(value) && !value.equals("null")) {
+        if (!StringUtils.isNullOrEmpty(value) && !value.equals("null")) {
             array.add(getJsonObject(property, value));
         }
     }
@@ -68,7 +64,7 @@ public class HubSpotHelper {
      * @return the object node
      */
     public static ObjectNode putJsonObject(ObjectNode node, String property, Object value) {
-        if (!Strings.isNullOrEmpty(value + "") && !value.equals("null")) {
+        if (!StringUtils.isNullOrEmpty(value + "") && !value.equals("null")) {
             if (value instanceof String) {
                 node.put(property, (String) value);
             } else if (value instanceof Number) {
