@@ -134,6 +134,7 @@ public class HSPipeline extends HSObject {
      * Gets stages.
      *
      * @return the stages
+     * @throws HubSpotException Exception from parsing results
      */
     public List<HSStage> getStages() throws HubSpotException {
         JsonNode jsonNode = JsonUtils.parseJson(getProperty(STAGES));

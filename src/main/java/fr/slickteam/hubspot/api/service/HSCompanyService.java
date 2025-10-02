@@ -25,7 +25,7 @@ public class HSCompanyService {
     private static final String LOG_PROPERTIES = " | properties : ";
     private static final String RESULTS = "results";
     private static final String NOT_FOUND = "Not Found";
-    public static final String AFTER = "after";
+    private static final String AFTER = "after";
     private final HttpService httpService;
     private final HSService hsService;
     private HSContactService contactService;

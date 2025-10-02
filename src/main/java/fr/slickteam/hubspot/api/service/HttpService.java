@@ -31,11 +31,11 @@ public class HttpService {
 
     private static final System.Logger log = System.getLogger(HttpService.class.getName());
     private static final String MESSAGE = "message";
-    public static final String ACCEPT = "Accept";
-    public static final String CONTENT_TYPE = "Content-Type";
-    public static final String AUTHORIZATION = "Authorization";
-    public static final String BEARER = "Bearer ";
-    public static final String APPLICATION_JSON = "application/json";
+    private static final String ACCEPT = "Accept";
+    private static final String CONTENT_TYPE = "Content-Type";
+    private static final String AUTHORIZATION = "Authorization";
+    private static final String BEARER = "Bearer ";
+    private static final String APPLICATION_JSON = "application/json";
 
     private final String apiBase;
     private final OAuthConfig oAuthConfig;
