@@ -8,9 +8,9 @@ plugins {
     `java-library`
     `maven-publish`
     signing
-    id("org.sonarqube") version "6.0.1.5171"
+    id("org.sonarqube") version "6.3.1.5724"
     id("jacoco")
-    id("org.jreleaser") version "1.17.0"
+    id("org.jreleaser") version "1.20.0"
 }
 
 repositories {
@@ -30,7 +30,7 @@ java {
 }
 
 jacoco {
-    toolVersion = "0.8.12"
+    toolVersion = "0.8.13"
 }
 
 dependencies {
