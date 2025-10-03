@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class HSLineItemJSONTest {
@@ -30,8 +31,8 @@ class HSLineItemJSONTest {
         JsonNode jsonNode = mapper.readTree(inputData);
 
         HSLineItem lineItem = service.parseLineItemData(jsonNode);
-        assertEquals(71, lineItem.getId());
-        assertEquals("1", lineItem.getProperty("test"));
+        assertThat(lineItem.getId()).isEqualTo(71L);
+        assertThat(lineItem.getProperty("test")).isEqualTo("1");
     }
 
     @Test
@@ -42,6 +43,6 @@ class HSLineItemJSONTest {
 
         HSLineItem lineItem = service.parseLineItemData(jsonNode);
         String result = lineItem.toJson().toString();
-        assertEquals("{\"properties\":{\"test2\":\"2\",\"test\":\"1\"}}", result);
+        assertThat(result).isEqualTo("{\"properties\":{\"test\":\"1\",\"test2\":\"2\"}}");
     }
 }

@@ -40,20 +40,31 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion")
     implementation("org.apache.httpcomponents.client5:httpclient5:$httpClientVersion")
     implementation("commons-codec:commons-codec:$commonsCodecVersion")
+
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
     testImplementation("org.mockito:mockito-core:$mockitoVersion")
     testImplementation("org.assertj:assertj-core:$assertJVersion")
+
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
 }
 
-tasks.withType<JavaCompile> {
-    options.encoding = "UTF-8"
-    options.compilerArgs.add("-Xlint:unchecked")
-}
+tasks {
+    withType<Test> {
+        useJUnitPlatform()
+        finalizedBy("jacocoTestReport")
+    }
 
-tasks.jar{
-    enabled = true
-    // Remove `plain` postfix from jar file name
-    archiveClassifier.set("")
+    withType<JavaCompile> {
+        options.encoding = "UTF-8"
+        options.compilerArgs.add("-Xlint:unchecked")
+    }
+
+    jar {
+        enabled = true
+        // Remove `plain` postfix from jar file name
+        archiveClassifier.set("")
+    }
 }
 
 sonar {

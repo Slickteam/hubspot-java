@@ -374,6 +374,7 @@ class HSContactServiceIT {
         assertThat(createdContact.getId()).isNotZero();
         properties.put("hs_object_id", String.valueOf(createdContact.getId()));
         List<HSContact> hsContacts = hubSpot.contact().searchFilteredByProperties(properties, responseProperties, 10);
+
         assertThat(hsContacts).isNotEmpty();
     }
 

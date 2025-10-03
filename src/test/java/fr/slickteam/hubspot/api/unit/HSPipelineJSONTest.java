@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class HSPipelineJSONTest {
@@ -29,8 +30,8 @@ class HSPipelineJSONTest {
         JsonNode jsonNode = mapper.readTree(inputData);
 
         HSPipeline pipeline = service.parsePipelineData(jsonNode);
-        assertEquals("71", pipeline.getId());
-        assertEquals("1", pipeline.getProperty("test"));
+        assertThat(pipeline.getId()).isEqualTo("71");
+        assertThat(pipeline.getProperty("test")).isEqualTo("1");
     }
 
     @Test
@@ -41,6 +42,6 @@ class HSPipelineJSONTest {
 
         HSPipeline pipeline = service.parsePipelineData(jsonNode);
         String result = pipeline.toJson().toString();
-        assertEquals("{\"properties\":{\"test2\":\"2\",\"id\":\"71\",\"test\":\"1\"}}", result);
+        assertThat(result).isEqualTo("{\"properties\":{\"test\":\"1\",\"test2\":\"2\"}}");
     }
 }

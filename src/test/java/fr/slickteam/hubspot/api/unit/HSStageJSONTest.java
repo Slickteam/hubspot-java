@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class HSStageJSONTest {
@@ -27,10 +28,10 @@ class HSStageJSONTest {
         String inputData = "{\"test\":1,\"id\":71}";
         ObjectMapper mapper = new ObjectMapper();
         JsonNode jsonNode = mapper.readTree(inputData);
-        HSStage stage = service.parseStageData(jsonNode);
 
-        assertEquals("71", stage.getId());
-        assertEquals("1", stage.getProperty("test"));
+        HSStage stage = service.parseStageData(jsonNode);
+        assertThat(stage.getId()).isEqualTo("71");
+        assertThat(stage.getProperty("test")).isEqualTo("1");
     }
 
     @Test
@@ -41,6 +42,6 @@ class HSStageJSONTest {
 
         HSStage stage = service.parseStageData(jsonNode);
         String result = stage.toJson().toString();
-        assertEquals("{\"properties\":{\"test2\":\"2\",\"id\":\"71\",\"test\":\"1\"}}", result);
+        assertThat(result).isEqualTo("{\"properties\":{\"test\":\"1\",\"test2\":\"2\"}}");
     }
 }
