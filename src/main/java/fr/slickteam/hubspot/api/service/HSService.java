@@ -7,9 +7,7 @@ import fr.slickteam.hubspot.api.domain.HSObject;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
 import fr.slickteam.hubspot.api.utils.JsonUtils;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.StreamSupport;
@@ -39,13 +37,20 @@ public class HSService {
      */
     public HSObject parseJSONData(JsonNode jsonBody, HSObject hsObject) {
         JsonNode jsonProperties;
-        if(jsonBody.has("properties")) {
+        if (jsonBody.has("properties")) {
             jsonProperties = jsonBody.path("properties");
         } else {
             jsonProperties = jsonBody;
         }
 
-        jsonProperties.fieldNames().forEachRemaining(key -> {
+        // Convert fieldNames iterator to a sorted list
+        List<String> sortedFieldNames = StreamSupport
+                .stream(Spliterators.spliteratorUnknownSize(jsonProperties.fieldNames(), Spliterator.ORDERED), false)
+                .sorted()
+                .toList();
+
+        // Process the fields in sorted order
+        sortedFieldNames.forEach(key -> {
             JsonNode value = jsonProperties.path(key);
             if (value.isObject() && value.has("value")) {
                 hsObject.setProperty(key, value.path("value").asText());
