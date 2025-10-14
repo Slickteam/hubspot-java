@@ -43,21 +43,18 @@ public class HSService {
             jsonProperties = jsonBody;
         }
 
-        // Convert fieldNames iterator to a sorted list
-        List<String> sortedFieldNames = StreamSupport
-                .stream(Spliterators.spliteratorUnknownSize(jsonProperties.fieldNames(), Spliterator.ORDERED), false)
-                .sorted()
-                .toList();
+        Map<String, JsonNode> jsonOrderedFields = new TreeMap<>();
+        jsonProperties.fieldNames()
+                      .forEachRemaining(name -> jsonOrderedFields.put(name, jsonProperties.path(name)));
 
         // Process the fields in sorted order
-        sortedFieldNames.forEach(key -> {
-            JsonNode value = jsonProperties.path(key);
+        jsonOrderedFields.forEach((name, value) -> {
             if (value.isObject() && value.has("value")) {
-                hsObject.setProperty(key, value.path("value").asText());
+                hsObject.setProperty(name, value.path("value").asText());
             } else if (value.isArray()) {
-                hsObject.setProperty(key, value.toString());
+                hsObject.setProperty(name, value.toString());
             } else {
-                hsObject.setProperty(key, value.isNull() ? null : value.asText());
+                hsObject.setProperty(name, value.isNull() ? null : value.asText());
             }
         });
         

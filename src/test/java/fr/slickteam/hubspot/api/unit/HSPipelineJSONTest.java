@@ -42,6 +42,6 @@ class HSPipelineJSONTest {
 
         HSPipeline pipeline = service.parsePipelineData(jsonNode);
         String result = pipeline.toJson().toString();
-        assertThat(result).isEqualTo("{\"properties\":{\"test\":\"1\",\"test2\":\"2\"}}");
+        assertThat(result).isEqualTo("{\"properties\":{\"test\":\"1\",\"test2\":\"2\",\"id\":\"71\"}}");
     }
 }
