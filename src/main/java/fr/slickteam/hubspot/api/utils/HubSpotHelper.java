@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * The type Hub spot helper.
@@ -65,14 +66,12 @@ public class HubSpotHelper {
      */
     public static ObjectNode putJsonObject(ObjectNode node, String property, Object value) {
         if (!StringUtils.isNullOrEmpty(value + "") && !value.equals("null")) {
-            if (value instanceof String) {
-                node.put(property, (String) value);
-            } else if (value instanceof Number) {
-                node.put(property, value.toString());
-            } else if (value instanceof Boolean) {
-                node.put(property, (Boolean) value);
-            } else if (value != null) {
-                node.put(property, value.toString());
+            if (value instanceof String val) {
+                node.put(property, val);
+            } else if (value instanceof Number val) {
+                node.put(property, val.toString());
+            } else if (value instanceof Boolean val) {
+                node.put(property, val);
             }
         }
         return node;

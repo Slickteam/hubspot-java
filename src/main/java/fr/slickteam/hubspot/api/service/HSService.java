@@ -1,15 +1,13 @@
 package fr.slickteam.hubspot.api.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import fr.slickteam.hubspot.api.domain.HSObject;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
-import fr.slickteam.hubspot.api.utils.JsonUtils;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.StreamSupport;
 
 /**
@@ -43,21 +41,17 @@ public class HSService {
             jsonProperties = jsonBody;
         }
 
-        Map<String, JsonNode> jsonOrderedFields = new TreeMap<>();
-        jsonProperties.fieldNames()
-                      .forEachRemaining(name -> jsonOrderedFields.put(name, jsonProperties.path(name)));
-
-        // Process the fields in sorted order
-        jsonOrderedFields.forEach((name, value) -> {
+        jsonProperties.fieldNames().forEachRemaining(key -> {
+            JsonNode value = jsonProperties.path(key);
             if (value.isObject() && value.has("value")) {
-                hsObject.setProperty(name, value.path("value").asText());
+                hsObject.setProperty(key, value.path("value").asText());
             } else if (value.isArray()) {
-                hsObject.setProperty(name, value.toString());
+                hsObject.setProperty(key, value.toString());
             } else {
-                hsObject.setProperty(name, value.isNull() ? null : value.asText());
+                hsObject.setProperty(key, value.isNull() ? null : value.asText());
             }
         });
-        
+
         return hsObject;
     }
 
@@ -74,8 +68,8 @@ public class HSService {
         JsonNode results = requestResponse.path("results");
 
         return StreamSupport.stream(results.spliterator(), false)
-                .map(resultObj -> Long.valueOf(resultObj.path("toObjectId").asText()))
-                .collect(Collectors.toList());
+                            .map(resultObj -> Long.valueOf(resultObj.path("toObjectId").asText()))
+                            .collect(Collectors.toList());
     }
 
     /**
@@ -85,11 +79,11 @@ public class HSService {
      * @return the list
      * @throws HubSpotException the hub spot exception
      */
-    public List<JsonNode> parseJsonResultToList (String url) throws HubSpotException {
+    public List<JsonNode> parseJsonResultToList(String url) throws HubSpotException {
         JsonNode requestResponse = (JsonNode) httpService.getRequest(url);
         JsonNode results = requestResponse.path("results");
         return StreamSupport.stream(results.spliterator(), false)
-                .collect(Collectors.toList());
+                            .collect(Collectors.toList());
     }
 
     /**
@@ -100,11 +94,11 @@ public class HSService {
      * @return the list
      * @throws HubSpotException the hub spot exception
      */
-    public List<JsonNode> parsePostJsonResultToList (String url, String body) throws HubSpotException {
+    public List<JsonNode> parsePostJsonResultToList(String url, String body) throws HubSpotException {
         JsonNode requestResponse = (JsonNode) httpService.postRequest(url, body);
         JsonNode results = requestResponse.path("results");
         return StreamSupport.stream(results.spliterator(), false)
-                .collect(Collectors.toList());
+                            .collect(Collectors.toList());
     }
 
     /**
@@ -182,14 +176,14 @@ public class HSService {
      * If the specified key points to a single object, that object is returned as a single-element list.
      *
      * @param response the JSON response object to be parsed
-     * @param results the key in the JSON response indicating the desired data
+     * @param results  the key in the JSON response indicating the desired data
      * @return a list of JSON nodes extracted from the response
      */
     public List<JsonNode> parseJSONResults(JsonNode response, String results) {
         JsonNode resultsNode = response.path(results);
         if (resultsNode.isArray()) {
             return StreamSupport.stream(resultsNode.spliterator(), false)
-                    .collect(Collectors.toList());
+                                .collect(Collectors.toList());
         } else {
             return List.of(resultsNode);
         }
