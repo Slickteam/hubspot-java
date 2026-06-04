@@ -1,4 +1,5 @@
 val jacksonVersion: String by project
+val jacksonAnnotationVersion: String by project
 val httpClientVersion: String by project
 val commonsCodecVersion: String by project
 val junitVersion: String by project
@@ -37,7 +38,7 @@ jacoco {
 dependencies {
     implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
     implementation("com.fasterxml.jackson.core:jackson-core:$jacksonVersion")
-    implementation("com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion")
+    implementation("com.fasterxml.jackson.core:jackson-annotations:$jacksonAnnotationVersion")
     implementation("org.apache.httpcomponents.client5:httpclient5:$httpClientVersion")
     implementation("commons-codec:commons-codec:$commonsCodecVersion")
 
