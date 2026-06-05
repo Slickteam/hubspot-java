@@ -13,11 +13,10 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class HSStageJSONTest {
 
-     HSStageService service;
+    HSStageService service;
 
     @BeforeEach
     void setUp() throws IOException {
@@ -39,12 +38,11 @@ class HSStageJSONTest {
     void toJson_Test() throws Exception {
         String inputData = "{\"test\":1, \"test2\":2,\"id\":71}";
         ObjectMapper mapper = new ObjectMapper();
-        JsonNode jsonNode = mapper.setConfig(mapper.getSerializationConfig()
-                                                   .with(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY))
-                                  .readTree(inputData);
+        JsonNode jsonNode = mapper.readTree(inputData);
 
         HSStage stage = service.parseStageData(jsonNode);
-        String result = stage.toJson().toString();
-        assertThat(result).isEqualTo("{\"properties\":{\"test\":\"1\",\"test2\":\"2\",\"id\":\"71\"}}");
+        JsonNode result = stage.toJson();
+        JsonNode expected = mapper.readTree("{\"properties\":{\"test\":\"1\",\"test2\":\"2\",\"id\":\"71\"}}");
+        assertThat(result).isEqualTo(expected);
     }
 }

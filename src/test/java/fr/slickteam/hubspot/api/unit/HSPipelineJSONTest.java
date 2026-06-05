@@ -41,7 +41,8 @@ class HSPipelineJSONTest {
         JsonNode jsonNode = mapper.readTree(inputData);
 
         HSPipeline pipeline = service.parsePipelineData(jsonNode);
-        String result = pipeline.toJson().toString();
-        assertThat(result).isEqualTo("{\"properties\":{\"test\":\"1\",\"test2\":\"2\",\"id\":\"71\"}}");
+        JsonNode result = pipeline.toJson();
+        JsonNode expected = mapper.readTree("{\"properties\":{\"test\":\"1\",\"test2\":\"2\",\"id\":\"71\"}}");
+        assertThat(result).isEqualTo(expected);
     }
 }

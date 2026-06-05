@@ -41,7 +41,8 @@ class HSDealJSONTest {
         JsonNode jsonNode = mapper.readTree(inputData);
 
         HSDeal deal = service.parseDealData(jsonNode);
-        String result = deal.toJson().toString();
-        assertThat(result).isEqualTo("{\"properties\":{\"test\":\"1\",\"test2\":\"2\"}}");
+        JsonNode result = deal.toJson();
+        JsonNode expected = mapper.readTree("{\"properties\":{\"test\":\"1\",\"test2\":\"2\"}}");
+        assertThat(result).isEqualTo(expected);
     }
 }

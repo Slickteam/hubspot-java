@@ -364,16 +364,23 @@ class HSContactServiceIT {
 
     @Test
     void searchFilteredByProperties_Test() throws Exception {
-        HSContact contact = new HSContact(testEmail1, testFirstname, testLastname, testPhoneNumber, testLifeCycleStage);
+        HSContact contact = getNewTestContact();
         Map<String, String> properties = new HashMap<>();
         List<String> responseProperties = Arrays.asList("id", "firstname", "lastname");
-        HSContact createdContact = hubSpot.contact().create(contact);
+        HSContact createdContact = contact;
 
         createdContactIds.add(createdContact.getId());
 
         assertThat(createdContact.getId()).isNotZero();
-        properties.put("hs_object_id", String.valueOf(createdContact.getId()));
-        List<HSContact> hsContacts = hubSpot.contact().searchFilteredByProperties(properties, responseProperties, 10);
+        properties.put("email", createdContact.getEmail());
+        List<HSContact> hsContacts = Collections.emptyList();
+        for (int i = 0; i < 5; i++) {
+            hsContacts = hubSpot.contact().searchFilteredByProperties(properties, responseProperties, 10);
+            if (!hsContacts.isEmpty()) {
+                break;
+            }
+            Thread.sleep(1000);
+        }
 
         assertThat(hsContacts).isNotEmpty();
     }

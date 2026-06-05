@@ -42,7 +42,8 @@ class HSContactJSONTest {
         JsonNode jsonNode = mapper.readTree(inputData);
 
         HSContact contact = service.parseContactData(jsonNode);
-        String result = contact.toJson().toString();
-        assertThat(result).isEqualTo("{\"properties\":{\"test\":\"1\",\"test2\":\"2\"}}");
+        JsonNode result = contact.toJson();
+        JsonNode expected = mapper.readTree("{\"properties\":{\"test\":\"1\",\"test2\":\"2\"}}");
+        assertThat(result).isEqualTo(expected);
     }
 }

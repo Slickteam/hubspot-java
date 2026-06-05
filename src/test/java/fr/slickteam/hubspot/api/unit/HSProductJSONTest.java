@@ -43,8 +43,8 @@ class HSProductJSONTest {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode jsonNode = mapper.readTree(inputData);
         HSProduct product = service.parseProductData(jsonNode);
-
-        String result = product.toJson().toString();
-        assertEquals("{\"properties\":{\"description\":\"Onboarding service for data product\"}}", result);
+        JsonNode result = product.toJson();
+        JsonNode expected = mapper.readTree("{\"properties\":{\"description\":\"Onboarding service for data product\"}}");
+        assertEquals(expected, result);
     }
 }

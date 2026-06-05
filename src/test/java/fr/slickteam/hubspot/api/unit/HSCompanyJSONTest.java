@@ -39,7 +39,8 @@ class HSCompanyJSONTest {
         JsonNode jsonNode = mapper.readTree(inputData);
         HSCompany company = service.parseCompanyData(jsonNode);
 
-        String result = company.toJson().toString();
-        assertEquals("{\"properties\":{\"description\":\"text\"}}", result);
+        JsonNode result = company.toJson();
+        JsonNode expected = mapper.readTree("{\"properties\":{\"description\":\"text\"}}");
+        assertEquals(expected, result);
     }
 }

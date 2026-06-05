@@ -42,7 +42,8 @@ class HSLineItemJSONTest {
         JsonNode jsonNode = mapper.readTree(inputData);
 
         HSLineItem lineItem = service.parseLineItemData(jsonNode);
-        String result = lineItem.toJson().toString();
-        assertThat(result).isEqualTo("{\"properties\":{\"test\":\"1\",\"test2\":\"2\"}}");
+        JsonNode result = lineItem.toJson();
+        JsonNode expected = mapper.readTree("{\"properties\":{\"test\":\"1\",\"test2\":\"2\"}}");
+        assertThat(result).isEqualTo(expected);
     }
 }

@@ -211,8 +211,14 @@ class HSLineItemServiceIT {
 
         hubSpot.association().dealToLineItem(deal.getId(), lineItem.getId());
 
-        sleep(8000);
-        List<HSLineItem> results = hubSpot.deal().getHSLineItemsForHSDeal(deal);
+        List<HSLineItem> results = List.of();
+        for (int i = 0; i < 20; i++) {
+            results = hubSpot.deal().getHSLineItemsForHSDeal(deal);
+            if (!results.isEmpty()) {
+                break;
+            }
+            sleep(2000);
+        }
 
         assertThat(results).isNotEmpty();
         assertThat(results.get(0).getHsProductId()).isEqualTo(lineItem.getHsProductId());
