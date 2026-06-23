@@ -1,42 +1,46 @@
 package fr.slickteam.hubspot.api.unit;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.slickteam.hubspot.api.utils.Helper;
 import fr.slickteam.hubspot.api.domain.HSCompany;
 import fr.slickteam.hubspot.api.service.HSCompanyService;
 import fr.slickteam.hubspot.api.service.HubSpot;
-import kong.unirest.json.JSONObject;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class HSCompanyJSONTest {
+class HSCompanyJSONTest {
 
     HSCompanyService service;
 
-    @Before
-    public void setUp() throws IOException {
+    @BeforeEach
+    void setUp() throws IOException {
         service = new HubSpot(Helper.provideHubspotProperties()).company();
     }
 
     @Test
-    public void parseCompanyData_Test() {
+    void parseCompanyData_Test() throws Exception {
         String inputData = "{\"portalId\": 62515,\"id\": 10444744,\"isDeleted\": false,\"properties\": {\"description\": \"text\"}}";
-        JSONObject jsonObject = new JSONObject(inputData);
-        HSCompany company = service.parseCompanyData(jsonObject);
-        assertEquals(company.getId(), 10444744);
-        assertEquals(company.getProperty("description"), "text");
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode jsonNode = mapper.readTree(inputData);
+        HSCompany company = service.parseCompanyData(jsonNode);
+        assertEquals(10444744, company.getId());
+        assertEquals("text", company.getProperty("description"));
     }
 
     @Test
-    public void toJson_Test() {
+    void toJson_Test() throws Exception {
         String inputData = "{\"portalId\": 62515,\"id\": 10444744,\"isDeleted\": false,\"properties\": {\"description\": \"text\"}}";
-        JSONObject jsonObject = new JSONObject(inputData);
-        HSCompany company = service.parseCompanyData(jsonObject);
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode jsonNode = mapper.readTree(inputData);
+        HSCompany company = service.parseCompanyData(jsonNode);
 
-        String result = company.toJson().toString();
-        assertEquals("{\"properties\":{\"description\":\"text\"}}", result);
+        JsonNode result = company.toJson();
+        JsonNode expected = mapper.readTree("{\"properties\":{\"description\":\"text\"}}");
+        assertEquals(expected, result);
     }
 }

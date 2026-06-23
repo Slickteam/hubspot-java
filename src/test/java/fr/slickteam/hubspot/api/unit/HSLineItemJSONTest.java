@@ -1,44 +1,49 @@
 package fr.slickteam.hubspot.api.unit;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.slickteam.hubspot.api.domain.HSLineItem;
 import fr.slickteam.hubspot.api.service.HSLineItemService;
 import fr.slickteam.hubspot.api.service.HubSpot;
 import fr.slickteam.hubspot.api.utils.Helper;
-import kong.unirest.json.JSONObject;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class HSLineItemJSONTest {
+class HSLineItemJSONTest {
 
     HSLineItemService service;
 
 
-    @Before
-    public void setUp() throws IOException {
+    @BeforeEach
+    void setUp() throws IOException {
         service = new HubSpot(Helper.provideHubspotProperties()).lineItem();
     }
 
     @Test
-    public void parseDealData_Test() {
-        String inputData = "{properties:{test:1},id:71}";
-        JSONObject jsonObject = new JSONObject(inputData);
+    void parseDealData_Test() throws Exception {
+        String inputData = "{\"properties\":{\"test\":1},\"id\":71}";
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode jsonNode = mapper.readTree(inputData);
 
-        HSLineItem lineItem = service.parseLineItemData(jsonObject);
-        assertEquals(lineItem.getId(), 71);
-        assertEquals(lineItem.getProperty("test"), "1");
+        HSLineItem lineItem = service.parseLineItemData(jsonNode);
+        assertThat(lineItem.getId()).isEqualTo(71L);
+        assertThat(lineItem.getProperty("test")).isEqualTo("1");
     }
 
     @Test
-    public void toJson_Test() {
-        String inputData = "{properties:{test:1, test2:2},id:71}";
-        JSONObject jsonObject = new JSONObject(inputData);
+    void toJson_Test() throws Exception {
+        String inputData = "{\"properties\":{\"test\":1, \"test2\":2},\"id\":71}";
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode jsonNode = mapper.readTree(inputData);
 
-        HSLineItem lineItem = service.parseLineItemData(jsonObject);
-        String result = lineItem.toJson().toString();
-        assertEquals("{\"properties\":{\"test2\":\"2\",\"test\":\"1\"}}", result);
+        HSLineItem lineItem = service.parseLineItemData(jsonNode);
+        JsonNode result = lineItem.toJson();
+        JsonNode expected = mapper.readTree("{\"properties\":{\"test\":\"1\",\"test2\":\"2\"}}");
+        assertThat(result).isEqualTo(expected);
     }
 }

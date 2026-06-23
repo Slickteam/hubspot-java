@@ -1,9 +1,9 @@
 package fr.slickteam.hubspot.api.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import fr.slickteam.hubspot.api.domain.HSAssocationTypeInput;
 import fr.slickteam.hubspot.api.domain.HSAssociationTypeEnum;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
-import kong.unirest.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +21,12 @@ public class HSAssociationService {
     private static final String CLOSE_BLOCK = "    },\n";
     private static final String COMPANY_ID_LOGS = " | companyId : ";
     private static final String COMPANY_ID_LIST_LOGS = " | companyIdList : ";
+    public static final String INPUTS = "  \"inputs\": [\n";
+    public static final String OBJECT_BEGIN = "    {\n";
+    public static final String FROM = "      \"from\": {\n";
+    public static final String ID = "        \"id\": \"";
+    public static final String OBJECT_END = "    }";
+    public static final String TO = "      \"to\": {\n";
 
     private static class BasePath {
         /**
@@ -81,13 +87,13 @@ public class HSAssociationService {
     public void contactToCompany(long contactId, long companyId) throws HubSpotException {
         log.log(DEBUG, "contactToCompany - contactId : " + contactId + COMPANY_ID_LOGS + companyId);
         String associationProperties = "{\n" +
-                "  \"inputs\": [\n" +
-                "    {\n" +
-                "      \"from\": {\n" +
-                "        \"id\": \"" + contactId + "\"\n" +
+                INPUTS +
+                OBJECT_BEGIN +
+                FROM +
+                ID + contactId + "\"\n" +
                 "      },\n" +
-                "      \"to\": {\n" +
-                "        \"id\": \"" + companyId + "\"\n" +
+                TO +
+                ID + companyId + "\"\n" +
                 "      },\n" +
                 "      \"types\": [\n" +
                 "         {\n" +
@@ -114,7 +120,7 @@ public class HSAssociationService {
         log.log(DEBUG, "contactToCompanyList - contactId : " + contactId + COMPANY_ID_LIST_LOGS + companyIdList);
         String inputProperties = getContactToCompanyInputList(contactId, companyIdList);
         String associationProperties = "{\n" +
-                "  \"inputs\": [\n" + inputProperties +
+                INPUTS + inputProperties +
                 "  ]\n" +
                 "}";
         String url =
@@ -130,20 +136,20 @@ public class HSAssociationService {
         int index = 0;
 
         for (long companyId : companyIdList) {
-            stringBuilder.append("    {\n")
-                    .append("      \"from\": {\n")
-                    .append("        \"id\": \"").append(contactId).append("\"\n")
-                    .append("      },\n")
-                    .append("      \"to\": {\n")
-                    .append("        \"id\": \"").append(companyId).append("\"\n")
-                    .append("      },\n")
-                    .append("      \"types\": [\n")
-                    .append("         {\n")
-                    .append("            \"associationCategory\": \"HUBSPOT_DEFINED\",\n")
-                    .append("            \"associationTypeId\": 279\n")
-                    .append("         }\n")
-                    .append("      ]\n")
-                    .append("    }");
+            stringBuilder.append(OBJECT_BEGIN)
+                         .append(FROM)
+                         .append(ID).append(contactId).append("\"\n")
+                         .append("      },\n")
+                         .append(TO)
+                         .append(ID).append(companyId).append("\"\n")
+                         .append("      },\n")
+                         .append("      \"types\": [\n")
+                         .append("         {\n")
+                         .append("            \"associationCategory\": \"HUBSPOT_DEFINED\",\n")
+                         .append("            \"associationTypeId\": 279\n")
+                         .append("         }\n")
+                         .append("      ]\n")
+                         .append(OBJECT_END);
 
             if (index != lastIndex) {
                 stringBuilder.append(",\n");
@@ -168,13 +174,13 @@ public class HSAssociationService {
                 " | type : " + typeEnum.name());
         HSAssocationTypeInput assocationTypeInput = new HSAssocationTypeInput().setType(typeEnum);
         String associationProperties = "{\n" +
-                "  \"inputs\": [\n" +
-                "    {\n" +
-                "      \"from\": {\n" +
-                "        \"id\": \"" + companyId + "\"\n" +
+                INPUTS +
+                OBJECT_BEGIN +
+                FROM +
+                ID + companyId + "\"\n" +
                 "      },\n" +
-                "      \"to\": {\n" +
-                "        \"id\": \"" + associatedCompanyId + "\"\n" +
+                TO +
+                ID + associatedCompanyId + "\"\n" +
                 "      },\n" +
                 "      \"types\": [\n" + assocationTypeInput.getJsonAssociationType() +
                 "      ]\n" +
@@ -197,7 +203,7 @@ public class HSAssociationService {
         log.log(DEBUG, "companyToChildCompanyList - companyId : " + companyId + " | associatedCompanyIdList : " + associatedCompanyIdList);
         String inputProperties = getCompanyToChildCompanyInputList(companyId, associatedCompanyIdList);
         String associationProperties = "{\n" +
-                "  \"inputs\": [\n" + inputProperties +
+                INPUTS + inputProperties +
                 "  ]\n" +
                 "}";
         String url =
@@ -214,16 +220,16 @@ public class HSAssociationService {
         int index = 0;
 
         for (long associatedCompanyId : companyIdList) {
-            stringBuilder.append("    {\n")
-                    .append("      \"from\": {\n")
-                    .append("        \"id\": \"").append(companyId).append("\"\n")
-                    .append("      },\n")
-                    .append("      \"to\": {\n")
-                    .append("        \"id\": \"").append(associatedCompanyId).append("\"\n")
-                    .append("      },\n")
-                    .append("      \"types\": [\n" + assocationTypeInput.getJsonAssociationType())
-                    .append("      ]\n")
-                    .append("    }");
+            stringBuilder.append(OBJECT_BEGIN)
+                         .append(FROM)
+                         .append(ID).append(companyId).append("\"\n")
+                         .append("      },\n")
+                         .append(TO)
+                         .append(ID).append(associatedCompanyId).append("\"\n")
+                         .append("      },\n")
+                         .append("      \"types\": [\n" + assocationTypeInput.getJsonAssociationType())
+                         .append("      ]\n")
+                         .append(OBJECT_END);
 
             if (index != lastIndex) {
                 stringBuilder.append(",\n");
@@ -245,13 +251,13 @@ public class HSAssociationService {
     public void removeContactToCompany(long contactId, long companyId) throws HubSpotException {
         log.log(DEBUG, "removeContactToCompany - contactId : " + contactId + COMPANY_ID_LOGS + companyId);
         String associationProperties = "{\n" +
-                "  \"inputs\": [\n" +
-                "    {\n" +
-                "      \"from\": {\n" +
-                "        \"id\": \"" + contactId + "\"\n" +
+                INPUTS +
+                OBJECT_BEGIN +
+                FROM +
+                ID + contactId + "\"\n" +
                 "      },\n" +
-                "      \"to\": {\n" +
-                "        \"id\": \"" + companyId + "\"\n" +
+                TO +
+                ID + companyId + "\"\n" +
                 "      },\n" +
                 "      \"type\": \"contact_to_company\"" +
                 "    }\n" +
@@ -273,7 +279,7 @@ public class HSAssociationService {
         log.log(DEBUG, "removeContactToCompanyList - contactId : " + contactId + COMPANY_ID_LIST_LOGS + companyIdList);
         String inputProperties = getRemoveInputList(contactId, companyIdList, "contact_to_company");
         String associationProperties = "{\n" +
-                "  \"inputs\": [\n" + inputProperties +
+                INPUTS + inputProperties +
                 "  ]\n" +
                 "}";
         String url = BasePath.V3_ASSOCIATION + CONTACTS + COMPANIES + BATCH + ARCHIVE;
@@ -292,7 +298,7 @@ public class HSAssociationService {
         log.log(DEBUG, "removeCompanyToChildCompanyList - companyId : " + companyId + COMPANY_ID_LIST_LOGS + companyIdList);
         String inputProperties = getRemoveInputList(companyId, companyIdList, "company_to_company");
         String associationProperties = "{\n" +
-                "  \"inputs\": [\n" + inputProperties +
+                INPUTS + inputProperties +
                 "  ]\n" +
                 "}";
         String url = BasePath.V3_ASSOCIATION + COMPANIES + COMPANIES + BATCH + ARCHIVE;
@@ -308,15 +314,15 @@ public class HSAssociationService {
         int index = 0;
 
         for (long companyId : companyIdList) {
-            stringBuilder.append("    {\n")
-                    .append("      \"from\": {\n")
-                    .append("        \"id\": \"").append(contactId).append("\"\n")
-                    .append("      },\n")
-                    .append("      \"to\": {\n")
-                    .append("        \"id\": \"").append(companyId).append("\"\n")
-                    .append("      },\n")
-                    .append("      \"type\": \"").append(associationType).append("\"\n")
-                    .append("    }");
+            stringBuilder.append(OBJECT_BEGIN)
+                         .append(FROM)
+                         .append(ID).append(contactId).append("\"\n")
+                         .append("      },\n")
+                         .append(TO)
+                         .append(ID).append(companyId).append("\"\n")
+                         .append("      },\n")
+                         .append("      \"type\": \"").append(associationType).append("\"\n")
+                         .append(OBJECT_END);
 
             if (index != lastIndex) {
                 stringBuilder.append(",\n");
@@ -379,7 +385,7 @@ public class HSAssociationService {
      * @return the companies to company
      * @throws HubSpotException - if HTTP call fails
      */
-    public List<JSONObject> getCompaniesToCompany(long companyId) throws HubSpotException {
+    public List<JsonNode> getCompaniesToCompany(long companyId) throws HubSpotException {
         log.log(DEBUG, "getCompaniesToCompany - companyId : " + companyId);
         String url =
                 BasePath.V4_OBJECT + COMPANIES + companyId + "/" + ASSOCIATION + COMPANIES;
@@ -401,11 +407,11 @@ public class HSAssociationService {
      * @return the list
      * @throws HubSpotException - if HTTP call fails
      */
-    public List<JSONObject> companiesToContacts(List<Long> companyIds) throws HubSpotException {
+    public List<JsonNode> companiesToContacts(List<Long> companyIds) throws HubSpotException {
         log.log(DEBUG, "companiesToContacts - companyIds : " + companyIds);
         StringBuilder companyIdList = new StringBuilder("{\n" +
-                "  \"inputs\": [\n");
-        companyIds.forEach(id -> companyIdList.append("    {\n")
+                                                                INPUTS);
+        companyIds.forEach(id -> companyIdList.append(OBJECT_BEGIN)
                 .append(ID_BATCH_REQUEST).append(id).append("\"\n")
                 .append(CLOSE_BLOCK));
         String postBody = companyIdList.substring(0, companyIdList.length() - 2) + "]\n" + "}";
@@ -563,11 +569,11 @@ public class HSAssociationService {
      * @return the list of associations
      * @throws HubSpotException - if HTTP call fails
      */
-    public List<JSONObject> companiesToDeals(List<Long> companyIds) throws HubSpotException {
+    public List<JsonNode> companiesToDeals(List<Long> companyIds) throws HubSpotException {
         log.log(DEBUG, "companiesToDeals - companyIds : " + companyIds);
         StringBuilder companyIdList = new StringBuilder("{\n" +
-                                                        "  \"inputs\": [\n");
-        companyIds.forEach(id -> companyIdList.append("    {\n")
+                                                                INPUTS);
+        companyIds.forEach(id -> companyIdList.append(OBJECT_BEGIN)
                 .append(ID_BATCH_REQUEST).append(id).append("\"\n")
                 .append(CLOSE_BLOCK));
         String postBody = companyIdList.substring(0, companyIdList.length() - 2) + "]\n" + "}";
@@ -591,11 +597,11 @@ public class HSAssociationService {
      * @return the list of associations
      * @throws HubSpotException - if HTTP call fails
      */
-    public List<JSONObject> dealsToCompanies(List<Long> dealIds) throws HubSpotException {
+    public List<JsonNode> dealsToCompanies(List<Long> dealIds) throws HubSpotException {
         log.log(DEBUG, "dealsToCompanies - dealIds : " + dealIds);
         StringBuilder dealIdList = new StringBuilder("{\n" +
-                                                        "  \"inputs\": [\n");
-        dealIds.forEach(id -> dealIdList.append("    {\n")
+                                                             INPUTS);
+        dealIds.forEach(id -> dealIdList.append(OBJECT_BEGIN)
                 .append(ID_BATCH_REQUEST).append(id).append("\"\n")
                 .append(CLOSE_BLOCK));
         String postBody = dealIdList.substring(0, dealIdList.length() - 2) + "]\n" + "}";
@@ -619,11 +625,11 @@ public class HSAssociationService {
      * @return the list of associations
      * @throws HubSpotException - if HTTP call fails
      */
-    public List<JSONObject> dealsToContacts(List<Long> dealIds) throws HubSpotException {
+    public List<JsonNode> dealsToContacts(List<Long> dealIds) throws HubSpotException {
         log.log(DEBUG, "dealsToContacts - dealIds : " + dealIds);
         StringBuilder dealIdList = new StringBuilder("{\n" +
-                                                     "  \"inputs\": [\n");
-        dealIds.forEach(id -> dealIdList.append("    {\n")
+                                                             INPUTS);
+        dealIds.forEach(id -> dealIdList.append(OBJECT_BEGIN)
                 .append(ID_BATCH_REQUEST).append(id).append("\"\n")
                 .append(CLOSE_BLOCK));
         String postBody = dealIdList.substring(0, dealIdList.length() - 2) + "]\n" + "}";
@@ -647,11 +653,11 @@ public class HSAssociationService {
      * @return the list of associations
      * @throws HubSpotException - if HTTP call fails
      */
-    public List<JSONObject> dealsToLineItems(List<Long> dealIds) throws HubSpotException {
+    public List<JsonNode> dealsToLineItems(List<Long> dealIds) throws HubSpotException {
         log.log(DEBUG, "dealsToLineItems - dealIds : " + dealIds);
         StringBuilder dealIdList = new StringBuilder("{\n" +
-                                                     "  \"inputs\": [\n");
-        dealIds.forEach(id -> dealIdList.append("    {\n")
+                                                             INPUTS);
+        dealIds.forEach(id -> dealIdList.append(OBJECT_BEGIN)
                 .append(ID_BATCH_REQUEST).append(id).append("\"\n")
                 .append(CLOSE_BLOCK));
         String postBody = dealIdList.substring(0, dealIdList.length() - 2) + "]\n" + "}";

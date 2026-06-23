@@ -1,22 +1,28 @@
 package fr.slickteam.hubspot.api.service;
 
-import com.google.common.base.Strings;
+import com.fasterxml.jackson.databind.JsonNode;
 import fr.slickteam.hubspot.api.domain.HSObject;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
 import fr.slickteam.hubspot.api.utils.HubSpotProperties;
-import kong.unirest.HttpResponse;
-import kong.unirest.JsonNode;
-import kong.unirest.UnirestException;
-import kong.unirest.json.JSONArray;
-import kong.unirest.json.JSONObject;
+import fr.slickteam.hubspot.api.utils.JsonUtils;
+import fr.slickteam.hubspot.api.utils.StringUtils;
+import org.apache.hc.client5.http.classic.methods.*;
+import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.*;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.io.entity.StringEntity;
+import org.apache.hc.core5.http.message.BasicNameValuePair;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import static java.lang.System.Logger.Level.ERROR;
 import static java.lang.System.Logger.Level.TRACE;
-import static kong.unirest.Unirest.*;
 
 /**
  * Service for handling requests to HubSpot API.
@@ -25,6 +31,11 @@ public class HttpService {
 
     private static final System.Logger log = System.getLogger(HttpService.class.getName());
     private static final String MESSAGE = "message";
+    private static final String ACCEPT = "Accept";
+    private static final String CONTENT_TYPE = "Content-Type";
+    private static final String AUTHORIZATION = "Authorization";
+    private static final String BEARER = "Bearer ";
+    private static final String APPLICATION_JSON = "application/json";
 
     private final String apiBase;
     private final OAuthConfig oAuthConfig;
@@ -42,23 +53,22 @@ public class HttpService {
     /**
      * Parse json data hs object.
      *
-     * @param jsonBody the json body
+     * @param jsonNode the json node
      * @param hsObject the hs object
      * @return the hs object
      */
-    public HSObject parseJSONData(JSONObject jsonBody, HSObject hsObject) {
-        JSONObject jsonProperties = jsonBody.getJSONObject("properties");
-
-        Set<String> keys = jsonProperties.keySet();
-
-        keys.forEach(key ->
-                hsObject.setProperty(key,
-                        jsonProperties.get(key) instanceof JSONObject ?
-                                ((JSONObject) jsonProperties.get(key)).getString(
-                                        "value") :
-                                jsonProperties.get(key).toString()
-                )
-        );
+    public HSObject parseJSONData(JsonNode jsonNode, HSObject hsObject) {
+        JsonNode jsonProperties = jsonNode.get("properties");
+        if (jsonProperties != null && jsonProperties.isObject()) {
+            jsonProperties.fieldNames().forEachRemaining(key -> {
+                JsonNode value = jsonProperties.get(key);
+                if (value.isObject() && value.has("value")) {
+                    hsObject.setProperty(key, value.get("value").asText());
+                } else {
+                    hsObject.setProperty(key, value.asText());
+                }
+            });
+        }
         return hsObject;
     }
 
@@ -70,20 +80,31 @@ public class HttpService {
      * @throws HubSpotException the hub spot exception
      */
     public Object getRequest(String url) throws HubSpotException {
-        try {
-            HttpResponse<JsonNode> resp = get(apiBase + url)
-                    .header("Accept", "application/json")
-                    .header("Content-Type", "application/json")
-                    .header("Authorization", "Bearer " + oAuthConfig.getAccessToken()).asJson();
-            if (oauthTokenHasExpired(resp)) {
-                refreshToken();
-                resp = get(apiBase + url)
-                        .header("Accept", "application/json")
-                        .header("Content-Type", "application/json")
-                        .header("Authorization", "Bearer " + oAuthConfig.getAccessToken()).asJson();
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            HttpGet httpGet = new HttpGet(apiBase + url);
+            httpGet.setHeader(ACCEPT, APPLICATION_JSON);
+            httpGet.setHeader(CONTENT_TYPE, APPLICATION_JSON);
+            httpGet.setHeader(AUTHORIZATION, BEARER + oAuthConfig.getAccessToken());
+
+            try (CloseableHttpResponse response = httpClient.execute(httpGet)) {
+                // Extract response body once to avoid input stream consumption issues
+                HttpEntity entity = response.getEntity();
+                String responseBody = null;
+                if (entity != null) {
+                    responseBody = EntityUtils.toString(entity);
+                }
+
+                if (response.getCode() == 401 && responseBody != null &&
+                        oauthTokenHasExpiredFromBody(responseBody)) {
+                    refreshToken();
+                    httpGet.setHeader(AUTHORIZATION, BEARER + oAuthConfig.getAccessToken());
+                    return executeRequest(httpClient, httpGet);
+                }
+                return processResponseFromBody(response, responseBody);
+            } catch (ParseException e) {
+                throw new HubSpotException("Can not parse response body", e);
             }
-            return checkResponse(resp);
-        } catch (UnirestException e) {
+        } catch (IOException e) {
             throw new HubSpotException("Can not get data\n URL:" + url, e);
         }
     }
@@ -96,23 +117,33 @@ public class HttpService {
      * @return the object
      * @throws HubSpotException the hub spot exception
      */
-    public Object postRequest(String url, String properties) throws HubSpotException {
-        try {
-            HttpResponse<JsonNode> resp = post(apiBase + url)
-                    .header("Authorization", "Bearer " + oAuthConfig.getAccessToken())
-                    .header("accept", "application/json")
-                    .header("Content-Type", "application/json")
-                    .body(properties).asJson();
-            if (oauthTokenHasExpired(resp)) {
-                refreshToken();
-                resp = post(apiBase + url)
-                        .header("Authorization", "Bearer " + oAuthConfig.getAccessToken())
-                        .header("accept", "application/json")
-                        .header("Content-Type", "application/json")
-                        .body(properties).asJson();
+    public JsonNode postRequest(String url, String properties) throws HubSpotException {
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            HttpPost httpPost = new HttpPost(apiBase + url);
+            httpPost.setHeader(AUTHORIZATION, BEARER + oAuthConfig.getAccessToken());
+            httpPost.setHeader(ACCEPT, APPLICATION_JSON);
+            httpPost.setHeader(CONTENT_TYPE, APPLICATION_JSON);
+            httpPost.setEntity(new StringEntity(properties, ContentType.APPLICATION_JSON));
+
+            try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
+                // Extract response body once to avoid input stream consumption issues
+                HttpEntity entity = response.getEntity();
+                String responseBody = null;
+                if (entity != null) {
+                    responseBody = EntityUtils.toString(entity);
+                }
+
+                if (response.getCode() == 401 && responseBody != null &&
+                        oauthTokenHasExpiredFromBody(responseBody)) {
+                    refreshToken();
+                    httpPost.setHeader(AUTHORIZATION, BEARER + oAuthConfig.getAccessToken());
+                    return executeRequest(httpClient, httpPost);
+                }
+                return processResponseFromBody(response, responseBody);
+            } catch (ParseException e) {
+                throw new HubSpotException("Can not parse response body", e);
             }
-            return checkResponse(resp);
-        } catch (UnirestException e) {
+        } catch (IOException e) {
             throw new HubSpotException("Cannot make a request: \n" + properties, e);
         }
     }
@@ -126,22 +157,32 @@ public class HttpService {
      * @throws HubSpotException the hub spot exception
      */
     public Object patchRequest(String url, String properties) throws HubSpotException {
-        try {
-            HttpResponse<JsonNode> resp = patch(apiBase + url)
-                    .header("Authorization", "Bearer " + oAuthConfig.getAccessToken())
-                    .header("accept", "application/json")
-                    .header("Content-Type", "application/json")
-                    .body(properties).asJson();
-            if (oauthTokenHasExpired(resp)) {
-                refreshToken();
-                resp = patch(apiBase + url)
-                        .header("Authorization", "Bearer " + oAuthConfig.getAccessToken())
-                        .header("accept", "application/json")
-                        .header("Content-Type", "application/json")
-                        .body(properties).asJson();
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            HttpPatch httpPatch = new HttpPatch(apiBase + url);
+            httpPatch.setHeader(AUTHORIZATION, BEARER + oAuthConfig.getAccessToken());
+            httpPatch.setHeader(ACCEPT, APPLICATION_JSON);
+            httpPatch.setHeader(CONTENT_TYPE, APPLICATION_JSON);
+            httpPatch.setEntity(new StringEntity(properties, ContentType.APPLICATION_JSON));
+
+            try (CloseableHttpResponse response = httpClient.execute(httpPatch)) {
+                // Extract response body once to avoid input stream consumption issues
+                HttpEntity entity = response.getEntity();
+                String responseBody = null;
+                if (entity != null) {
+                    responseBody = EntityUtils.toString(entity);
+                }
+
+                if (response.getCode() == 401 && responseBody != null &&
+                        oauthTokenHasExpiredFromBody(responseBody)) {
+                    refreshToken();
+                    httpPatch.setHeader(AUTHORIZATION, BEARER + oAuthConfig.getAccessToken());
+                    return executeRequest(httpClient, httpPatch);
+                }
+                return processResponseFromBody(response, responseBody);
+            } catch (ParseException e) {
+                throw new HubSpotException("Can not parse response body", e);
             }
-            return checkResponse(resp);
-        } catch (UnirestException e) {
+        } catch (IOException e) {
             throw new HubSpotException("Cannot make a request: \n" + properties, e);
         }
     }
@@ -155,22 +196,32 @@ public class HttpService {
      * @throws HubSpotException the hub spot exception
      */
     public Object putRequest(String url, String properties) throws HubSpotException {
-        try {
-            HttpResponse<JsonNode> resp = put(apiBase + url)
-                    .header("Authorization", "Bearer " + oAuthConfig.getAccessToken())
-                    .header("accept", "application/json")
-                    .header("Content-Type", "application/json")
-                    .body(properties).asJson();
-            if (oauthTokenHasExpired(resp)) {
-                refreshToken();
-                resp = put(apiBase + url)
-                        .header("Authorization", "Bearer " + oAuthConfig.getAccessToken())
-                        .header("accept", "application/json")
-                        .header("Content-Type", "application/json")
-                        .body(properties).asJson();
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            HttpPut httpPut = new HttpPut(apiBase + url);
+            httpPut.setHeader(AUTHORIZATION, BEARER + oAuthConfig.getAccessToken());
+            httpPut.setHeader(ACCEPT, APPLICATION_JSON);
+            httpPut.setHeader(CONTENT_TYPE, APPLICATION_JSON);
+            httpPut.setEntity(new StringEntity(properties, ContentType.APPLICATION_JSON));
+
+            try (CloseableHttpResponse response = httpClient.execute(httpPut)) {
+                // Extract response body once to avoid input stream consumption issues
+                HttpEntity entity = response.getEntity();
+                String responseBody = null;
+                if (entity != null) {
+                    responseBody = EntityUtils.toString(entity);
+                }
+
+                if (response.getCode() == 401 && responseBody != null &&
+                        oauthTokenHasExpiredFromBody(responseBody)) {
+                    refreshToken();
+                    httpPut.setHeader(AUTHORIZATION, BEARER + oAuthConfig.getAccessToken());
+                    return executeRequest(httpClient, httpPut);
+                }
+                return processResponseFromBody(response, responseBody);
+            } catch (ParseException e) {
+                throw new HubSpotException("Can not parse response body", e);
             }
-            return checkResponse(resp);
-        } catch (UnirestException e) {
+        } catch (IOException e) {
             throw new HubSpotException("Can not get data", e);
         }
     }
@@ -183,20 +234,31 @@ public class HttpService {
      * @throws HubSpotException the hub spot exception
      */
     public Object putRequest(String url) throws HubSpotException {
-        try {
-            HttpResponse<JsonNode> resp = put(apiBase + url)
-                    .header("Authorization", "Bearer " + oAuthConfig.getAccessToken())
-                    .header("accept", "application/json")
-                    .header("Content-Type", "application/json").asJson();
-            if (oauthTokenHasExpired(resp)) {
-                refreshToken();
-                resp = put(apiBase + url)
-                        .header("Authorization", "Bearer " + oAuthConfig.getAccessToken())
-                        .header("accept", "application/json")
-                        .header("Content-Type", "application/json").asJson();
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            HttpPut httpPut = new HttpPut(apiBase + url);
+            httpPut.setHeader(AUTHORIZATION, BEARER + oAuthConfig.getAccessToken());
+            httpPut.setHeader(ACCEPT, APPLICATION_JSON);
+            httpPut.setHeader(CONTENT_TYPE, APPLICATION_JSON);
+
+            try (CloseableHttpResponse response = httpClient.execute(httpPut)) {
+                // Extract response body once to avoid input stream consumption issues
+                HttpEntity entity = response.getEntity();
+                String responseBody = null;
+                if (entity != null) {
+                    responseBody = EntityUtils.toString(entity);
+                }
+
+                if (response.getCode() == 401 && responseBody != null &&
+                        oauthTokenHasExpiredFromBody(responseBody)) {
+                    refreshToken();
+                    httpPut.setHeader(AUTHORIZATION, BEARER + oAuthConfig.getAccessToken());
+                    return executeRequest(httpClient, httpPut);
+                }
+                return processResponseFromBody(response, responseBody);
+            } catch (ParseException e) {
+                throw new HubSpotException("Can not parse response body", e);
             }
-            return checkResponse(resp);
-        } catch (UnirestException e) {
+        } catch (IOException e) {
             throw new HubSpotException("Can not get data", e);
         }
     }
@@ -208,93 +270,162 @@ public class HttpService {
      * @throws HubSpotException the hub spot exception
      */
     public void deleteRequest(String url) throws HubSpotException {
-        try {
-            HttpResponse<JsonNode> resp = delete(apiBase + url)
-                    .header("Authorization", "Bearer " + oAuthConfig.getAccessToken())
-                    .header("accept", "application/json")
-                    .header("Content-Type", "application/json").asJson();
-            if (oauthTokenHasExpired(resp)) {
-                refreshToken();
-                delete(apiBase + url)
-                        .header("Authorization", "Bearer " + oAuthConfig.getAccessToken())
-                        .header("accept", "application/json")
-                        .header("Content-Type", "application/json").asJson();
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            HttpDelete httpDelete = new HttpDelete(apiBase + url);
+            httpDelete.setHeader(AUTHORIZATION, BEARER + oAuthConfig.getAccessToken());
+            httpDelete.setHeader(ACCEPT, APPLICATION_JSON);
+            httpDelete.setHeader(CONTENT_TYPE, APPLICATION_JSON);
+
+            try (CloseableHttpResponse response = httpClient.execute(httpDelete)) {
+                if (oauthTokenHasExpired(response)) {
+                    refreshToken();
+                    httpDelete.setHeader(AUTHORIZATION, BEARER + oAuthConfig.getAccessToken());
+                    httpClient.execute(httpDelete)
+                              .close(); // Execute and close immediately since we don't need the response
+                }
             }
-        } catch (UnirestException e) {
+        } catch (IOException e) {
             throw new HubSpotException("Cannot make delete request: \n URL: " + url, e);
         }
     }
 
 
-    private boolean oauthTokenHasExpired(HttpResponse<JsonNode> resp) {
-        return resp.getStatus() == 401
-               && "EXPIRED_AUTHENTICATION".equals(resp.getBody()
-                .getObject()
-                .getString("category"));
-    }
-
-    private void refreshToken() throws UnirestException {
-        HttpResponse<JsonNode> rest = post(apiBase + "/oauth/v1/token")
-                .field("grant_type", "refresh_token")
-                .field("client_id", oAuthConfig.getClientId())
-                .field("client_secret", oAuthConfig.getClientSecret())
-                .field("redirect_uri", oAuthConfig.getRedirectUrl())
-                .field("refresh_token", oAuthConfig.getRefreshToken())
-                .asJson();
-        this.oAuthConfig.setRefreshToken(rest.getBody().getObject().getString("refresh_token"));
-        this.oAuthConfig.setAccessToken(rest.getBody().getObject().getString("access_token"));
-
-    }
-
-    private Object checkResponse(HttpResponse<JsonNode> resp) throws HubSpotException {
-        if (204 != resp.getStatus() && 200 != resp.getStatus() && 201 != resp.getStatus() && 202 != resp.getStatus()) {
-            String message = null;
+    private boolean oauthTokenHasExpired(CloseableHttpResponse response) {
+        if (response.getCode() == 401) {
             try {
-                switch (resp.getStatus()) {
-                    case 404:
-                        message = resp.getStatusText();
-                        break;
-                    case 207:
-                        message = ((List<JSONObject>) ((JSONArray) resp.getBody().getObject().get("errors")).toList()).stream()
-                                .map(error -> error.get(MESSAGE))
-                                .collect(Collectors.toList())
-                                .toString();
-                        break;
-                    default:
-                        resp.getBody().getObject().getString(MESSAGE);
+                HttpEntity entity = response.getEntity();
+                if (entity != null) {
+                    String responseBody = EntityUtils.toString(entity);
+                    return oauthTokenHasExpiredFromBody(responseBody);
                 }
-
-                if (Strings.isNullOrEmpty(message)) {
-                    message = resp.getBody().getObject().getString(MESSAGE);
-                }
-
-                if (!Strings.isNullOrEmpty(message)) {
-                    log.log(ERROR, getHttpErrorMessageAndStatus(resp));
-                    throw new HubSpotException(message, resp.getStatus());
-                } else {
-                    log.log(ERROR, "checkResponse : message is empty");
-                    throw new HubSpotException(resp.getStatusText(), resp.getStatus());
-                }
-            } catch (HubSpotException e) {
-                throw e;
             } catch (Exception e) {
-                log.log(ERROR, getHttpErrorMessageAndStatus(resp), e);
+                log.log(ERROR, "Error checking if OAuth token has expired", e);
+            }
+        }
+        return false;
+    }
+
+    private boolean oauthTokenHasExpiredFromBody(String responseBody) {
+        try {
+            JsonNode jsonNode = JsonUtils.parseJson(responseBody);
+            return jsonNode.has("category") && "EXPIRED_AUTHENTICATION".equals(jsonNode.get("category").asText());
+        } catch (Exception e) {
+            log.log(ERROR, "Error parsing response body to check if OAuth token has expired", e);
+            return false;
+        }
+    }
+
+    private void refreshToken() throws HubSpotException {
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            HttpPost httpPost = new HttpPost(apiBase + "/oauth/v1/token");
+
+            List<NameValuePair> params = new ArrayList<>();
+            params.add(new BasicNameValuePair("grant_type", "refresh_token"));
+            params.add(new BasicNameValuePair("client_id", oAuthConfig.getClientId()));
+            params.add(new BasicNameValuePair("client_secret", oAuthConfig.getClientSecret()));
+            params.add(new BasicNameValuePair("redirect_uri", oAuthConfig.getRedirectUrl()));
+            params.add(new BasicNameValuePair("refresh_token", oAuthConfig.getRefreshToken()));
+
+            httpPost.setEntity(new UrlEncodedFormEntity(params));
+
+            try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
+                HttpEntity entity = response.getEntity();
+                if (entity != null) {
+                    String responseBody = EntityUtils.toString(entity);
+                    JsonNode jsonNode = JsonUtils.parseJson(responseBody);
+
+                    this.oAuthConfig.setRefreshToken(jsonNode.get("refresh_token").asText());
+                    this.oAuthConfig.setAccessToken(jsonNode.get("access_token").asText());
+                }
+            } catch (ParseException e) {
+                throw new HubSpotException("Can not parse response body", e);
+            }
+        } catch (IOException e) {
+            throw new HubSpotException("Failed to refresh token", e);
+        }
+    }
+
+    private JsonNode processResponse(CloseableHttpResponse response) throws HubSpotException, IOException,
+            ParseException {
+        HttpEntity entity = response.getEntity();
+        String responseBody = null;
+        if (entity != null) {
+            responseBody = EntityUtils.toString(entity);
+        }
+        return processResponseFromBody(response, responseBody);
+    }
+
+    private JsonNode processResponseFromBody(CloseableHttpResponse response, String responseBody) throws HubSpotException {
+        int statusCode = response.getCode();
+        String statusText = response.getReasonPhrase();
+
+        if (statusCode != HttpStatus.SC_NO_CONTENT && statusCode != HttpStatus.SC_OK &&
+                statusCode != HttpStatus.SC_CREATED && statusCode != HttpStatus.SC_ACCEPTED) {
+
+            String message = null;
+
+            if (responseBody != null) {
+                JsonNode jsonNode = JsonUtils.parseJson(responseBody);
+
+                try {
+                    switch (statusCode) {
+                        case HttpStatus.SC_NOT_FOUND:
+                            message = statusText;
+                            break;
+                        case 207: // Multi-Status
+                            if (jsonNode.has("errors") && jsonNode.get("errors").isArray()) {
+                                message = StreamSupport.stream(jsonNode.get("errors").spliterator(), false)
+                                                       .map(error -> error.has(MESSAGE) ? error
+                                                               .get(MESSAGE)
+                                                               .asText() : "")
+                                                       .toList()
+                                                       .toString();
+                            }
+                            break;
+                        default:
+                            if (jsonNode.has(MESSAGE)) {
+                                message = jsonNode.get(MESSAGE).asText();
+                            }
+                    }
+
+                    if (StringUtils.isNullOrEmpty(message) && jsonNode.has(MESSAGE)) {
+                        message = jsonNode.get(MESSAGE).asText();
+                    }
+
+                    if (!StringUtils.isNullOrEmpty(message)) {
+                        log.log(ERROR, getHttpErrorMessageAndStatus(response, responseBody));
+                        throw new HubSpotException(message, statusCode);
+                    } else {
+                        log.log(ERROR, "checkResponse : message is empty");
+                        throw new HubSpotException(statusText, statusCode);
+                    }
+                } catch (HubSpotException e) {
+                    throw e;
+                } catch (Exception e) {
+                    log.log(ERROR, getHttpErrorMessageAndStatus(response, responseBody), e);
+                }
             }
         } else {
-            if (resp.getBody() != null) {
-                log.log(TRACE, getHttpErrorMessageAndStatus(resp));
-                return resp.getBody().isArray() ? resp.getBody().getArray() : resp.getBody().getObject();
+            if (responseBody != null) {
+                log.log(TRACE, getHttpErrorMessageAndStatus(response, responseBody));
+                return JsonUtils.parseJson(responseBody);
             } else {
-                log.log(TRACE, "checkResponse : HTTP status : " + resp.getStatus() +
-                               " (" + resp.getStatusText() + ")");
+                log.log(TRACE, "checkResponse : HTTP status : " + statusCode + " (" + statusText + ")");
             }
         }
         return null;
     }
 
-    private static String getHttpErrorMessageAndStatus(HttpResponse<JsonNode> resp) {
-        return "checkResponse : HTTP status : " + resp.getStatus() +
-               " (" + resp.getStatusText() +
-               ") | message = " + resp.getBody().toString();
+    private JsonNode executeRequest(CloseableHttpClient httpClient, HttpUriRequestBase request) throws IOException,
+            HubSpotException, ParseException {
+        try (CloseableHttpResponse response = httpClient.execute(request)) {
+            return processResponse(response);
+        }
+    }
+
+    private static String getHttpErrorMessageAndStatus(CloseableHttpResponse response, String responseBody) {
+        return "checkResponse : HTTP status : " + response.getCode() +
+                " (" + response.getReasonPhrase() +
+                ") | message = " + responseBody;
     }
 }

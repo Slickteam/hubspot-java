@@ -1,12 +1,11 @@
 package fr.slickteam.hubspot.api.service;
 
-import com.google.common.base.Strings;
+import com.fasterxml.jackson.databind.JsonNode;
 import fr.slickteam.hubspot.api.domain.HSCompany;
 import fr.slickteam.hubspot.api.domain.HSContact;
 import fr.slickteam.hubspot.api.domain.PagedHSContactList;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
-import kong.unirest.json.JSONArray;
-import kong.unirest.json.JSONObject;
+import fr.slickteam.hubspot.api.utils.StringUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -36,6 +35,7 @@ public class HSContactService {
     private static final String PAGING = "paging";
     private static final String LOG_PROPERTIES = " | properties : ";
     private static final String RESULTS = "results";
+    public static final String NOT_FOUND = "Not Found";
     private final HttpService httpService;
     private final HSService hsService;
     private final HSAssociationService associationService;
@@ -105,23 +105,23 @@ public class HSContactService {
         String formatProperties = getJsonProperties(properties);
         String formatIdList = getJsonInputList(idList);
         String associationProperties = "{\n" +
-                                       "  \"properties\": [\n" + formatProperties +
-                                       "   ],\n" +
-                                       "  \"propertiesWithHistory\": [],\n" +
-                                       "   \"inputs\": [\n" + formatIdList +
-                                       "   ]\n" +
-                                       "}";
+                "  \"properties\": [\n" + formatProperties +
+                "   ],\n" +
+                "  \"propertiesWithHistory\": [],\n" +
+                "   \"inputs\": [\n" + formatIdList +
+                "   ]\n" +
+                "}";
         String url = CONTACT_URL + BATCH + READ;
         try {
-            JSONObject response = (JSONObject) httpService.postRequest(url, associationProperties);
-            JSONArray jsonList = response.optJSONArray(RESULTS);
-            List<HSContact> contacts = new ArrayList<>(jsonList.length());
-            for (int i = 0; i < jsonList.length(); i++) {
-                contacts.add(parseContactData(jsonList.optJSONObject(i)));
+            JsonNode response = (JsonNode) httpService.postRequest(url, associationProperties);
+            JsonNode jsonList = response.path(RESULTS);
+            List<HSContact> contacts = new ArrayList<>();
+            for (JsonNode node : jsonList) {
+                contacts.add(parseContactData(node));
             }
             return contacts;
         } catch (HubSpotException e) {
-            if (e.getMessage().equals("Not Found")) {
+            if (e.getMessage().equals(NOT_FOUND)) {
                 return new ArrayList<>();
             } else {
                 throw e;
@@ -144,19 +144,19 @@ public class HSContactService {
         String url = CONTACT_URL + "?limit=" + limit + "&after=" + after + "&properties=" + propertiesUrl;
 
         try {
-            JSONObject response = (JSONObject) httpService.getRequest(url);
-            JSONArray jsonList = response.optJSONArray(RESULTS);
-            List<HSContact> contacts = new ArrayList<>(jsonList.length());
-            for (int i = 0; i < jsonList.length(); i++) {
-                contacts.add(parseContactData(jsonList.optJSONObject(i)));
+            JsonNode response = (JsonNode) httpService.getRequest(url);
+            JsonNode jsonList = response.path(RESULTS);
+            List<HSContact> contacts = new ArrayList<>();
+            for (JsonNode node : jsonList) {
+                contacts.add(parseContactData(node));
             }
             String nextPageToken = null;
-            if (response.has(PAGING) && ((JSONObject) response.get(PAGING)).has("next")) {
-                nextPageToken = ((JSONObject) ((JSONObject) response.get(PAGING)).get("next")).getString("after");
+            if (response.has(PAGING) && response.path(PAGING).has("next")) {
+                nextPageToken = response.path(PAGING).path("next").path("after").asText();
             }
             return new PagedHSContactList(contacts, nextPageToken);
         } catch (HubSpotException e) {
-            if (e.getMessage().equals("Not Found")) {
+            if (e.getMessage().equals(NOT_FOUND)) {
                 return new PagedHSContactList(Collections.emptyList(), "0");
             } else {
                 throw e;
@@ -179,9 +179,9 @@ public class HSContactService {
 
     private HSContact getContact(String url) throws HubSpotException {
         try {
-            return parseContactData((JSONObject) httpService.getRequest(url));
+            return parseContactData((JsonNode) httpService.getRequest(url));
         } catch (HubSpotException e) {
-            if (e.getMessage().equals("Not Found")) {
+            if (e.getMessage().equals(NOT_FOUND)) {
                 return null;
             } else {
                 throw e;
@@ -227,12 +227,12 @@ public class HSContactService {
      */
     public HSContact create(HSContact hsContact) throws HubSpotException {
         log.log(DEBUG, "create - hsContact : " + hsContact);
-        if (Strings.isNullOrEmpty(hsContact.getEmail())) {
+        if (StringUtils.isNullOrEmpty(hsContact.getEmail())) {
             throw new HubSpotException("User email must be provided");
         }
 
-        JSONObject jsonObject = (JSONObject) httpService.postRequest(CONTACT_URL, hsContact.toJsonString());
-        return parseContactData(jsonObject);
+        JsonNode jsonNode = (JsonNode) httpService.postRequest(CONTACT_URL, hsContact.toJsonString());
+        return parseContactData(jsonNode);
     }
 
     /**
@@ -249,8 +249,8 @@ public class HSContactService {
         }
 
         String url = CONTACT_URL + contact.getId();
-        JSONObject jsonObject = (JSONObject) httpService.patchRequest(url, contact.toJsonString());
-        return parseContactData(jsonObject);
+        JsonNode jsonNode = (JsonNode) httpService.patchRequest(url, contact.toJsonString());
+        return parseContactData(jsonNode);
     }
 
     /**
@@ -283,14 +283,14 @@ public class HSContactService {
     /**
      * Parse contact data from HubSpot API response
      *
-     * @param jsonObject - body from HubSpot API response
+     * @param jsonNode - body from HubSpot API response
      * @return the contact
      */
-    public HSContact parseContactData(JSONObject jsonObject) {
+    public HSContact parseContactData(JsonNode jsonNode) {
         HSContact hsContact = new HSContact();
-        hsContact.setId(jsonObject.getLong("id"));
+        hsContact.setId(jsonNode.path("id").asLong());
 
-        hsService.parseJSONData(jsonObject, hsContact);
+        hsService.parseJSONData(jsonNode, hsContact);
         return hsContact;
     }
 
@@ -304,22 +304,23 @@ public class HSContactService {
      * @return a contact list filtered
      * @throws HubSpotException - if HTTP call fails
      */
-    public List<HSContact> queryByDefaultSearchableProperties(String input, List<String> responseProperties, int limit) throws HubSpotException {
+    public List<HSContact> queryByDefaultSearchableProperties(String input, List<String> responseProperties,
+                                                              int limit) throws HubSpotException {
         log.log(DEBUG, "queryByDefaultSearchableProperties");
         String url = CONTACT_URL + SEARCH;
 
         String responsePropertiesList = responseProperties.stream()
-                .map(property -> "    \"" + property + "\"")
-                .collect(Collectors.joining(",\n"));
+                                                          .map(property -> "    \"" + property + "\"")
+                                                          .collect(Collectors.joining(",\n"));
 
         String queryProperties = "{\n" +
-                                 "  \"query\": \"" + input + "\"," +
-                                 "  \"properties\": [\n" +
-                                 responsePropertiesList +
-                                 "  ],\n" +
-                                 "  \"limit\": " + limit + ",\n" +
-                                 "  \"after\": 0\n" +
-                                 "}";
+                "  \"query\": \"" + input + "\"," +
+                "  \"properties\": [\n" +
+                responsePropertiesList +
+                "  ],\n" +
+                "  \"limit\": " + limit + ",\n" +
+                "  \"after\": 0\n" +
+                "}";
 
         return sendContactSearchRequest(url, queryProperties);
     }
@@ -338,14 +339,14 @@ public class HSContactService {
         List<HSContact> contacts = Collections.emptyList();
 
         try {
-            JSONObject response = (JSONObject) httpService.postRequest(url, properties);
-            JSONArray jsonList = response.optJSONArray(RESULTS);
-            contacts = new ArrayList<>(jsonList.length());
-            for (int i = 0; i < jsonList.length(); i++) {
-                contacts.add(parseContactData(jsonList.optJSONObject(i)));
+            JsonNode response = (JsonNode) httpService.postRequest(url, properties);
+            JsonNode jsonList = response.path(RESULTS);
+            contacts = new ArrayList<>();
+            for (JsonNode node : jsonList) {
+                contacts.add(parseContactData(node));
             }
         } catch (HubSpotException e) {
-            if (e.getMessage().equals("Not Found")) {
+            if (e.getMessage().equals(NOT_FOUND)) {
                 return contacts;
             } else {
                 throw e;
@@ -363,41 +364,42 @@ public class HSContactService {
      * @return a contact list filtered
      * @throws HubSpotException - if HTTP call fails
      */
-    public List<HSContact> searchFilteredByProperties(Map<String, String> propertiesAndValuesFilters, List<String> responseProperties, int limit) throws HubSpotException {
+    public List<HSContact> searchFilteredByProperties(Map<String, String> propertiesAndValuesFilters,
+                                                      List<String> responseProperties, int limit) throws HubSpotException {
         log.log(DEBUG, "searchFilteredByProperties");
         String url = CONTACT_URL + SEARCH;
 
         String filtersPropertyList = propertiesAndValuesFilters.entrySet().stream()
-                .map(entry ->
-                        " {\n" +
-                        "      \"filters\": [\n" +
-                        "        {\n" +
-                        "          \"propertyName\": \"" + entry.getKey() + "\",\n" +
-                        "          \"value\": \"" + entry.getValue() + "\",\n" +
-                        "          \"operator\": \"EQ\"\n" +
-                        "        }" +
-                        "      ]\n" +
-                        "    }\n"
-                )
-                .collect(Collectors.joining(",\n"));
+                                                               .map(entry ->
+                                                                            " {\n" +
+                                                                                    "      \"filters\": [\n" +
+                                                                                    "        {\n" +
+                                                                                    "          \"propertyName\": \"" + entry.getKey() + "\",\n" +
+                                                                                    "          \"value\": \"" + entry.getValue() + "\",\n" +
+                                                                                    "          \"operator\": \"EQ\"\n" +
+                                                                                    "        }" +
+                                                                                    "      ]\n" +
+                                                                                    "    }\n"
+                                                               )
+                                                               .collect(Collectors.joining(",\n"));
 
         String responsePropertiesList = responseProperties.stream()
-                .map(property -> "    \"" + property + "\"")
-                .collect(Collectors.joining(",\n"));
+                                                          .map(property -> "    \"" + property + "\"")
+                                                          .collect(Collectors.joining(",\n"));
 
         String filterGroupsProperties =
                 "{\n" +
-                "  \"filterGroups\": [\n" +
-                filtersPropertyList +
-                "  ],\n" +
-                "  \"sorts\": [\n" +
-                "    \"lastname\"\n" +
-                "  ],\n" +
-                "  \"properties\": [\n" +
-                responsePropertiesList +
-                "  ],\n" +
-                "  \"limit\": " + limit + "\n" +
-                "}";
+                        "  \"filterGroups\": [\n" +
+                        filtersPropertyList +
+                        "  ],\n" +
+                        "  \"sorts\": [\n" +
+                        "    \"lastname\"\n" +
+                        "  ],\n" +
+                        "  \"properties\": [\n" +
+                        responsePropertiesList +
+                        "  ],\n" +
+                        "  \"limit\": " + limit + "\n" +
+                        "}";
 
         return sendContactSearchRequest(url, filterGroupsProperties);
     }

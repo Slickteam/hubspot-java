@@ -1,11 +1,10 @@
 package fr.slickteam.hubspot.api.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import fr.slickteam.hubspot.api.domain.HSDeal;
 import fr.slickteam.hubspot.api.domain.HSLineItem;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
 import fr.slickteam.hubspot.api.utils.HubSpotHelper;
-import kong.unirest.json.JSONArray;
-import kong.unirest.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,6 +30,8 @@ public class HSDealService {
     private static final String READ = "read/";
     private static final String SEARCH = "search/";
     private static final String RESULTS = "results";
+    public static final String NOT_FOUND = "Not Found";
+    public static final String TO_OBJECT_ID = "toObjectId";
 
     private final HttpService httpService;
     private final HSService hsService;
@@ -77,9 +78,9 @@ public class HSDealService {
 
     private HSDeal getDeal(String url) throws HubSpotException {
         try {
-            return parseDealData((JSONObject) httpService.getRequest(url));
+            return parseDealData((JsonNode) httpService.getRequest(url));
         } catch (HubSpotException e) {
-            if (e.getMessage().equals("Not Found")) {
+            if (e.getMessage().equals(NOT_FOUND)) {
                 return null;
             } else {
                 throw e;
@@ -108,15 +109,15 @@ public class HSDealService {
                                 "}";
         String url = DEAL_URL + BATCH + READ;
         try {
-            JSONObject response = (JSONObject) httpService.postRequest(url, dealProperties);
-            JSONArray jsonList = response.optJSONArray(RESULTS);
-            List<HSDeal> deals = new ArrayList<>(jsonList.length());
-            for (int i = 0; i < jsonList.length(); i++) {
-                deals.add(parseDealData(jsonList.optJSONObject(i)));
+            JsonNode response = (JsonNode) httpService.postRequest(url, dealProperties);
+            JsonNode jsonList = response.path(RESULTS);
+            List<HSDeal> deals = new ArrayList<>(jsonList.size());
+            for (int i = 0; i < jsonList.size(); i++) {
+                deals.add(parseDealData(jsonList.path(i)));
             }
             return deals;
         } catch (HubSpotException e) {
-            if (e.getMessage().equals("Not Found")) {
+            if (e.getMessage().equals(NOT_FOUND)) {
                 return new ArrayList<>();
             } else {
                 throw e;
@@ -136,10 +137,10 @@ public class HSDealService {
         String filter = getFiltersLineItemsAssociatedWithDeal(deal);
         String url = LINE_ITEM_URL + SEARCH;
         try {
-            JSONObject response = (JSONObject) httpService.postRequest(url, filter);
+            JsonNode response = (JsonNode) httpService.postRequest(url, filter);
             return parseLineItemsData(response);
         } catch (HubSpotException e) {
-            if (e.getMessage().equals("Not Found")) {
+            if (e.getMessage().equals(NOT_FOUND)) {
                 return new ArrayList<>();
             } else {
                 throw e;
@@ -147,18 +148,20 @@ public class HSDealService {
         }
     }
 
-    private List<HSLineItem> parseLineItemsData(JSONObject jsonObject) {
+    private List<HSLineItem> parseLineItemsData(JsonNode jsonNode) {
         List<HSLineItem> lineItems = new ArrayList<>();
 
-        JSONArray jsonLineItems = jsonObject.getJSONArray("results");
+        JsonNode jsonLineItems = jsonNode.path("results");
 
-        jsonLineItems.forEach(jsonLineItem -> lineItems.add(getLineItemFromJSONObject((JSONObject) jsonLineItem)));
+        for (JsonNode jsonLineItem : jsonLineItems) {
+            lineItems.add(getLineItemFromJsonNode(jsonLineItem));
+        }
         return lineItems;
     }
 
-    private HSLineItem getLineItemFromJSONObject(JSONObject jsonLineItem) {
+    private HSLineItem getLineItemFromJsonNode(JsonNode jsonLineItem) {
         HSLineItem hsLineItem = (HSLineItem) hsService.parseJSONData(jsonLineItem, new HSLineItem());
-        hsLineItem.setId((jsonLineItem.getLong("id")));
+        hsLineItem.setId(jsonLineItem.path("id").asLong());
 
         return hsLineItem;
     }
@@ -182,9 +185,9 @@ public class HSDealService {
      */
     public HSDeal create(HSDeal hsDeal) throws HubSpotException {
         log.log(DEBUG, "create - hsDeal : " + hsDeal);
-        JSONObject jsonObject = (JSONObject) httpService.postRequest(DEAL_URL, hsDeal.toJsonString());
+        JsonNode jsonNode = (JsonNode) httpService.postRequest(DEAL_URL, hsDeal.toJsonString());
 
-        return parseDealData(jsonObject);
+        return parseDealData(jsonNode);
     }
 
     /**
@@ -193,10 +196,10 @@ public class HSDealService {
      * @param jsonBody - body from HubSpot API response
      * @return the company
      */
-    public HSDeal parseDealData(JSONObject jsonBody) {
+    public HSDeal parseDealData(JsonNode jsonBody) {
         HSDeal deal = new HSDeal();
 
-        deal.setId(jsonBody.getLong("id"));
+        deal.setId(jsonBody.path("id").asLong());
 
         hsService.parseJSONData(jsonBody, deal);
         return deal;
@@ -259,18 +262,18 @@ public class HSDealService {
      */
     public Map<Long, List<Long>> getAssociatedCompanyIds(List<Long> dealIds) throws HubSpotException {
         log.log(DEBUG, "getAssociatedCompanyIds - dealIds : " + dealIds);
-        List<JSONObject> associationList = associationService.dealsToCompanies(dealIds);
+        List<JsonNode> associationList = associationService.dealsToCompanies(dealIds);
         Map<Long, List<Long>> associatedDeals = new HashMap<>();
 
-        for (JSONObject associationsByDeal : associationList) {
+        for (JsonNode associationsByDeal : associationList) {
             // Initiate associated deal parameters
-            Long dealId = Long.parseLong(associationsByDeal.getJSONObject("from").get("id").toString());
-            JSONArray companies = associationsByDeal.getJSONArray("to");
+            Long dealId = associationsByDeal.path("from").path("id").asLong();
+            JsonNode companies = associationsByDeal.path("to");
 
             List<Long> companyIds = new ArrayList<>();
 
-            for (int i = 0, max = companies.length(); i < max; i++) {
-                companyIds.add(Long.parseLong(companies.getJSONObject(i).get("toObjectId").toString()));
+            for (int i = 0; i < companies.size(); i++) {
+                companyIds.add(companies.path(i).path(TO_OBJECT_ID).asLong());
             }
 
             associatedDeals.put(dealId, companyIds);
@@ -288,18 +291,18 @@ public class HSDealService {
      */
     public Map<Long, List<Long>> getAssociatedContactIds(List<Long> dealIds) throws HubSpotException {
         log.log(DEBUG, "getAssociatedContactIds - dealIds : " + dealIds);
-        List<JSONObject> associationList = associationService.dealsToContacts(dealIds);
+        List<JsonNode> associationList = associationService.dealsToContacts(dealIds);
         Map<Long, List<Long>> associatedDeals = new HashMap<>();
 
-        for (JSONObject associationsByDeal : associationList) {
+        for (JsonNode associationsByDeal : associationList) {
             // Initiate associated deal parameters
-            Long dealId = Long.parseLong(associationsByDeal.getJSONObject("from").get("id").toString());
-            JSONArray contacts = associationsByDeal.getJSONArray("to");
+            Long dealId = associationsByDeal.path("from").path("id").asLong();
+            JsonNode contacts = associationsByDeal.path("to");
 
             List<Long> contactIds = new ArrayList<>();
 
-            for (int i = 0, max = contacts.length(); i < max; i++) {
-                contactIds.add(Long.parseLong(contacts.getJSONObject(i).get("toObjectId").toString()));
+            for (int i = 0; i < contacts.size(); i++) {
+                contactIds.add(contacts.path(i).path(TO_OBJECT_ID).asLong());
             }
 
             associatedDeals.put(dealId, contactIds);
@@ -317,18 +320,18 @@ public class HSDealService {
      */
     public Map<Long, List<Long>> getAssociatedLineItemIds(List<Long> dealIds) throws HubSpotException {
         log.log(DEBUG, "getAssociatedLineItemIds - dealIds : " + dealIds);
-        List<JSONObject> associationList = associationService.dealsToLineItems(dealIds);
+        List<JsonNode> associationList = associationService.dealsToLineItems(dealIds);
         Map<Long, List<Long>> associatedDeals = new HashMap<>();
 
-        for (JSONObject associationsByDeal : associationList) {
+        for (JsonNode associationsByDeal : associationList) {
             // Initiate associated deal parameters
-            Long dealId = Long.parseLong(associationsByDeal.getJSONObject("from").get("id").toString());
-            JSONArray lineItems = associationsByDeal.getJSONArray("to");
+            Long dealId = associationsByDeal.path("from").path("id").asLong();
+            JsonNode lineItems = associationsByDeal.path("to");
 
             List<Long> lineItemIds = new ArrayList<>();
 
-            for (int i = 0, max = lineItems.length(); i < max; i++) {
-                lineItemIds.add(Long.parseLong(lineItems.getJSONObject(i).get("toObjectId").toString()));
+            for (int i = 0; i < lineItems.size(); i++) {
+                lineItemIds.add(lineItems.path(i).path(TO_OBJECT_ID).asLong());
             }
 
             associatedDeals.put(dealId, lineItemIds);

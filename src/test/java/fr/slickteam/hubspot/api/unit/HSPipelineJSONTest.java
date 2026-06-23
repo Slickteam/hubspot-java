@@ -1,43 +1,48 @@
 package fr.slickteam.hubspot.api.unit;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.slickteam.hubspot.api.domain.HSPipeline;
 import fr.slickteam.hubspot.api.service.HSPipelineService;
 import fr.slickteam.hubspot.api.service.HubSpot;
 import fr.slickteam.hubspot.api.utils.Helper;
-import kong.unirest.json.JSONObject;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class HSPipelineJSONTest {
+class HSPipelineJSONTest {
 
      HSPipelineService service;
 
-    @Before
-    public void setUp() throws IOException {
+    @BeforeEach
+    void setUp() throws IOException {
         service = new HubSpot(Helper.provideHubspotProperties()).pipeline();
     }
 
     @Test
-    public void parsePipelineData_Test() {
-        String inputData = "{test:1,id:71}";
-        JSONObject jsonObject = new JSONObject(inputData);
+    void parsePipelineData_Test() throws Exception {
+        String inputData = "{\"test\":1,\"id\":71}";
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode jsonNode = mapper.readTree(inputData);
 
-        HSPipeline pipeline = service.parsePipelineData(jsonObject);
-        assertEquals("71", pipeline.getId());
-        assertEquals("1", pipeline.getProperty("test"));
+        HSPipeline pipeline = service.parsePipelineData(jsonNode);
+        assertThat(pipeline.getId()).isEqualTo("71");
+        assertThat(pipeline.getProperty("test")).isEqualTo("1");
     }
 
     @Test
-    public void toJson_Test() {
-        String inputData = "{test:1, test2:2,id:71}";
-        JSONObject jsonObject = new JSONObject(inputData);
+    void toJson_Test() throws Exception {
+        String inputData = "{\"test\":1, \"test2\":2,\"id\":71}";
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode jsonNode = mapper.readTree(inputData);
 
-        HSPipeline pipeline = service.parsePipelineData(jsonObject);
-        String result = pipeline.toJson().toString();
-        assertEquals("{\"properties\":{\"test2\":\"2\",\"id\":\"71\",\"test\":\"1\"}}", result);
+        HSPipeline pipeline = service.parsePipelineData(jsonNode);
+        JsonNode result = pipeline.toJson();
+        JsonNode expected = mapper.readTree("{\"properties\":{\"test\":\"1\",\"test2\":\"2\",\"id\":\"71\"}}");
+        assertThat(result).isEqualTo(expected);
     }
 }

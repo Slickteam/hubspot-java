@@ -1,11 +1,10 @@
 package fr.slickteam.hubspot.api.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import fr.slickteam.hubspot.api.domain.*;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
 import fr.slickteam.hubspot.api.utils.HubSpotOrdering;
 import fr.slickteam.hubspot.api.utils.HubSpotSearchOperator;
-import kong.unirest.json.JSONArray;
-import kong.unirest.json.JSONObject;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -26,12 +25,19 @@ public class HSCompanyService {
     private static final String LOG_PROPERTIES = " | properties : ";
     private static final String RESULTS = "results";
     private static final String NOT_FOUND = "Not Found";
+    private static final String AFTER = "after";
+    public static final String TO_OBJECT_ID = "toObjectId";
     private final HttpService httpService;
     private final HSService hsService;
     private HSContactService contactService;
     private final HSAssociationService associationService;
     private final HSDealService dealService;
-    private static final List<String> DEAL_PROPERTIES = List.of("dealname", "dealstage", "pipeline", "date_debut_contrat", "date_fin_contrat", "amount");
+    private static final List<String> DEAL_PROPERTIES = List.of("dealname",
+                                                                "dealstage",
+                                                                "pipeline",
+                                                                "date_debut_contrat",
+                                                                "date_fin_contrat",
+                                                                "amount");
     private static final String COMPANY_URL_V3 = "/crm/v3/objects/companies/";
     private static final String COMPANY_URL_V4 = "/crm/v4/objects/companies/";
     private static final String BATCH = "batch/";
@@ -70,8 +76,8 @@ public class HSCompanyService {
      */
     public HSCompany create(HSCompany hsCompany) throws HubSpotException {
         log.log(DEBUG, "create - hsCompany : " + hsCompany);
-        JSONObject jsonObject = (JSONObject) httpService.postRequest(COMPANY_URL_V3, hsCompany.toJsonString());
-        hsCompany.setId(jsonObject.getLong("id"));
+        JsonNode jsonNode = (JsonNode) httpService.postRequest(COMPANY_URL_V3, hsCompany.toJsonString());
+        hsCompany.setId(jsonNode.path("id").asLong());
         return hsCompany;
     }
 
@@ -94,10 +100,10 @@ public class HSCompanyService {
      * @param jsonBody - body from HubSpot API response
      * @return the company
      */
-    public HSCompany parseCompanyData(JSONObject jsonBody) {
+    public HSCompany parseCompanyData(JsonNode jsonBody) {
         HSCompany company = new HSCompany();
 
-        company.setId(jsonBody.getLong("id"));
+        company.setId(jsonBody.path("id").asLong());
 
         hsService.parseJSONData(jsonBody, company);
         return company;
@@ -118,7 +124,7 @@ public class HSCompanyService {
 
     private HSCompany getCompany(String url) throws HubSpotException {
         try {
-            return parseCompanyData((JSONObject) httpService.getRequest(url));
+            return parseCompanyData((JsonNode) httpService.getRequest(url));
         } catch (HubSpotException e) {
             if (e.getMessage().equals(NOT_FOUND)) {
                 return null;
@@ -149,11 +155,12 @@ public class HSCompanyService {
                 "}";
         String url = COMPANY_URL_V3 + BATCH + READ;
         try {
-            JSONObject response = (JSONObject) httpService.postRequest(url, associationProperties);
-            JSONArray jsonList = response.optJSONArray(RESULTS);
-            List<HSCompany> companies = new ArrayList<>(jsonList.length());
-            for (int i = 0; i < jsonList.length(); i++) {
-                companies.add(parseCompanyData(jsonList.optJSONObject(i)));
+            JsonNode response = (JsonNode) httpService.postRequest(url, associationProperties);
+            List<JsonNode> jsonList = hsService.parseJSONResults(response, RESULTS);
+            List<HSCompany> companies = new ArrayList<>();
+
+            for (JsonNode jsonNode : jsonList) {
+                companies.add(parseCompanyData(jsonNode));
             }
             return companies;
         } catch (HubSpotException e) {
@@ -189,17 +196,17 @@ public class HSCompanyService {
      */
     public List<HSAssociatedCompany> getAssociatedCompanies(Long companyId) throws HubSpotException {
         log.log(DEBUG, "getAssociatedCompanies - companyId : " + companyId);
-        List<JSONObject> associationList = associationService.getCompaniesToCompany(companyId);
+        List<JsonNode> associationList = associationService.getCompaniesToCompany(companyId);
         List<HSAssociatedCompany> associatedCompanies = new ArrayList<>();
 
-        for (JSONObject JsonAssociation : associationList) {
+        for (JsonNode jsonAssociation : associationList) {
             // Initiate associated company parameters
-            HSCompany company = getByID((Long) JsonAssociation.get("toObjectId"));
+            HSCompany company = getByID(jsonAssociation.path(TO_OBJECT_ID).asLong());
             HSAssociationTypeOutput associationType = new HSAssociationTypeOutput();
             // Create association type from JSON Object
-            JSONObject jsonAssociationType = ((JSONArray) JsonAssociation.get("associationTypes")).getJSONObject(0);
-            associationType.setLabel((String) jsonAssociationType.get("label"));
-            associationType.setTypeId((Integer) jsonAssociationType.get("typeId"));
+            JsonNode jsonAssociationType = jsonAssociation.path("associationTypes").path(0);
+            associationType.setLabel(jsonAssociationType.path("label").asText());
+            associationType.setTypeId(jsonAssociationType.path("typeId").asInt());
             // Create associated company and add it to a list
             HSAssociatedCompany associatedCompany = new HSAssociatedCompany(associationType, company);
             associatedCompanies.add(associatedCompany);
@@ -218,17 +225,17 @@ public class HSCompanyService {
      */
     public List<HSAssociatedCompany> getAssociatedCompanies(Long companyId, List<String> properties) throws HubSpotException {
         log.log(DEBUG, "getAssociatedCompanies - companyId : " + companyId);
-        List<JSONObject> associationList = associationService.getCompaniesToCompany(companyId);
+        List<JsonNode> associationList = associationService.getCompaniesToCompany(companyId);
         List<HSAssociatedCompany> associatedCompanies = new ArrayList<>();
 
-        for (JSONObject JsonAssociation : associationList) {
+        for (JsonNode jsonAssociation : associationList) {
             // Initiate associated company parameters
-            HSCompany company = getByIdAndProperties((Long) JsonAssociation.get("toObjectId"), properties);
+            HSCompany company = getByIdAndProperties(jsonAssociation.path(TO_OBJECT_ID).asLong(), properties);
             HSAssociationTypeOutput associationType = new HSAssociationTypeOutput();
             // Create association type from JSON Object
-            JSONObject jsonAssociationType = ((JSONArray) JsonAssociation.get("associationTypes")).getJSONObject(0);
-            associationType.setLabel((String) jsonAssociationType.get("label"));
-            associationType.setTypeId((Integer) jsonAssociationType.get("typeId"));
+            JsonNode jsonAssociationType = jsonAssociation.path("associationTypes").path(0);
+            associationType.setLabel(jsonAssociationType.path("label").asText());
+            associationType.setTypeId(jsonAssociationType.path("typeId").asInt());
             // Create associated company and add it to a list
             HSAssociatedCompany associatedCompany = new HSAssociatedCompany(associationType, company);
             associatedCompanies.add(associatedCompany);
@@ -246,18 +253,18 @@ public class HSCompanyService {
      */
     public Map<Long, List<Long>> getAssociatedContacts(List<Long> companyIds) throws HubSpotException {
         log.log(DEBUG, "getAssociatedContacts - companyIds : " + companyIds);
-        List<JSONObject> associationList = associationService.companiesToContacts(companyIds);
+        List<JsonNode> associationList = associationService.companiesToContacts(companyIds);
         Map<Long, List<Long>> associatedContacts = new HashMap<>();
 
-        for (JSONObject associationsByCompany : associationList) {
+        for (JsonNode associationsByCompany : associationList) {
             // Initiate associated company parameters
-            Long companyId = Long.parseLong(associationsByCompany.getJSONObject("from").get("id").toString());
-            JSONArray contacts = associationsByCompany.getJSONArray("to");
+            Long companyId = associationsByCompany.path("from").path("id").asLong();
+            JsonNode contacts = associationsByCompany.path("to");
 
             List<Long> contactIds = new ArrayList<>();
 
-            for (int i = 0, max = contacts.length(); i < max; i++) {
-                contactIds.add(Long.parseLong(contacts.getJSONObject(i).get("toObjectId").toString()));
+            for (JsonNode contact : contacts) {
+                contactIds.add(contact.path(TO_OBJECT_ID).asLong());
             }
 
             associatedContacts.put(companyId, contactIds);
@@ -291,10 +298,14 @@ public class HSCompanyService {
         log.log(DEBUG, "getByDomain - domain : " + domain);
         List<HSCompany> companies = new ArrayList<>();
         String url = COMPANY_URL_V3 + domain;
-        JSONArray jsonArray = (JSONArray) httpService.getRequest(url);
+        JsonNode jsonNode = (JsonNode) httpService.getRequest(url);
 
-        for (int i = 0; i < jsonArray.length(); i++) {
-            companies.add(parseCompanyData(jsonArray.optJSONObject(i)));
+        if (jsonNode.isArray()) {
+            for (JsonNode node : jsonNode) {
+                companies.add(parseCompanyData(node));
+            }
+        } else {
+            companies.add(parseCompanyData(jsonNode));
         }
         return companies;
     }
@@ -314,15 +325,18 @@ public class HSCompanyService {
         String url = COMPANY_URL_V3 + "?limit=" + limit + "&after=" + after + "&properties=" + propertiesUrl;
 
         try {
-            JSONObject response = (JSONObject) httpService.getRequest(url);
-            JSONArray jsonList = response.optJSONArray(RESULTS);
-            List<HSCompany> companies = new ArrayList<>(jsonList.length());
-            for (int i = 0; i < jsonList.length(); i++) {
-                companies.add(parseCompanyData(jsonList.optJSONObject(i)));
+            JsonNode jsonNode = (JsonNode) httpService.getRequest(url);
+            JsonNode jsonList = jsonNode.path(RESULTS);
+            List<HSCompany> companies = new ArrayList<>();
+
+            for (JsonNode node : jsonList) {
+                companies.add(parseCompanyData(node));
             }
             String nextPageToken = null;
-            if (response.has(PAGING) && ((JSONObject) response.get(PAGING)).has("next")) {
-                nextPageToken = ((JSONObject) ((JSONObject) response.get(PAGING)).get("next")).getString("after");
+            if (jsonNode.has(PAGING) && jsonNode.path(PAGING).has("next") &&
+                    jsonNode.path(PAGING).path("next").path(AFTER) != null &&
+                    jsonNode.path(PAGING).path("next").path(AFTER).asText().length() > 1) {
+                nextPageToken = jsonNode.path(PAGING).path("next").path(AFTER).asText();
             }
             return new PagedHSCompanyList(companies, nextPageToken);
         } catch (HubSpotException e) {
@@ -368,8 +382,8 @@ public class HSCompanyService {
                 "  \"after\": 0\n" +
                 "}";
 
-        JSONObject response = (JSONObject) httpService.postRequest(url, searchProperties);
-        return Long.parseLong(response.get("total") + "");
+        JsonNode response = httpService.postRequest(url, searchProperties);
+        return response.path("total").asLong();
     }
 
     /**
@@ -381,13 +395,14 @@ public class HSCompanyService {
      * @return a company list filtered
      * @throws HubSpotException - if HTTP call fails
      */
-    public List<HSCompany> queryByDefaultSearchableProperties(String input, List<String> responseProperties, int limit) throws HubSpotException {
+    public List<HSCompany> queryByDefaultSearchableProperties(String input, List<String> responseProperties,
+                                                              int limit) throws HubSpotException {
         log.log(DEBUG, "queryByDefaultSearchableProperties");
         String url = COMPANY_URL_V3 + SEARCH;
 
         String responsePropertiesList = responseProperties.stream()
-                .map(property -> "    \"" + property + "\"")
-                .collect(Collectors.joining(",\n"));
+                                                          .map(property -> "    \"" + property + "\"")
+                                                          .collect(Collectors.joining(",\n"));
 
         String queryProperties = "{\n" +
                 "  \"query\": \"" + input + "\"," +
@@ -415,9 +430,9 @@ public class HSCompanyService {
                                                       int limit) throws HubSpotException {
         log.log(DEBUG, "searchFilteredByProperties");
         return searchSortedFilteredByProperties(propertiesAndValuesFilters,
-                responseProperties,
-                List.of(new HSSortOrder("name", HubSpotOrdering.DESCENDING)),
-                limit);
+                                                responseProperties,
+                                                List.of(new HSSortOrder("name", HubSpotOrdering.DESCENDING)),
+                                                limit);
     }
 
     /**
@@ -437,12 +452,13 @@ public class HSCompanyService {
         log.log(DEBUG, "searchSortedFilteredByProperties");
 
         List<HSSearchPropertyFilter> filtersPropertyList = propertiesAndValuesFilters.entrySet().stream()
-                .map(entry -> new HSSearchPropertyFilter(entry.getKey(),
-                        null,
-                        entry.getValue(),
-                        null,
-                        HubSpotSearchOperator.EQ))
-                .collect(Collectors.toList());
+                                                                                     .map(entry -> new HSSearchPropertyFilter(
+                                                                                             entry.getKey(),
+                                                                                             null,
+                                                                                             entry.getValue(),
+                                                                                             null,
+                                                                                             HubSpotSearchOperator.EQ))
+                                                                                     .collect(Collectors.toList());
 
         return searchSortedFiltered(filtersPropertyList, responseProperties, sortOrders, limit);
     }
@@ -465,17 +481,17 @@ public class HSCompanyService {
         String url = COMPANY_URL_V3 + SEARCH;
 
         String filtersPropertyList = propertiesFilters.stream()
-                .map(HSCompanyService::buildFilter)
-                .collect(Collectors.joining(",\n"));
+                                                      .map(HSCompanyService::buildFilter)
+                                                      .collect(Collectors.joining(",\n"));
 
         String responsePropertiesList = responseProperties.stream()
-                .map(property -> "    \"" + property + "\"")
-                .collect(Collectors.joining(",\n"));
+                                                          .map(property -> "    \"" + property + "\"")
+                                                          .collect(Collectors.joining(",\n"));
 
         String sorts = sortOrders.stream()
-                .map(so -> "   {\n\"propertyName\" : \"" + so.getProperty() + "\",\n" +
-                        "   \"direction\": \"" + so.getOrdering().name() + "\"}\n")
-                .collect(Collectors.joining(",\n"));
+                                 .map(so -> "   {\n\"propertyName\" : \"" + so.getProperty() + "\",\n" +
+                                         "   \"direction\": \"" + so.getOrdering().name() + "\"}\n")
+                                 .collect(Collectors.joining(",\n"));
 
         String filterGroupsProperties =
                 "{\n" +
@@ -502,9 +518,9 @@ public class HSCompanyService {
             case IN:
             case NOT_IN:
                 filter += "          \"values\": \"[" + propertyFilter.getValues()
-                        .stream()
-                        .map(val -> "\"" + val + "\"")
-                        .collect(Collectors.joining(",")) + "]\"\n";
+                                                                      .stream()
+                                                                      .map(val -> "\"" + val + "\"")
+                                                                      .collect(Collectors.joining(",")) + "]\"\n";
                 break;
             case BETWEEN:
                 filter += "          \"highValue\": \"" + propertyFilter.getHighValue() + "\",\n";
@@ -538,11 +554,11 @@ public class HSCompanyService {
         List<HSCompany> companies = Collections.emptyList();
 
         try {
-            JSONObject response = (JSONObject) httpService.postRequest(url, properties);
-            JSONArray jsonList = response.optJSONArray(RESULTS);
-            companies = new ArrayList<>(jsonList.length());
-            for (int i = 0; i < jsonList.length(); i++) {
-                companies.add(parseCompanyData(jsonList.optJSONObject(i)));
+            JsonNode response = httpService.postRequest(url, properties);
+            JsonNode jsonList = response.path(RESULTS);
+            companies = new ArrayList<>();
+            for (int i = 0; i < jsonList.size(); i++) {
+                companies.add(parseCompanyData(jsonList.path(i)));
             }
         } catch (HubSpotException e) {
             if (e.getMessage().equals(NOT_FOUND)) {
@@ -614,7 +630,8 @@ public class HSCompanyService {
         try {
             return hsService.parseJsonObjectToIdList(url);
         } catch (HubSpotException e) {
-            throw new HubSpotException("Cannot get company's deals. Company id : " + companyId + ". Reason: " + e.getMessage(), e);
+            throw new HubSpotException("Cannot get company's deals. Company id : " + companyId + ". Reason: " + e.getMessage(),
+                                       e);
         }
     }
 
@@ -660,8 +677,8 @@ public class HSCompanyService {
         }
 
         return dealList.stream()
-                .max(Comparator.comparing(HSDeal::getCreatedDate))
-                .orElse(null);
+                       .max(Comparator.comparing(HSDeal::getCreatedDate))
+                       .orElse(null);
     }
 
     /**
@@ -673,18 +690,18 @@ public class HSCompanyService {
      */
     public Map<Long, List<Long>> getAssociatedDealIds(List<Long> companyIds) throws HubSpotException {
         log.log(DEBUG, "getAssociatedDealIds - companyIds : " + companyIds);
-        List<JSONObject> associationList = associationService.companiesToDeals(companyIds);
+        List<JsonNode> associationList = associationService.companiesToDeals(companyIds);
         Map<Long, List<Long>> associatedDeals = new HashMap<>();
 
-        for (JSONObject associationsByCompany : associationList) {
+        for (JsonNode associationsByCompany : associationList) {
             // Initiate associated company parameters
-            Long companyId = Long.parseLong(associationsByCompany.getJSONObject("from").get("id").toString());
-            JSONArray deals = associationsByCompany.getJSONArray("to");
+            Long companyId = associationsByCompany.path("from").path("id").asLong();
+            JsonNode deals = associationsByCompany.path("to");
 
             List<Long> dealIds = new ArrayList<>();
 
-            for (int i = 0, max = deals.length(); i < max; i++) {
-                dealIds.add(Long.parseLong(deals.getJSONObject(i).get("toObjectId").toString()));
+            for (int i = 0; i < deals.size(); i++) {
+                dealIds.add(deals.path(i).path(TO_OBJECT_ID).asLong());
             }
 
             associatedDeals.put(companyId, dealIds);

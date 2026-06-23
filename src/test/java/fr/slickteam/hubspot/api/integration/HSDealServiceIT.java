@@ -5,12 +5,9 @@ import fr.slickteam.hubspot.api.service.HSDealService;
 import fr.slickteam.hubspot.api.service.HubSpot;
 import fr.slickteam.hubspot.api.utils.Helper;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
-import org.hamcrest.core.StringContains;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.math.BigDecimal;
@@ -19,11 +16,12 @@ import java.time.LocalDate;
 import java.util.*;
 
 import static java.lang.Thread.sleep;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class HSDealServiceIT {
+class HSDealServiceIT {
 
 
     private final String testDealName = "Test deal";
@@ -37,11 +35,8 @@ public class HSDealServiceIT {
 
     private HubSpot hubSpot;
 
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
-
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         hubSpot = new HubSpot(Helper.provideHubspotProperties());
         HSObject object = new HSObject();
         object.setProperty("price", testAmount.toString());
@@ -51,8 +46,8 @@ public class HSDealServiceIT {
     }
 
 
-    @After
-    public void tearDown() throws Exception {
+    @AfterEach
+    void tearDown() throws Exception {
         if (createdDealId != null) {
             hubSpot.deal().delete(createdDealId);
         }
@@ -65,39 +60,39 @@ public class HSDealServiceIT {
     }
 
     @Test
-    public void createDeal_Test() throws Exception {
+    void createDeal_Test() throws Exception {
         HSDeal deal = new HSDeal(testDealName, testDealStage, testPipeline, testAmount, testCloseDate);
         deal = hubSpot.deal().create(deal);
 
         createdDealId = deal.getId();
 
-        assertNotEquals(0L, deal.getId());
-        assertEquals(deal.getDealName(), hubSpot.deal().getByID(deal.getId()).getDealName());
+        assertThat(deal.getId()).isNotZero();
+        assertThat(hubSpot.deal().getByID(deal.getId()).getDealName()).isEqualTo(deal.getDealName());
     }
 
     @Test
-    public void createDeal_NetworkError_Test() throws Exception {
+    void createDeal_NetworkError_Test() throws Exception {
         HSDeal deal = new HSDeal(testDealName, testDealStage, testPipeline, testAmount, testCloseDate);
 
         HSDealService mockHSDealService = mock(HSDealService.class);
         Mockito.doThrow(new HubSpotException("Network error")).when(mockHSDealService).create(deal);
         HubSpot mockHubSpot = mock(HubSpot.class);
         when(mockHubSpot.deal()).thenReturn(mockHSDealService);
-        exception.expect(HubSpotException.class);
-        mockHubSpot.deal().create(deal);
+        assertThatThrownBy(() -> mockHubSpot.deal().create(deal))
+            .isInstanceOf(HubSpotException.class);
     }
 
     @Test
-    public void createDealIncorrectProperty_Test() throws Exception {
+    void createDealIncorrectProperty_Test() {
         HSDeal deal = new HSDeal(testDealName, testDealStage, testPipeline, testAmount, testCloseDate);
         deal.setProperty("badpropertyz", "Test value 1");
 
-        exception.expect(HubSpotException.class);
-        hubSpot.deal().create(deal);
+        assertThatThrownBy(() -> hubSpot.deal().create(deal))
+            .isInstanceOf(HubSpotException.class);
     }
 
     @Test
-    public void getDeal_Id_Test() throws Exception {
+    void getDeal_Id_Test() throws Exception {
         long dealId = hubSpot
                 .deal()
                 .create(new HSDeal(testDealName, testDealStage, testPipeline, testAmount, testCloseDate))
@@ -106,12 +101,12 @@ public class HSDealServiceIT {
 
         HSDeal deal = hubSpot.deal().getByID(dealId);
 
-        assertEquals(dealId, deal.getId());
-        assertEquals(testDealName, deal.getDealName());
+        assertThat(deal.getId()).isEqualTo(dealId);
+        assertThat(deal.getDealName()).isEqualTo(testDealName);
     }
 
     @Test
-    public void getDeal_Id_And_Properties_Test() throws Exception {
+    void getDeal_Id_And_Properties_Test() throws Exception {
         LocalDate testDealContractStart = LocalDate.now();
         LocalDate testDealContractEnd = LocalDate.now();
         Map<String, String> contractDates = new HashMap<>();
@@ -126,21 +121,21 @@ public class HSDealServiceIT {
 
         HSDeal deal = hubSpot.deal().getByIdAndProperties(dealId, properties);
 
-        assertEquals(dealId, deal.getId());
-        assertEquals(testDealName, deal.getDealName());
+        assertThat(deal.getId()).isEqualTo(dealId);
+        assertThat(deal.getDealName()).isEqualTo(testDealName);
     }
 
     @Test
-    public void getDeal_Id_Not_Found_Test() throws Exception {
+    void getDeal_Id_Not_Found_Test() throws Exception {
         long id = -777;
-        assertNull(hubSpot.deal().getByID(id));
-        assertNull(hubSpot.deal().getByID(id));
+        assertThat(hubSpot.deal().getByID(id)).isNull();
+        assertThat(hubSpot.deal().getByID(id)).isNull();
     }
 
 
     @Test
-    public void patch_phone_Deal_Test() throws Exception {
-        String test_value = "new phone number";
+    void patch_phone_Deal_Test() throws Exception {
+        String testValue = "new phone number";
         HSDeal deal = hubSpot
                 .deal()
                 .create(new HSDeal(testDealName, testDealStage, testPipeline, testAmount, testCloseDate));
@@ -148,15 +143,15 @@ public class HSDealServiceIT {
 
         HSDeal editDeal = new HSDeal();
         editDeal.setId(deal.getId());
-        editDeal.setDealName(test_value);
+        editDeal.setDealName(testValue);
         HSDeal result = hubSpot.deal().patch(editDeal);
 
-        assertEquals(editDeal.getDealName(), result.getDealName());
+        assertThat(result.getDealName()).isEqualTo(editDeal.getDealName());
     }
 
 
     @Test
-    public void patchDealIncorrectPredefinedFieldValue_Test() throws Exception {
+    void patchDealIncorrectPredefinedFieldValue_Test() throws Exception {
         HSDeal deal = hubSpot
                 .deal()
                 .create(new HSDeal(testDealName, testDealStage, testPipeline, testAmount, testCloseDate));
@@ -166,34 +161,34 @@ public class HSDealServiceIT {
         editDeal.setId(deal.getId());
         editDeal.setDealStage("test invalid");
 
-        exception.expect(HubSpotException.class);
-        exception.expectMessage("");
-        hubSpot.deal().patch(editDeal);
+        assertThatThrownBy(() -> hubSpot.deal().patch(editDeal))
+            .isInstanceOf(HubSpotException.class)
+            .hasMessageContaining("");
     }
 
     @Test
-    public void patchDealMissedRequiredProperty_Test() throws Exception {
-        String test_property = "linkedinbio";
-        String test_value = "Test value 1";
+    void patchDealMissedRequiredProperty_Test() throws Exception {
+        String testProperty = "linkedinbio";
+        String testValue = "Test value 1";
         HSDeal deal = hubSpot
                 .deal()
                 .create(new HSDeal(testDealName, testDealStage, testPipeline, testAmount, testCloseDate));
         createdDealId = deal.getId();
-        deal.setProperty(test_property, test_value);
+        deal.setProperty(testProperty, testValue);
         HSDeal missedDeal = new HSDeal(deal.getDealName(),
                                                 deal.getDealStage(),
                                                 deal.getPipeline(),
                                                 deal.getAmount(),
                                                 deal.getCloseDate());
 
-        exception.expect(HubSpotException.class);
-        hubSpot.deal().patch(missedDeal);
+        assertThatThrownBy(() -> hubSpot.deal().patch(missedDeal))
+            .isInstanceOf(HubSpotException.class);
     }
 
     @Test
-    public void patchDealIncorrectProperty_Test() throws Exception {
-        String test_property = "badpropertyz";
-        String test_value = "Test value 1";
+    void patchDealIncorrectProperty_Test() throws Exception {
+        String testProperty = "badpropertyz";
+        String testValue = "Test value 1";
         HSDeal deal = hubSpot
                 .deal()
                 .create(new HSDeal(testDealName, testDealStage, testPipeline, testAmount, testCloseDate));
@@ -201,70 +196,70 @@ public class HSDealServiceIT {
 
         HSDeal editDeal = new HSDeal();
         editDeal.setId(deal.getId());
-        editDeal.setProperty(test_property, test_value);
+        editDeal.setProperty(testProperty, testValue);
 
-        exception.expect(HubSpotException.class);
-        hubSpot.deal().patch(editDeal);
+        assertThatThrownBy(() -> hubSpot.deal().patch(editDeal))
+            .isInstanceOf(HubSpotException.class);
     }
 
     @Test
-    public void patchDeal_Bad_Stage_Test() throws Exception {
+    void patchDeal_Bad_Stage_Test() {
         HSDeal deal = new HSDeal(testDealName, "wrong stage", testPipeline, testAmount, testCloseDate).setId(1);
-        exception.expect(HubSpotException.class);
-        hubSpot.deal().create(deal);
-        createdDealId = deal.getId();
+        assertThatThrownBy(() -> {
+            hubSpot.deal().create(deal);
+            createdDealId = deal.getId();
+        }).isInstanceOf(HubSpotException.class);
     }
 
     @Test
-    public void patchDeal_Not_Found_Test() throws Exception {
+    void patchDeal_Not_Found_Test() {
         HSDeal deal = new HSDeal(testDealName, testDealStage, testPipeline, testAmount, testCloseDate).setId(-777);
 
         HSDeal editDeal = new HSDeal();
         editDeal.setId(deal.getId());
         editDeal.setDealName(deal.getDealName());
 
-        exception.expect(HubSpotException.class);
-        exception.expectMessage("Not Found");
-
-        hubSpot.deal().patch(editDeal);
+        assertThatThrownBy(() -> hubSpot.deal().patch(editDeal))
+            .isInstanceOf(HubSpotException.class)
+            .hasMessageContaining("Not Found");
     }
 
     @Test
-    public void deleteDeal_Test() throws Exception {
+    void deleteDeal_Test() throws Exception {
         HSDeal deal = new HSDeal(testDealName, testDealStage, testPipeline, testAmount, testCloseDate);
         deal = hubSpot.deal().create(deal);
         createdDealId = deal.getId();
 
         hubSpot.deal().delete(deal);
 
-        assertNull(hubSpot.deal().getByID(deal.getId()));
+        assertThat(hubSpot.deal().getByID(deal.getId())).isNull();
 
     }
 
     @Test
-    public void deleteDeal_by_id_Test() throws Exception {
+    void deleteDeal_by_id_Test() throws Exception {
         HSDeal deal = new HSDeal(testDealName, testDealStage, testPipeline, testAmount, testCloseDate);
         deal = hubSpot.deal().create(deal);
         createdDealId = deal.getId();
 
         hubSpot.deal().delete(deal.getId());
 
-        assertNull(hubSpot.deal().getByID(deal.getId()));
+        assertThat(hubSpot.deal().getByID(deal.getId())).isNull();
 
     }
 
     @Test
-    public void deleteDeal_No_ID_Test() throws Exception {
+    void deleteDeal_No_ID_Test() {
         HSDeal deal = new HSDeal().setDealName(testDealName);
 
-        exception.expect(HubSpotException.class);
-        exception.expectMessage(StringContains.containsString("Deal ID must be provided"));
-        hubSpot.deal().delete(deal);
+        assertThatThrownBy(() -> hubSpot.deal().delete(deal))
+            .isInstanceOf(HubSpotException.class)
+            .hasMessageContaining("Deal ID must be provided");
     }
 
 
     @Test
-    public void getDealListByIdAndProperties_Test() throws Exception {
+    void getDealListByIdAndProperties_Test() throws Exception {
         HSDeal deal = new HSDeal();
         HSDeal deal2 = new HSDeal();
         HSDeal deal3 = new HSDeal();
@@ -282,11 +277,11 @@ public class HSDealServiceIT {
             List<HSDeal> deals = hubSpot.deal().getDealListByIdAndProperties(List.of(deal.getId(), deal2.getId(), deal3.getId(), deal4.getId(), deal5.getId()),
                     properties);
 
-            assertNotNull(deals);
-            assertEquals(5, deals.size());
+            assertThat(deals).isNotNull();
+            assertThat(deals).hasSize(5);
 
-            assertEquals(deals.get(0).getId(), deals.get(0).getId());
-            assertEquals(deals.get(1).getId(), deals.get(1).getId());
+            assertThat(deals.get(0).getId()).isEqualTo(deals.get(0).getId());
+            assertThat(deals.get(1).getId()).isEqualTo(deals.get(1).getId());
         } finally {
             hubSpot.deal().delete(deal.getId());
             hubSpot.deal().delete(deal2.getId());
@@ -297,7 +292,7 @@ public class HSDealServiceIT {
     }
 
     @Test
-    public void getAssociatedCompanies_Tests() throws Exception {
+    void getAssociatedCompanies_Tests() throws Exception {
         Map<Long, List<Long>> savedDealsAndCompanies = new HashMap<>();
         for (int i = 0; i < 3; i++) {
             HSDeal deal = getNewTestDeal();
@@ -313,11 +308,11 @@ public class HSDealServiceIT {
         try {
             Map<Long, List<Long>> dealsCompanies = hubSpot.deal().getAssociatedCompanyIds(new ArrayList<>(savedDealsAndCompanies.keySet()));
 
-            assertNotNull(dealsCompanies);
-            assertFalse(dealsCompanies.isEmpty());
+            assertThat(dealsCompanies).isNotNull();
+            assertThat(dealsCompanies).isNotEmpty();
             dealsCompanies.keySet().forEach(resDealId -> {
-                assertEquals(dealsCompanies.get(resDealId).size(), savedDealsAndCompanies.get(resDealId).size());
-                assertTrue(dealsCompanies.get(resDealId).containsAll(savedDealsAndCompanies.get(resDealId)));
+                assertThat(dealsCompanies.get(resDealId)).hasSameSizeAs(savedDealsAndCompanies.get(resDealId));
+                assertThat(dealsCompanies.get(resDealId)).containsAll(savedDealsAndCompanies.get(resDealId));
             });
         } finally {
             savedDealsAndCompanies.forEach((key, value) -> {
@@ -338,7 +333,7 @@ public class HSDealServiceIT {
     }
 
     @Test
-    public void getAssociatedContacts_Tests() throws Exception {
+    void getAssociatedContacts_Tests() throws Exception {
         Map<Long, List<Long>> savedDealsAndContacts = new HashMap<>();
         for (int i = 0; i < 3; i++) {
             HSDeal deal = getNewTestDeal();
@@ -354,11 +349,11 @@ public class HSDealServiceIT {
         try {
             Map<Long, List<Long>> dealsContacts = hubSpot.deal().getAssociatedContactIds(new ArrayList<>(savedDealsAndContacts.keySet()));
 
-            assertNotNull(dealsContacts);
-            assertFalse(dealsContacts.isEmpty());
+            assertThat(dealsContacts).isNotNull();
+            assertThat(dealsContacts).isNotEmpty();
             dealsContacts.keySet().forEach(resDealId -> {
-                assertEquals(dealsContacts.get(resDealId).size(), savedDealsAndContacts.get(resDealId).size());
-                assertTrue(dealsContacts.get(resDealId).containsAll(savedDealsAndContacts.get(resDealId)));
+                assertThat(dealsContacts.get(resDealId)).hasSameSizeAs(savedDealsAndContacts.get(resDealId));
+                assertThat(dealsContacts.get(resDealId)).containsAll(savedDealsAndContacts.get(resDealId));
             });
         } finally {
             savedDealsAndContacts.forEach((key, value) -> {
@@ -379,7 +374,7 @@ public class HSDealServiceIT {
     }
 
     @Test
-    public void getAssociatedLineItems_Tests() throws Exception {
+    void getAssociatedLineItems_Tests() throws Exception {
         Map<Long, List<Long>> savedDealsAndLineItems = new HashMap<>();
         for (int i = 0; i < 3; i++) {
             HSDeal deal = getNewTestDeal();
@@ -395,11 +390,11 @@ public class HSDealServiceIT {
         try {
             Map<Long, List<Long>> dealsLineItems = hubSpot.deal().getAssociatedLineItemIds(new ArrayList<>(savedDealsAndLineItems.keySet()));
 
-            assertNotNull(dealsLineItems);
-            assertFalse(dealsLineItems.isEmpty());
+            assertThat(dealsLineItems).isNotNull();
+            assertThat(dealsLineItems).isNotEmpty();
             dealsLineItems.keySet().forEach(resDealId -> {
-                assertEquals(dealsLineItems.get(resDealId).size(), savedDealsAndLineItems.get(resDealId).size());
-                assertTrue(dealsLineItems.get(resDealId).containsAll(savedDealsAndLineItems.get(resDealId)));
+                assertThat(dealsLineItems.get(resDealId)).hasSameSizeAs(savedDealsAndLineItems.get(resDealId));
+                assertThat(dealsLineItems.get(resDealId)).containsAll(savedDealsAndLineItems.get(resDealId));
             });
         } finally {
             savedDealsAndLineItems.forEach((key, value) -> {

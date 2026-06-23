@@ -1,26 +1,28 @@
 package fr.slickteam.hubspot.api.integration;
 
 import fr.slickteam.hubspot.api.domain.HSCompany;
-import fr.slickteam.hubspot.api.domain.PagedHSCompanyList;
-import fr.slickteam.hubspot.api.domain.PagedHSContactList;
-import fr.slickteam.hubspot.api.utils.HubSpotException;
 import fr.slickteam.hubspot.api.domain.HSContact;
+import fr.slickteam.hubspot.api.domain.PagedHSContactList;
 import fr.slickteam.hubspot.api.service.HSContactService;
 import fr.slickteam.hubspot.api.service.HubSpot;
 import fr.slickteam.hubspot.api.utils.Helper;
-import org.hamcrest.core.StringContains;
-import org.junit.*;
-import org.junit.rules.ExpectedException;
+import fr.slickteam.hubspot.api.utils.HubSpotException;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.time.Instant;
 import java.util.*;
 
 import static java.lang.Thread.sleep;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-public class HSContactServiceIT {
+class HSContactServiceIT {
 
     private String testEmail1;
     private final String testBadEmail = "test@test.test";
@@ -36,18 +38,15 @@ public class HSContactServiceIT {
 
     private HubSpot hubSpot;
 
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
-
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         hubSpot = new HubSpot(Helper.provideHubspotProperties());
         testEmail1 = "test1" + Instant.now().getEpochSecond() + "@mail.com";
         createdContactIds = new ArrayList<>();
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @AfterEach
+    void tearDown() throws Exception {
         for (long createdContactId : createdContactIds) {
             hubSpot.contact().delete(createdContactId);
         }
@@ -56,78 +55,78 @@ public class HSContactServiceIT {
     }
 
     @Test
-    public void createContact_Test() throws Exception {
+    void createContact_Test() throws Exception {
         HSContact contact = new HSContact(testEmail1, testFirstname, testLastname, testPhoneNumber, testLifeCycleStage);
         contact = hubSpot.contact().create(contact);
 
         createdContactIds.add(contact.getId());
 
-        assertNotEquals(0L, contact.getId());
-        assertEquals(contact.getEmail(), hubSpot.contact().getByID(contact.getId()).getEmail());
+        assertThat(contact.getId()).isNotZero();
+        assertThat(hubSpot.contact().getByID(contact.getId()).getEmail()).isEqualTo(contact.getEmail());
     }
 
     @Test
-    public void should_get_contact_by_email_when_contact_exist() throws Exception {
+    void should_get_contact_by_email_when_contact_exist() throws Exception {
         HSContact contact = new HSContact(testEmail1, testFirstname, testLastname, testPhoneNumber, testLifeCycleStage);
         contact = hubSpot.contact().create(contact);
         createdContactIds.add(contact.getId());
 
         Optional<HSContact> foundContact = hubSpot.contact().getByEmail(contact.getEmail());
 
-        assertTrue(foundContact.isPresent());
-        assertEquals(contact.getEmail(), foundContact.get().getEmail());
+        assertThat(foundContact).isPresent();
+        assertThat(foundContact.get().getEmail()).isEqualTo(contact.getEmail());
     }
 
     @Test
-    public void should_not_get_contact_by_email_when_contact_does_not_exist() throws Exception {
+    void should_not_get_contact_by_email_when_contact_does_not_exist() throws Exception {
 
         Optional<HSContact> foundContact = hubSpot.contact().getByEmail(testEmail1);
 
-        assertFalse(foundContact.isPresent());
+        assertThat(foundContact).isNotPresent();
     }
 
     @Test
-    public void should_not_get_contact_when_email_is_null() throws Exception {
+    void should_not_get_contact_when_email_is_null() throws Exception {
 
         Optional<HSContact> foundContact = hubSpot.contact().getByEmail(null);
 
-        assertFalse(foundContact.isPresent());
+        assertThat(foundContact).isNotPresent();
     }
 
     @Test
-    public void createContact_NetworkError_Test() throws Exception {
+    void createContact_NetworkError_Test() throws Exception {
         HSContact contact = new HSContact(testEmail1, testFirstname, testLastname, testPhoneNumber, testLifeCycleStage);
 
         HSContactService mockHSContactService = mock(HSContactService.class);
         Mockito.doThrow(new HubSpotException("Network error")).when(mockHSContactService).create(contact);
         HubSpot mockHubSpot = mock(HubSpot.class);
         when(mockHubSpot.contact()).thenReturn(mockHSContactService);
-        exception.expect(HubSpotException.class);
-        mockHubSpot.contact().create(contact);
+        assertThatThrownBy(() -> mockHubSpot.contact().create(contact))
+                .isInstanceOf(HubSpotException.class);
     }
 
     @Test
-    public void createContactIncorrectProperty_Test() throws Exception {
+    void createContactIncorrectProperty_Test() {
         HSContact contact = new HSContact(testEmail1, testFirstname, testLastname, testPhoneNumber, testLifeCycleStage);
         contact.setProperty("badpropertyz", "Test value 1");
 
-        exception.expect(HubSpotException.class);
-        hubSpot.contact().create(contact);
+        assertThatThrownBy(() -> hubSpot.contact().create(contact))
+                .isInstanceOf(HubSpotException.class);
     }
 
     @Test
-    public void createContactMissedRequiredProperty_Test() throws Exception {
+    void createContactMissedRequiredProperty_Test() {
         HSContact contact = new HSContact();
         contact.setFirstname(testFirstname);
         contact.setLastname(testLastname);
 
-        exception.expect(HubSpotException.class);
-        hubSpot.contact().create(contact);
+        assertThatThrownBy(() -> hubSpot.contact().create(contact))
+                .isInstanceOf(HubSpotException.class);
     }
 
 
     @Test
-    public void getContact_Id_Test() throws Exception {
+    void getContact_Id_Test() throws Exception {
         long contactId = hubSpot
                 .contact()
                 .create(new HSContact(testEmail1, testFirstname, testLastname, testPhoneNumber, testLifeCycleStage))
@@ -136,18 +135,18 @@ public class HSContactServiceIT {
 
         HSContact contact = hubSpot.contact().getByID(contactId);
 
-        assertEquals(contactId, contact.getId());
-        assertEquals(testFirstname, contact.getFirstname());
+        assertThat(contact.getId()).isEqualTo(contactId);
+        assertThat(contact.getFirstname()).isEqualTo(testFirstname);
     }
 
     @Test
-    public void getContact_Id_Not_Found_Test() throws Exception {
+    void getContact_Id_Not_Found_Test() throws Exception {
         long id = -777;
-        assertNull(hubSpot.contact().getByID(id));
+        assertThat(hubSpot.contact().getByID(id)).isNull();
     }
 
     @Test
-    public void getContactByIdAndProperties_Test() throws Exception {
+    void getContactByIdAndProperties_Test() throws Exception {
         HSContact contact = hubSpot
                 .contact()
                 .create(new HSContact(testEmail1, testFirstname, testLastname, testPhoneNumber, testLifeCycleStage));
@@ -156,18 +155,22 @@ public class HSContactServiceIT {
         List<String> properties = Arrays.asList("email", "firstname", "lastname", "phone", "lifecyclestage");
         HSContact contactWithDetails = hubSpot.contact().getByIdAndProperties(contact.getId(), properties);
 
-        assertEquals(contact.getId(), contactWithDetails.getId());
-        assertEquals(contact.getPhoneNumber(), contactWithDetails.getPhoneNumber());
+        assertThat(contactWithDetails.getId()).isEqualTo(contact.getId());
+        assertThat(contactWithDetails.getPhoneNumber()).isEqualTo(contact.getPhoneNumber());
     }
 
     @Test
-    public void getContactListByIdAndProperties_Test() throws Exception {
+    void getContactListByIdAndProperties_Test() throws Exception {
         HSContact contact = hubSpot
                 .contact()
                 .create(new HSContact(testEmail1, testFirstname, testLastname, testPhoneNumber, testLifeCycleStage));
         HSContact contact2 = hubSpot
                 .contact()
-                .create(new HSContact("test2@email.com", "testFirstname2", "testLastname2", testPhoneNumber, testLifeCycleStage));
+                .create(new HSContact("test2@email.com",
+                                      "testFirstname2",
+                                      "testLastname2",
+                                      testPhoneNumber,
+                                      testLifeCycleStage));
 
         createdContactIds.add(contact.getId());
         createdContactIds.add(contact2.getId());
@@ -176,24 +179,29 @@ public class HSContactServiceIT {
 
         List<HSContact> contacts = hubSpot.contact().getContactListByIdAndProperties(createdContactIds, properties);
 
-        assertNotNull(contacts);
-        assertNotNull(contacts.get(0).getPhoneNumber());
-        assertEquals(2, contacts.size());
+        assertThat(contacts).isNotNull();
+        assertThat(contacts.get(0).getPhoneNumber()).isNotNull();
+        assertThat(contacts).hasSize(2);
     }
 
     @Test
-    public void getContactCompanies_Test() throws Exception {
+    void getContactCompanies_Test() throws Exception {
         long contactId = hubSpot
                 .contact()
                 .create(new HSContact(testEmail1, testFirstname, testLastname, testPhoneNumber, testLifeCycleStage))
                 .getId();
-        HSCompany company = new HSCompany("TestCompany"+ Instant.now().getEpochSecond(), testPhoneNumber, testAddress, testZip, testCity, testCountry);
+        HSCompany company = new HSCompany("TestCompany" + Instant.now().getEpochSecond(),
+                                          testPhoneNumber,
+                                          testAddress,
+                                          testZip,
+                                          testCity,
+                                          testCountry);
         hubSpot.company().create(company);
         hubSpot.association().contactToCompany(contactId, company.getId());
         List<HSCompany> companies = hubSpot.contact().getContactCompanies(contactId);
-        assertNotNull(companies);
-        assertFalse(companies.isEmpty());
-        assertEquals(companies.get(0).getId(), company.getId());
+        assertThat(companies).isNotNull()
+                             .isNotEmpty();
+        assertThat(companies.get(0).getId()).isEqualTo(company.getId());
 
         hubSpot.association().removeContactToCompany(contactId, company.getId());
         hubSpot.contact().delete(contactId);
@@ -201,18 +209,23 @@ public class HSContactServiceIT {
     }
 
     @Test
-    public void getContactCompanies_withProperties_Test() throws Exception {
+    void getContactCompanies_withProperties_Test() throws Exception {
         HSContact contact = hubSpot
                 .contact()
                 .create(new HSContact(testEmail1, testFirstname, testLastname, testPhoneNumber, testLifeCycleStage));
-        HSCompany company = new HSCompany("TestCompany"+ Instant.now().getEpochSecond(), testPhoneNumber, testAddress, testZip, testCity, testCountry);
+        HSCompany company = new HSCompany("TestCompany" + Instant.now().getEpochSecond(),
+                                          testPhoneNumber,
+                                          testAddress,
+                                          testZip,
+                                          testCity,
+                                          testCountry);
         hubSpot.company().create(company);
         hubSpot.association().contactToCompany(contact.getId(), company.getId());
         List<HSCompany> companies = hubSpot.contact().getContactCompanies(contact.getId(), List.of("address"));
-        assertNotNull(companies);
-        assertFalse(companies.isEmpty());
-        assertEquals(companies.get(0).getId(), company.getId());
-        assertEquals(companies.get(0).getProperty("address"), company.getProperty("address"));
+        assertThat(companies).isNotNull()
+                             .isNotEmpty();
+        assertThat(companies.get(0).getId()).isEqualTo(company.getId());
+        assertThat(companies.get(0).getProperty("address")).isEqualTo(company.getProperty("address"));
 
         hubSpot.association().removeContactToCompany(contact.getId(), company.getId());
         hubSpot.contact().delete(contact.getId());
@@ -221,8 +234,8 @@ public class HSContactServiceIT {
 
 
     @Test
-    public void patch_phone_Contact_Test() throws Exception {
-        String test_value = "new phone number";
+    void patch_phone_Contact_Test() throws Exception {
+        String testValue = "new phone number";
         HSContact contact = hubSpot
                 .contact()
                 .create(new HSContact(testEmail1, testFirstname, testLastname, testPhoneNumber, testLifeCycleStage));
@@ -230,15 +243,15 @@ public class HSContactServiceIT {
 
         HSContact editContact = new HSContact();
         editContact.setId(contact.getId());
-        editContact.setPhoneNumber(test_value);
+        editContact.setPhoneNumber(testValue);
         HSContact result = hubSpot.contact().patch(editContact);
 
-        assertEquals(editContact.getPhoneNumber(), result.getPhoneNumber());
+        assertThat(result.getPhoneNumber()).isEqualTo(editContact.getPhoneNumber());
     }
 
 
     @Test
-    public void patchContactIncorrectPredefinedFieldValue_Test() throws Exception {
+    void patchContactIncorrectPredefinedFieldValue_Test() throws Exception {
         HSContact contact = hubSpot
                 .contact()
                 .create(new HSContact(testEmail1, testFirstname, testLastname, testPhoneNumber, testLifeCycleStage));
@@ -248,34 +261,34 @@ public class HSContactServiceIT {
         editContact.setId(contact.getId());
         editContact.setEmail("email@ru");
 
-        exception.expect(HubSpotException.class);
-        exception.expectMessage("");
-        hubSpot.contact().patch(editContact);
+        assertThatThrownBy(() -> hubSpot.contact().patch(editContact))
+                .isInstanceOf(HubSpotException.class)
+                .hasMessageContaining("");
     }
 
     @Test
-    public void patchContactMissedRequiredProperty_Test() throws Exception {
-        String test_property = "linkedinbio";
-        String test_value = "Test value 1";
+    void patchContactMissedRequiredProperty_Test() throws Exception {
+        String testProperty = "linkedinbio";
+        String testValue = "Test value 1";
         HSContact contact = hubSpot
                 .contact()
                 .create(new HSContact(testEmail1, testFirstname, testLastname, testPhoneNumber, testLifeCycleStage));
         createdContactIds.add(contact.getId());
-        contact.setProperty(test_property, test_value);
+        contact.setProperty(testProperty, testValue);
         HSContact missedContact = new HSContact(contact.getEmail(),
-                contact.getFirstname(),
-                contact.getLastname(),
-                contact.getPhoneNumber(),
-                contact.getLifeCycleStage());
+                                                contact.getFirstname(),
+                                                contact.getLastname(),
+                                                contact.getPhoneNumber(),
+                                                contact.getLifeCycleStage());
 
-        exception.expect(HubSpotException.class);
-        hubSpot.contact().patch(missedContact);
+        assertThatThrownBy(() -> hubSpot.contact().patch(missedContact))
+                .isInstanceOf(HubSpotException.class);
     }
 
     @Test
-    public void patchContactIncorrectProperty_Test() throws Exception {
-        String test_property = "badpropertyz";
-        String test_value = "Test value 1";
+    void patchContactIncorrectProperty_Test() throws Exception {
+        String testProperty = "badpropertyz";
+        String testValue = "Test value 1";
         HSContact contact = hubSpot
                 .contact()
                 .create(new HSContact(testEmail1, testFirstname, testLastname, testPhoneNumber, testLifeCycleStage));
@@ -283,107 +296,119 @@ public class HSContactServiceIT {
 
         HSContact editContact = new HSContact();
         editContact.setId(contact.getId());
-        editContact.setProperty(test_property, test_value);
+        editContact.setProperty(testProperty, testValue);
 
-        exception.expect(HubSpotException.class);
-        hubSpot.contact().patch(editContact);
+        assertThatThrownBy(() -> hubSpot.contact().patch(editContact))
+                .isInstanceOf(HubSpotException.class);
     }
 
     @Test
-    public void patchContact_Bad_Email_Test() throws Exception {
+    void patchContact_Bad_Email_Test() {
         HSContact contact = new HSContact(testBadEmail,
-                testFirstname,
-                testLastname,
-                testPhoneNumber,
-                testLifeCycleStage).setId(1);
-        exception.expect(HubSpotException.class);
-        hubSpot.contact().create(contact);
-        createdContactIds.add(contact.getId());
+                                          testFirstname,
+                                          testLastname,
+                                          testPhoneNumber,
+                                          testLifeCycleStage).setId(1);
+        assertThatThrownBy(() -> {
+            hubSpot.contact().create(contact);
+            createdContactIds.add(contact.getId());
 
-        hubSpot.contact().delete(contact);
+            hubSpot.contact().delete(contact);
+        }).isInstanceOf(HubSpotException.class);
     }
 
     @Test
-    public void patchContact_Not_Found_Test() throws Exception {
+    void patchContact_Not_Found_Test() {
         HSContact contact = new HSContact(testBadEmail,
-                testFirstname,
-                testLastname,
-                testPhoneNumber,
-                testLifeCycleStage).setId(-777);
+                                          testFirstname,
+                                          testLastname,
+                                          testPhoneNumber,
+                                          testLifeCycleStage).setId(-777);
 
 
         HSContact editContact = new HSContact();
         editContact.setId(contact.getId());
         editContact.setEmail(contact.getEmail());
 
-        exception.expect(HubSpotException.class);
-        exception.expectMessage("Not Found");
-
-        hubSpot.contact().patch(editContact);
+        assertThatThrownBy(() -> hubSpot.contact().patch(editContact))
+                .isInstanceOf(HubSpotException.class)
+                .hasMessageContaining("Not Found");
     }
 
     @Test
-    public void deleteContact_Test() throws Exception {
+    void deleteContact_Test() throws Exception {
         HSContact contact = new HSContact(testEmail1, testFirstname, testLastname, testPhoneNumber, testLifeCycleStage);
         contact = hubSpot.contact().create(contact);
         createdContactIds.add(contact.getId());
 
         hubSpot.contact().delete(contact);
 
-        assertNull(hubSpot.contact().getByID(contact.getId()));
+        assertThat(hubSpot.contact().getByID(contact.getId())).isNull();
 
     }
 
-    @Ignore("Unexpected test behavior")
+    @Disabled("Unexpected test behavior")
     @Test
-    public void queryByDefaultSearchableProperties_Test() throws Exception {
+    void queryByDefaultSearchableProperties_Test() throws Exception {
         HSContact contact = new HSContact(testEmail1, testFirstname, testLastname, testPhoneNumber, testLifeCycleStage);
         List<String> responseProperties = Arrays.asList("id", "firstname", "lastname");
 
         contact = hubSpot.contact().create(contact);
         createdContactIds.add(contact.getId());
 
-        assertFalse(hubSpot.contact().queryByDefaultSearchableProperties(testFirstname, responseProperties, 10).size() > 0);
-    }
-     @Test
-    public void searchFilteredByProperties_Test() throws Exception {
-        HSContact contact = new HSContact(testEmail1, testFirstname, testLastname, testPhoneNumber, testLifeCycleStage);
-        Map<String, String> properties = new HashMap<>();
-         List<String> responseProperties = Arrays.asList("id", "firstname", "lastname");
-        HSContact createdContact = hubSpot.contact().create(contact);
-
-        createdContactIds.add(createdContact.getId());
-
-        assertNotEquals(0L, createdContact.getId());
-        properties.put("hs_object_id", String.valueOf(createdContact.getId()));
-        List<HSContact> hsContacts = hubSpot.contact().searchFilteredByProperties(properties, responseProperties, 10);
-        assertFalse(hsContacts.size() > 0);
+        assertThat(hubSpot
+                           .contact()
+                           .queryByDefaultSearchableProperties(testFirstname, responseProperties, 10)
+                           .size() > 0).isFalse();
     }
 
     @Test
-    public void deleteContact_by_id_Test() throws Exception {
+    void searchFilteredByProperties_Test() throws Exception {
+        HSContact contact = getNewTestContact();
+        Map<String, String> properties = new HashMap<>();
+        List<String> responseProperties = Arrays.asList("id", "firstname", "lastname");
+        HSContact createdContact = contact;
+
+        createdContactIds.add(createdContact.getId());
+
+        assertThat(createdContact.getId()).isNotZero();
+        properties.put("email", createdContact.getEmail());
+        List<HSContact> hsContacts = Collections.emptyList();
+        for (int i = 0; i < 5; i++) {
+            hsContacts = hubSpot.contact().searchFilteredByProperties(properties, responseProperties, 10);
+            if (!hsContacts.isEmpty()) {
+                break;
+            }
+            Thread.sleep(1000);
+        }
+
+        assertThat(hsContacts).isNotEmpty();
+    }
+
+    @Test
+    void deleteContact_by_id_Test() throws Exception {
         HSContact contact = new HSContact(testEmail1, testFirstname, testLastname, testPhoneNumber, testLifeCycleStage);
         contact = hubSpot.contact().create(contact);
         createdContactIds.add(contact.getId());
 
         hubSpot.contact().delete(contact.getId());
 
-        assertNull(hubSpot.contact().getByID(contact.getId()));
+        assertThat(hubSpot.contact().getByID(contact.getId())).isNull();
 
     }
 
     @Test
-    public void deleteContact_No_ID_Test() throws Exception {
+    void deleteContact_No_ID_Test() {
         HSContact contact = new HSContact().setEmail(testEmail1);
 
-        exception.expect(HubSpotException.class);
-        exception.expectMessage(StringContains.containsString("Contact ID must be provided"));
-        hubSpot.contact().delete(contact);
+        assertThatThrownBy(() -> hubSpot.contact().delete(contact))
+                .isInstanceOf(HubSpotException.class)
+                .hasMessageContaining("Contact ID must be provided");
     }
 
 
     @Test
-    public void getContacts_Test() throws Exception {
+    void getContacts_Test() throws Exception {
         HSContact contact = new HSContact();
         HSContact contact2 = new HSContact();
         HSContact contact3 = new HSContact();
@@ -400,21 +425,27 @@ public class HSContactServiceIT {
 
             PagedHSContactList contacts = hubSpot.contact().getContacts("0", 10, properties);
 
-            assertNotNull(contacts);
-            assertEquals(10, contacts.getContacts().size());
+            assertThat(contacts).isNotNull();
+            assertThat(contacts.getContacts()).hasSize(10);
 
             contacts = hubSpot.contact().getContacts("0", 2, properties);
 
-            assertEquals(2, contacts.getContacts().size());
+            assertThat(contacts.getContacts()).hasSize(2);
             PagedHSContactList contactsNextPage = hubSpot.contact().getContacts(contacts.getAfter(), 2, properties);
             PagedHSContactList contactsBigPage = hubSpot.contact().getContacts("0", 4, properties);
 
-            assertEquals(2, contactsNextPage.getContacts().size());
-            assertEquals(4, contactsBigPage.getContacts().size());
-            assertEquals(contacts.getContacts().get(0).getId(), contactsBigPage.getContacts().get(0).getId());
-            assertEquals(contacts.getContacts().get(1).getId(), contactsBigPage.getContacts().get(1).getId());
-            assertEquals(contactsNextPage.getContacts().get(0).getId(), contactsBigPage.getContacts().get(2).getId());
-            assertEquals(contactsNextPage.getContacts().get(1).getId(), contactsBigPage.getContacts().get(3).getId());
+            assertThat(contactsNextPage.getContacts()).hasSize(2);
+            assertThat(contactsBigPage.getContacts()).hasSize(4);
+            assertThat(contactsBigPage.getContacts().get(0).getId()).isEqualTo(contacts.getContacts().get(0).getId());
+            assertThat(contactsBigPage.getContacts().get(1).getId()).isEqualTo(contacts.getContacts().get(1).getId());
+            assertThat(contactsBigPage.getContacts().get(2).getId()).isEqualTo(contactsNextPage
+                                                                                       .getContacts()
+                                                                                       .get(0)
+                                                                                       .getId());
+            assertThat(contactsBigPage.getContacts().get(3).getId()).isEqualTo(contactsNextPage
+                                                                                       .getContacts()
+                                                                                       .get(1)
+                                                                                       .getId());
         } finally {
             hubSpot.contact().delete(contact.getId());
             hubSpot.contact().delete(contact2.getId());
@@ -425,7 +456,13 @@ public class HSContactServiceIT {
     }
 
     private HSContact getNewTestContact() throws HubSpotException {
-        return hubSpot.contact().create(new HSContact(UUID.randomUUID()+"@test.fr", testFirstname, testLastname, testPhoneNumber, testLifeCycleStage));
+        return hubSpot
+                .contact()
+                .create(new HSContact(UUID.randomUUID() + "@test.fr",
+                                      testFirstname,
+                                      testLastname,
+                                      testPhoneNumber,
+                                      testLifeCycleStage));
     }
 
 }

@@ -1,10 +1,18 @@
+val jacksonVersion: String by project
+val jacksonAnnotationVersion: String by project
+val httpClientVersion: String by project
+val commonsCodecVersion: String by project
+val junitVersion: String by project
+val mockitoVersion: String by project
+val assertJVersion: String by project
+
 plugins {
     `java-library`
     `maven-publish`
     signing
-    id("org.sonarqube") version "6.0.1.5171"
+    id("org.sonarqube") version "6.3.1.5724"
     id("jacoco")
-    id("org.jreleaser") version "1.17.0"
+    id("org.jreleaser") version "1.20.0"
 }
 
 repositories {
@@ -12,38 +20,52 @@ repositories {
 }
 
 group = "fr.slickteam.hubspot.api"
-version = "2.3.0"
+version = "3.0.0"
 description = "Java Wrapper for HubSpot API"
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 
     withJavadocJar()
     withSourcesJar()
 }
 
 jacoco {
-    toolVersion = "0.8.12"
+    toolVersion = "0.8.13"
 }
 
 dependencies {
-    implementation("com.google.guava:guava:33.4.8-jre")
-    implementation("com.konghq:unirest-java:3.14.5")
-    implementation("commons-codec:commons-codec:1.18.0")
-    testImplementation ("junit:junit:4.13.2")
-    testImplementation("org.mockito:mockito-core:3.12.4")
+    implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
+    implementation("com.fasterxml.jackson.core:jackson-core:$jacksonVersion")
+    implementation("com.fasterxml.jackson.core:jackson-annotations:$jacksonAnnotationVersion")
+    implementation("org.apache.httpcomponents.client5:httpclient5:$httpClientVersion")
+    implementation("commons-codec:commons-codec:$commonsCodecVersion")
+
+    testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
+    testImplementation("org.mockito:mockito-core:$mockitoVersion")
+    testImplementation("org.assertj:assertj-core:$assertJVersion")
+
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
 }
 
-tasks.withType<JavaCompile> {
-    options.encoding = "UTF-8"
-    options.compilerArgs.add("-Xlint:unchecked")
-}
+tasks {
+    withType<Test> {
+        useJUnitPlatform()
+        finalizedBy("jacocoTestReport")
+    }
 
-tasks.jar{
-    enabled = true
-    // Remove `plain` postfix from jar file name
-    archiveClassifier.set("")
+    withType<JavaCompile> {
+        options.encoding = "UTF-8"
+        options.compilerArgs.add("-Xlint:unchecked")
+    }
+
+    jar {
+        enabled = true
+        // Remove `plain` postfix from jar file name
+        archiveClassifier.set("")
+    }
 }
 
 sonar {
