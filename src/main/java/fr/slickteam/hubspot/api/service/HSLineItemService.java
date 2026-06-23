@@ -85,12 +85,12 @@ public class HSLineItemService {
      * @return the company
      */
     public HSLineItem parseLineItemData(JsonNode jsonBody) {
-        HSLineItem line_items = new HSLineItem();
+        HSLineItem lineItems = new HSLineItem();
 
-        line_items.setId(jsonBody.path("id").asLong());
+        lineItems.setId(jsonBody.path("id").asLong());
 
-        hsService.parseJSONData(jsonBody, line_items);
-        return line_items;
+        hsService.parseJSONData(jsonBody, lineItems);
+        return lineItems;
     }
 
     /**

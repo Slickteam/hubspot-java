@@ -35,6 +35,7 @@ public class HSContactService {
     private static final String PAGING = "paging";
     private static final String LOG_PROPERTIES = " | properties : ";
     private static final String RESULTS = "results";
+    public static final String NOT_FOUND = "Not Found";
     private final HttpService httpService;
     private final HSService hsService;
     private final HSAssociationService associationService;
@@ -120,7 +121,7 @@ public class HSContactService {
             }
             return contacts;
         } catch (HubSpotException e) {
-            if (e.getMessage().equals("Not Found")) {
+            if (e.getMessage().equals(NOT_FOUND)) {
                 return new ArrayList<>();
             } else {
                 throw e;
@@ -155,7 +156,7 @@ public class HSContactService {
             }
             return new PagedHSContactList(contacts, nextPageToken);
         } catch (HubSpotException e) {
-            if (e.getMessage().equals("Not Found")) {
+            if (e.getMessage().equals(NOT_FOUND)) {
                 return new PagedHSContactList(Collections.emptyList(), "0");
             } else {
                 throw e;
@@ -180,7 +181,7 @@ public class HSContactService {
         try {
             return parseContactData((JsonNode) httpService.getRequest(url));
         } catch (HubSpotException e) {
-            if (e.getMessage().equals("Not Found")) {
+            if (e.getMessage().equals(NOT_FOUND)) {
                 return null;
             } else {
                 throw e;
@@ -345,7 +346,7 @@ public class HSContactService {
                 contacts.add(parseContactData(node));
             }
         } catch (HubSpotException e) {
-            if (e.getMessage().equals("Not Found")) {
+            if (e.getMessage().equals(NOT_FOUND)) {
                 return contacts;
             } else {
                 throw e;

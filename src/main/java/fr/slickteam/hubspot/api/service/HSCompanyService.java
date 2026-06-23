@@ -26,6 +26,7 @@ public class HSCompanyService {
     private static final String RESULTS = "results";
     private static final String NOT_FOUND = "Not Found";
     private static final String AFTER = "after";
+    public static final String TO_OBJECT_ID = "toObjectId";
     private final HttpService httpService;
     private final HSService hsService;
     private HSContactService contactService;
@@ -200,7 +201,7 @@ public class HSCompanyService {
 
         for (JsonNode jsonAssociation : associationList) {
             // Initiate associated company parameters
-            HSCompany company = getByID(jsonAssociation.path("toObjectId").asLong());
+            HSCompany company = getByID(jsonAssociation.path(TO_OBJECT_ID).asLong());
             HSAssociationTypeOutput associationType = new HSAssociationTypeOutput();
             // Create association type from JSON Object
             JsonNode jsonAssociationType = jsonAssociation.path("associationTypes").path(0);
@@ -229,7 +230,7 @@ public class HSCompanyService {
 
         for (JsonNode jsonAssociation : associationList) {
             // Initiate associated company parameters
-            HSCompany company = getByIdAndProperties(jsonAssociation.path("toObjectId").asLong(), properties);
+            HSCompany company = getByIdAndProperties(jsonAssociation.path(TO_OBJECT_ID).asLong(), properties);
             HSAssociationTypeOutput associationType = new HSAssociationTypeOutput();
             // Create association type from JSON Object
             JsonNode jsonAssociationType = jsonAssociation.path("associationTypes").path(0);
@@ -263,7 +264,7 @@ public class HSCompanyService {
             List<Long> contactIds = new ArrayList<>();
 
             for (JsonNode contact : contacts) {
-                contactIds.add(contact.path("toObjectId").asLong());
+                contactIds.add(contact.path(TO_OBJECT_ID).asLong());
             }
 
             associatedContacts.put(companyId, contactIds);
@@ -700,7 +701,7 @@ public class HSCompanyService {
             List<Long> dealIds = new ArrayList<>();
 
             for (int i = 0; i < deals.size(); i++) {
-                dealIds.add(deals.path(i).path("toObjectId").asLong());
+                dealIds.add(deals.path(i).path(TO_OBJECT_ID).asLong());
             }
 
             associatedDeals.put(companyId, dealIds);

@@ -30,6 +30,8 @@ public class HSDealService {
     private static final String READ = "read/";
     private static final String SEARCH = "search/";
     private static final String RESULTS = "results";
+    public static final String NOT_FOUND = "Not Found";
+    public static final String TO_OBJECT_ID = "toObjectId";
 
     private final HttpService httpService;
     private final HSService hsService;
@@ -78,7 +80,7 @@ public class HSDealService {
         try {
             return parseDealData((JsonNode) httpService.getRequest(url));
         } catch (HubSpotException e) {
-            if (e.getMessage().equals("Not Found")) {
+            if (e.getMessage().equals(NOT_FOUND)) {
                 return null;
             } else {
                 throw e;
@@ -115,7 +117,7 @@ public class HSDealService {
             }
             return deals;
         } catch (HubSpotException e) {
-            if (e.getMessage().equals("Not Found")) {
+            if (e.getMessage().equals(NOT_FOUND)) {
                 return new ArrayList<>();
             } else {
                 throw e;
@@ -138,7 +140,7 @@ public class HSDealService {
             JsonNode response = (JsonNode) httpService.postRequest(url, filter);
             return parseLineItemsData(response);
         } catch (HubSpotException e) {
-            if (e.getMessage().equals("Not Found")) {
+            if (e.getMessage().equals(NOT_FOUND)) {
                 return new ArrayList<>();
             } else {
                 throw e;
@@ -271,7 +273,7 @@ public class HSDealService {
             List<Long> companyIds = new ArrayList<>();
 
             for (int i = 0; i < companies.size(); i++) {
-                companyIds.add(companies.path(i).path("toObjectId").asLong());
+                companyIds.add(companies.path(i).path(TO_OBJECT_ID).asLong());
             }
 
             associatedDeals.put(dealId, companyIds);
@@ -300,7 +302,7 @@ public class HSDealService {
             List<Long> contactIds = new ArrayList<>();
 
             for (int i = 0; i < contacts.size(); i++) {
-                contactIds.add(contacts.path(i).path("toObjectId").asLong());
+                contactIds.add(contacts.path(i).path(TO_OBJECT_ID).asLong());
             }
 
             associatedDeals.put(dealId, contactIds);
@@ -329,7 +331,7 @@ public class HSDealService {
             List<Long> lineItemIds = new ArrayList<>();
 
             for (int i = 0; i < lineItems.size(); i++) {
-                lineItemIds.add(lineItems.path(i).path("toObjectId").asLong());
+                lineItemIds.add(lineItems.path(i).path(TO_OBJECT_ID).asLong());
             }
 
             associatedDeals.put(dealId, lineItemIds);

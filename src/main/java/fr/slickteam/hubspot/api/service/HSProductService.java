@@ -15,7 +15,7 @@ public class HSProductService {
 
     private static final System.Logger log = System.getLogger(HSProductService.class.getName());
 
-    private final static String PRODUCT_URL = "/crm/v3/objects/products/";
+    private static final String PRODUCT_URL = "/crm/v3/objects/products/";
 
     private final HttpService httpService;
     private final HSService hsService;
