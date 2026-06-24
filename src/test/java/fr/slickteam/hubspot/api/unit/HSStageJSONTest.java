@@ -1,8 +1,9 @@
 package fr.slickteam.hubspot.api.unit;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.MapperFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import fr.slickteam.hubspot.api.domain.HSStage;
 import fr.slickteam.hubspot.api.service.HSStageService;
 import fr.slickteam.hubspot.api.service.HubSpot;
@@ -26,7 +27,7 @@ class HSStageJSONTest {
     @Test
     void parseStageData_Test() throws Exception {
         String inputData = "{\"test\":1,\"id\":71}";
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = new JsonMapper();
         JsonNode jsonNode = mapper.readTree(inputData);
 
         HSStage stage = service.parseStageData(jsonNode);
@@ -37,7 +38,7 @@ class HSStageJSONTest {
     @Test
     void toJson_Test() throws Exception {
         String inputData = "{\"test\":1, \"test2\":2,\"id\":71}";
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = new JsonMapper();
         JsonNode jsonNode = mapper.readTree(inputData);
 
         HSStage stage = service.parseStageData(jsonNode);

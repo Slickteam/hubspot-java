@@ -1,6 +1,6 @@
 package fr.slickteam.hubspot.api.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import fr.slickteam.hubspot.api.domain.HSObject;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
 
@@ -41,14 +41,14 @@ public class HSService {
             jsonProperties = jsonBody;
         }
 
-        jsonProperties.fieldNames().forEachRemaining(key -> {
+        jsonProperties.propertyNames().iterator().forEachRemaining(key -> {
             JsonNode value = jsonProperties.path(key);
             if (value.isObject() && value.has("value")) {
-                hsObject.setProperty(key, value.path("value").asText());
+                hsObject.setProperty(key, value.path("value").asString());
             } else if (value.isArray()) {
                 hsObject.setProperty(key, value.toString());
             } else {
-                hsObject.setProperty(key, value.isNull() ? null : value.asText());
+                hsObject.setProperty(key, value.isNull() ? null : value.asString());
             }
         });
 
@@ -68,7 +68,7 @@ public class HSService {
         JsonNode results = requestResponse.path("results");
 
         return StreamSupport.stream(results.spliterator(), false)
-                            .map(resultObj -> Long.valueOf(resultObj.path("toObjectId").asText()))
+                            .map(resultObj -> Long.valueOf(resultObj.path("toObjectId").asString()))
                             .collect(Collectors.toList());
     }
 

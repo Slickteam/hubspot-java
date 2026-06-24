@@ -1,12 +1,12 @@
 package fr.slickteam.hubspot.api.utils;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
+import tools.jackson.core.JacksonException;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
@@ -16,7 +16,7 @@ import java.util.StringJoiner;
  */
 public final class JsonUtils {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = new JsonMapper();
 
     private JsonUtils() {
         //SONAR
@@ -70,7 +70,7 @@ public final class JsonUtils {
     public static String toJson(Object object) throws HubSpotException {
         try {
             return OBJECT_MAPPER.writeValueAsString(object);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new HubSpotException("Failed to convert object to JSON", e);
         }
     }
@@ -85,7 +85,7 @@ public final class JsonUtils {
     public static JsonNode parseJson(String json) throws HubSpotException {
         try {
             return OBJECT_MAPPER.readTree(json);
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             throw new HubSpotException("Failed to parse JSON", e);
         }
     }

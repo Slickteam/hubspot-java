@@ -32,12 +32,12 @@ java {
 }
 
 jacoco {
-    toolVersion = "0.8.13"
+    toolVersion = "0.8.15"
 }
 
 dependencies {
-    implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
-    implementation("com.fasterxml.jackson.core:jackson-core:$jacksonVersion")
+    implementation("tools.jackson.core:jackson-databind:$jacksonVersion")
+    implementation("tools.jackson.core:jackson-core:$jacksonVersion")
     implementation("com.fasterxml.jackson.core:jackson-annotations:$jacksonAnnotationVersion")
     implementation("org.apache.httpcomponents.client5:httpclient5:$httpClientVersion")
     implementation("commons-codec:commons-codec:$commonsCodecVersion")

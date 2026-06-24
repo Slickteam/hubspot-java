@@ -1,6 +1,6 @@
 package fr.slickteam.hubspot.api.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import fr.slickteam.hubspot.api.domain.HSObject;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
 import fr.slickteam.hubspot.api.utils.HubSpotProperties;
@@ -60,12 +60,12 @@ public class HttpService {
     public HSObject parseJSONData(JsonNode jsonNode, HSObject hsObject) {
         JsonNode jsonProperties = jsonNode.get("properties");
         if (jsonProperties != null && jsonProperties.isObject()) {
-            jsonProperties.fieldNames().forEachRemaining(key -> {
+            jsonProperties.propertyNames().iterator().forEachRemaining(key -> {
                 JsonNode value = jsonProperties.get(key);
                 if (value.isObject() && value.has("value")) {
-                    hsObject.setProperty(key, value.get("value").asText());
+                    hsObject.setProperty(key, value.get("value").asString());
                 } else {
-                    hsObject.setProperty(key, value.asText());
+                    hsObject.setProperty(key, value.asString());
                 }
             });
         }
@@ -308,7 +308,7 @@ public class HttpService {
     private boolean oauthTokenHasExpiredFromBody(String responseBody) {
         try {
             JsonNode jsonNode = JsonUtils.parseJson(responseBody);
-            return jsonNode.has("category") && "EXPIRED_AUTHENTICATION".equals(jsonNode.get("category").asText());
+            return jsonNode.has("category") && "EXPIRED_AUTHENTICATION".equals(jsonNode.get("category").asString());
         } catch (Exception e) {
             log.log(ERROR, "Error parsing response body to check if OAuth token has expired", e);
             return false;
@@ -334,8 +334,8 @@ public class HttpService {
                     String responseBody = EntityUtils.toString(entity);
                     JsonNode jsonNode = JsonUtils.parseJson(responseBody);
 
-                    this.oAuthConfig.setRefreshToken(jsonNode.get("refresh_token").asText());
-                    this.oAuthConfig.setAccessToken(jsonNode.get("access_token").asText());
+                    this.oAuthConfig.setRefreshToken(jsonNode.get("refresh_token").asString());
+                    this.oAuthConfig.setAccessToken(jsonNode.get("access_token").asString());
                 }
             } catch (ParseException e) {
                 throw new HubSpotException("Can not parse response body", e);
@@ -377,19 +377,19 @@ public class HttpService {
                                 message = StreamSupport.stream(jsonNode.get("errors").spliterator(), false)
                                                        .map(error -> error.has(MESSAGE) ? error
                                                                .get(MESSAGE)
-                                                               .asText() : "")
+                                                               .asString() : "")
                                                        .toList()
                                                        .toString();
                             }
                             break;
                         default:
                             if (jsonNode.has(MESSAGE)) {
-                                message = jsonNode.get(MESSAGE).asText();
+                                message = jsonNode.get(MESSAGE).asString();
                             }
                     }
 
                     if (StringUtils.isNullOrEmpty(message) && jsonNode.has(MESSAGE)) {
-                        message = jsonNode.get(MESSAGE).asText();
+                        message = jsonNode.get(MESSAGE).asString();
                     }
 
                     if (!StringUtils.isNullOrEmpty(message)) {

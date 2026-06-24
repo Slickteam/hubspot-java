@@ -10,8 +10,8 @@
 
 package fr.slickteam.hubspot.api.utils;
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import java.util.Map;
 import java.util.Objects;

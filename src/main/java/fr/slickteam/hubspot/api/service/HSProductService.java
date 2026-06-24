@@ -1,6 +1,6 @@
 package fr.slickteam.hubspot.api.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import fr.slickteam.hubspot.api.domain.HSProduct;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
 

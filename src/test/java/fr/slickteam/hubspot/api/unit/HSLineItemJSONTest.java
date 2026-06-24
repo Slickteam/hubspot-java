@@ -1,7 +1,8 @@
 package fr.slickteam.hubspot.api.unit;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import fr.slickteam.hubspot.api.domain.HSLineItem;
 import fr.slickteam.hubspot.api.service.HSLineItemService;
 import fr.slickteam.hubspot.api.service.HubSpot;
@@ -27,7 +28,7 @@ class HSLineItemJSONTest {
     @Test
     void parseDealData_Test() throws Exception {
         String inputData = "{\"properties\":{\"test\":1},\"id\":71}";
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = new JsonMapper();
         JsonNode jsonNode = mapper.readTree(inputData);
 
         HSLineItem lineItem = service.parseLineItemData(jsonNode);
@@ -38,7 +39,7 @@ class HSLineItemJSONTest {
     @Test
     void toJson_Test() throws Exception {
         String inputData = "{\"properties\":{\"test\":1, \"test2\":2},\"id\":71}";
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = new JsonMapper();
         JsonNode jsonNode = mapper.readTree(inputData);
 
         HSLineItem lineItem = service.parseLineItemData(jsonNode);

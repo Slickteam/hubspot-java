@@ -1,6 +1,6 @@
 package fr.slickteam.hubspot.api.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import fr.slickteam.hubspot.api.domain.*;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
 import fr.slickteam.hubspot.api.utils.HubSpotOrdering;
@@ -205,7 +205,7 @@ public class HSCompanyService {
             HSAssociationTypeOutput associationType = new HSAssociationTypeOutput();
             // Create association type from JSON Object
             JsonNode jsonAssociationType = jsonAssociation.path("associationTypes").path(0);
-            associationType.setLabel(jsonAssociationType.path("label").asText());
+            associationType.setLabel(jsonAssociationType.path("label").asString());
             associationType.setTypeId(jsonAssociationType.path("typeId").asInt());
             // Create associated company and add it to a list
             HSAssociatedCompany associatedCompany = new HSAssociatedCompany(associationType, company);
@@ -234,7 +234,7 @@ public class HSCompanyService {
             HSAssociationTypeOutput associationType = new HSAssociationTypeOutput();
             // Create association type from JSON Object
             JsonNode jsonAssociationType = jsonAssociation.path("associationTypes").path(0);
-            associationType.setLabel(jsonAssociationType.path("label").asText());
+            associationType.setLabel(jsonAssociationType.path("label").asString());
             associationType.setTypeId(jsonAssociationType.path("typeId").asInt());
             // Create associated company and add it to a list
             HSAssociatedCompany associatedCompany = new HSAssociatedCompany(associationType, company);
@@ -335,8 +335,8 @@ public class HSCompanyService {
             String nextPageToken = null;
             if (jsonNode.has(PAGING) && jsonNode.path(PAGING).has("next") &&
                     jsonNode.path(PAGING).path("next").path(AFTER) != null &&
-                    jsonNode.path(PAGING).path("next").path(AFTER).asText().length() > 1) {
-                nextPageToken = jsonNode.path(PAGING).path("next").path(AFTER).asText();
+                    jsonNode.path(PAGING).path("next").path(AFTER).asString().length() > 1) {
+                nextPageToken = jsonNode.path(PAGING).path("next").path(AFTER).asString();
             }
             return new PagedHSCompanyList(companies, nextPageToken);
         } catch (HubSpotException e) {

@@ -1,7 +1,8 @@
 package fr.slickteam.hubspot.api.unit;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import fr.slickteam.hubspot.api.utils.Helper;
 import fr.slickteam.hubspot.api.domain.HSCompany;
 import fr.slickteam.hubspot.api.service.HSCompanyService;
@@ -25,7 +26,7 @@ class HSCompanyJSONTest {
     @Test
     void parseCompanyData_Test() throws Exception {
         String inputData = "{\"portalId\": 62515,\"id\": 10444744,\"isDeleted\": false,\"properties\": {\"description\": \"text\"}}";
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = new JsonMapper();
         JsonNode jsonNode = mapper.readTree(inputData);
         HSCompany company = service.parseCompanyData(jsonNode);
         assertEquals(10444744, company.getId());
@@ -35,7 +36,7 @@ class HSCompanyJSONTest {
     @Test
     void toJson_Test() throws Exception {
         String inputData = "{\"portalId\": 62515,\"id\": 10444744,\"isDeleted\": false,\"properties\": {\"description\": \"text\"}}";
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = new JsonMapper();
         JsonNode jsonNode = mapper.readTree(inputData);
         HSCompany company = service.parseCompanyData(jsonNode);
 

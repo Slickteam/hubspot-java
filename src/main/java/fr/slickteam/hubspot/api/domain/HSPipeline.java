@@ -1,8 +1,8 @@
 package fr.slickteam.hubspot.api.domain;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
 import fr.slickteam.hubspot.api.utils.JsonUtils;
 
@@ -219,12 +219,12 @@ public class HSPipeline extends HSObject {
         for (int i = 0; i < arrayNode.size(); i++) {
             HSStage stage = new HSStage();
             JsonNode jsonStage = arrayNode.get(i);
-            stage.setId(jsonStage.path(ID).asText());
-            stage.setLabel(jsonStage.path(LABEL).asText());
+            stage.setId(jsonStage.path(ID).asString());
+            stage.setLabel(jsonStage.path(LABEL).asString());
             stage.setDisplayOrder(jsonStage.path(DISPLAY_ORDER).asInt());
             stage.setMetadata(jsonStage.path("metadata").toString());
-            stage.setCreatedAt(Instant.parse(jsonStage.path(CREATED_AT).asText()));
-            stage.setUpdateAt(Instant.parse(jsonStage.path(UPDATED_AT).asText()));
+            stage.setCreatedAt(Instant.parse(jsonStage.path(CREATED_AT).asString()));
+            stage.setUpdateAt(Instant.parse(jsonStage.path(UPDATED_AT).asString()));
             stage.setArchived(jsonStage.path(ARCHIVED).asBoolean());
             stages.add(stage);
         }
