@@ -1,7 +1,8 @@
 package fr.slickteam.hubspot.api.unit;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import fr.slickteam.hubspot.api.utils.Helper;
 import fr.slickteam.hubspot.api.domain.HSDeal;
 import fr.slickteam.hubspot.api.service.HSDealService;
@@ -26,7 +27,7 @@ class HSDealJSONTest {
     @Test
     void parseDealData_Test() throws Exception {
         String inputData = "{\"properties\":{\"test\":1},\"id\":71}";
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = new JsonMapper();
         JsonNode jsonNode = mapper.readTree(inputData);
 
         HSDeal deal = service.parseDealData(jsonNode);
@@ -37,7 +38,7 @@ class HSDealJSONTest {
     @Test
     void toJson_Test() throws Exception {
         String inputData = "{\"properties\":{\"test\":1, \"test2\":2},\"id\":71}";
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = new JsonMapper();
         JsonNode jsonNode = mapper.readTree(inputData);
 
         HSDeal deal = service.parseDealData(jsonNode);

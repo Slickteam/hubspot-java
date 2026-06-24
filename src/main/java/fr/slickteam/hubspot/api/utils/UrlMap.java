@@ -69,8 +69,8 @@ public class UrlMap {
 
 					Object val = params.get(k);
 
-					if (val instanceof List) {
-						return ((List)val).stream().map(
+					if (val instanceof List list) {
+						return list.stream().map(
 								v -> k + "=" + urlEncode(v)
 						).collect(Collectors.joining("&"))
 								.toString();

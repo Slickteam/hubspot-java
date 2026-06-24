@@ -10,8 +10,8 @@
 
 package fr.slickteam.hubspot.api.utils;
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import java.util.Map;
 import java.util.Objects;
@@ -20,6 +20,8 @@ import java.util.Objects;
  * The type Hub spot helper.
  */
 public class HubSpotHelper {
+
+    public static final String VALUE = "value";
 
     /**
      * Gets json object node.
@@ -31,14 +33,14 @@ public class HubSpotHelper {
     public static ObjectNode getJsonObject(String property, Object value) {
         ObjectNode node = JsonUtils.createObjectNode();
         node.put("property", property);
-        if (value instanceof String) {
-            node.put("value", (String) value);
-        } else if (value instanceof Number) {
-            node.put("value", value.toString());
-        } else if (value instanceof Boolean) {
-            node.put("value", (Boolean) value);
+        if (value instanceof String strValue) {
+            node.put(VALUE, strValue);
+        } else if (value instanceof Number numValue) {
+            node.put(VALUE, numValue.toString());
+        } else if (value instanceof Boolean boolValue) {
+            node.put(VALUE, boolValue);
         } else if (value != null) {
-            node.put("value", value.toString());
+            node.put(VALUE, value.toString());
         }
         return node;
     }

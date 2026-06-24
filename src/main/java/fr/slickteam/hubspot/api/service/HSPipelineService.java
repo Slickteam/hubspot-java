@@ -1,6 +1,6 @@
 package fr.slickteam.hubspot.api.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import fr.slickteam.hubspot.api.domain.*;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
 
@@ -40,7 +40,7 @@ public class HSPipelineService {
     public HSPipeline create(HSPipeline hsPipeline) throws HubSpotException {
         log.log(DEBUG, "create - hsPipeline : " + hsPipeline);
         JsonNode jsonNode = (JsonNode) httpService.postRequest(PIPELINE_URL + DEALS, hsPipeline.toJsonString());
-        hsPipeline.setId(jsonNode.path("id").asText());
+        hsPipeline.setId(jsonNode.path("id").asString());
         return hsPipeline;
     }
 

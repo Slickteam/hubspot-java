@@ -1,6 +1,6 @@
 package fr.slickteam.hubspot.api.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import fr.slickteam.hubspot.api.domain.HSCompany;
 import fr.slickteam.hubspot.api.domain.HSContact;
 import fr.slickteam.hubspot.api.domain.PagedHSContactList;
@@ -152,7 +152,7 @@ public class HSContactService {
             }
             String nextPageToken = null;
             if (response.has(PAGING) && response.path(PAGING).has("next")) {
-                nextPageToken = response.path(PAGING).path("next").path("after").asText();
+                nextPageToken = response.path(PAGING).path("next").path("after").asString();
             }
             return new PagedHSContactList(contacts, nextPageToken);
         } catch (HubSpotException e) {

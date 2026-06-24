@@ -1,6 +1,6 @@
 package fr.slickteam.hubspot.api.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import fr.slickteam.hubspot.api.domain.HSObject;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
 
@@ -15,6 +15,7 @@ import java.util.stream.StreamSupport;
  */
 public class HSService {
 
+    public static final String RESULTS = "results";
     private final HttpService httpService;
 
     /**
@@ -41,14 +42,14 @@ public class HSService {
             jsonProperties = jsonBody;
         }
 
-        jsonProperties.fieldNames().forEachRemaining(key -> {
+        jsonProperties.propertyNames().iterator().forEachRemaining(key -> {
             JsonNode value = jsonProperties.path(key);
             if (value.isObject() && value.has("value")) {
-                hsObject.setProperty(key, value.path("value").asText());
-            } else if (value.isArray()) {
+                hsObject.setProperty(key, value.path("value").asString());
+            } else if (value.isArray() || value.isObject()) {
                 hsObject.setProperty(key, value.toString());
             } else {
-                hsObject.setProperty(key, value.isNull() ? null : value.asText());
+                hsObject.setProperty(key, value.isNull() ? null : value.asString());
             }
         });
 
@@ -65,12 +66,13 @@ public class HSService {
      */
     public List<Long> parseJsonObjectToIdList(String url) throws HubSpotException {
         JsonNode requestResponse = (JsonNode) httpService.getRequest(url);
-        JsonNode results = requestResponse.path("results");
+        JsonNode results = requestResponse.path(RESULTS);
 
         return StreamSupport.stream(results.spliterator(), false)
-                            .map(resultObj -> Long.valueOf(resultObj.path("toObjectId").asText()))
+                            .map(resultObj -> Long.valueOf(resultObj.path("toObjectId").asString()))
                             .collect(Collectors.toList());
     }
+
 
     /**
      * Parse json result to list list.
@@ -81,7 +83,7 @@ public class HSService {
      */
     public List<JsonNode> parseJsonResultToList(String url) throws HubSpotException {
         JsonNode requestResponse = (JsonNode) httpService.getRequest(url);
-        JsonNode results = requestResponse.path("results");
+        JsonNode results = requestResponse.path(RESULTS);
         return StreamSupport.stream(results.spliterator(), false)
                             .collect(Collectors.toList());
     }
@@ -96,7 +98,7 @@ public class HSService {
      */
     public List<JsonNode> parsePostJsonResultToList(String url, String body) throws HubSpotException {
         JsonNode requestResponse = (JsonNode) httpService.postRequest(url, body);
-        JsonNode results = requestResponse.path("results");
+        JsonNode results = requestResponse.path(RESULTS);
         return StreamSupport.stream(results.spliterator(), false)
                             .collect(Collectors.toList());
     }

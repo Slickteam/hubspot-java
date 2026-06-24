@@ -1,6 +1,6 @@
 package fr.slickteam.hubspot.api.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import fr.slickteam.hubspot.api.domain.HSDeal;
 import fr.slickteam.hubspot.api.domain.HSLineItem;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
@@ -151,7 +151,7 @@ public class HSDealService {
     private List<HSLineItem> parseLineItemsData(JsonNode jsonNode) {
         List<HSLineItem> lineItems = new ArrayList<>();
 
-        JsonNode jsonLineItems = jsonNode.path("results");
+        JsonNode jsonLineItems = jsonNode.path(RESULTS);
 
         for (JsonNode jsonLineItem : jsonLineItems) {
             lineItems.add(getLineItemFromJsonNode(jsonLineItem));

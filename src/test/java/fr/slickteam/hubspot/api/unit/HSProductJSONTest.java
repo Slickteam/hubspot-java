@@ -1,7 +1,8 @@
 package fr.slickteam.hubspot.api.unit;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import fr.slickteam.hubspot.api.utils.Helper;
 import fr.slickteam.hubspot.api.domain.HSProduct;
 import fr.slickteam.hubspot.api.service.HSProductService;
@@ -25,7 +26,7 @@ class HSProductJSONTest {
     @Test
     void parseProductData_Test() throws Exception {
         String inputData = "{\"id\": \"512\",\"properties\": {\"description\": \"Onboarding service for data product\",\"hs_cost_of_goods_sold\": \"600.00\",\"hs_recurring_billing_period\": \"12\",\"hs_sku\": \"191902\",\"name\": \"Implementation Service\",\"price\": \"6000.00\"}}";
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = new JsonMapper();
         JsonNode jsonNode = mapper.readTree(inputData);
         HSProduct product = service.parseProductData(jsonNode);
         assertEquals(512, product.getId());
@@ -40,7 +41,7 @@ class HSProductJSONTest {
     @Test
     void toJson_Test() throws Exception {
         String inputData = "{\"id\": \"512\",\"properties\":{\"description\":\"Onboarding service for data product\"}}";
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = new JsonMapper();
         JsonNode jsonNode = mapper.readTree(inputData);
         HSProduct product = service.parseProductData(jsonNode);
         JsonNode result = product.toJson();

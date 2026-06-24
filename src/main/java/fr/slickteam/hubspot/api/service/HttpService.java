@@ -1,6 +1,6 @@
 package fr.slickteam.hubspot.api.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import fr.slickteam.hubspot.api.domain.HSObject;
 import fr.slickteam.hubspot.api.utils.HubSpotException;
 import fr.slickteam.hubspot.api.utils.HubSpotProperties;
@@ -36,6 +36,8 @@ public class HttpService {
     private static final String AUTHORIZATION = "Authorization";
     private static final String BEARER = "Bearer ";
     private static final String APPLICATION_JSON = "application/json";
+    public static final String REFRESH_TOKEN = "refresh_token";
+    public static final String ERRORS = "errors";
 
     private final String apiBase;
     private final OAuthConfig oAuthConfig;
@@ -60,12 +62,14 @@ public class HttpService {
     public HSObject parseJSONData(JsonNode jsonNode, HSObject hsObject) {
         JsonNode jsonProperties = jsonNode.get("properties");
         if (jsonProperties != null && jsonProperties.isObject()) {
-            jsonProperties.fieldNames().forEachRemaining(key -> {
+            jsonProperties.propertyNames().iterator().forEachRemaining(key -> {
                 JsonNode value = jsonProperties.get(key);
                 if (value.isObject() && value.has("value")) {
-                    hsObject.setProperty(key, value.get("value").asText());
+                    hsObject.setProperty(key, value.get("value").asString());
+                } else if (value.isObject() || value.isArray()) {
+                    hsObject.setProperty(key, value.toString());
                 } else {
-                    hsObject.setProperty(key, value.asText());
+                    hsObject.setProperty(key, value.isNull() ? null : value.asString());
                 }
             });
         }
@@ -308,7 +312,7 @@ public class HttpService {
     private boolean oauthTokenHasExpiredFromBody(String responseBody) {
         try {
             JsonNode jsonNode = JsonUtils.parseJson(responseBody);
-            return jsonNode.has("category") && "EXPIRED_AUTHENTICATION".equals(jsonNode.get("category").asText());
+            return jsonNode.has("category") && "EXPIRED_AUTHENTICATION".equals(jsonNode.get("category").asString());
         } catch (Exception e) {
             log.log(ERROR, "Error parsing response body to check if OAuth token has expired", e);
             return false;
@@ -320,11 +324,11 @@ public class HttpService {
             HttpPost httpPost = new HttpPost(apiBase + "/oauth/v1/token");
 
             List<NameValuePair> params = new ArrayList<>();
-            params.add(new BasicNameValuePair("grant_type", "refresh_token"));
+            params.add(new BasicNameValuePair("grant_type", REFRESH_TOKEN));
             params.add(new BasicNameValuePair("client_id", oAuthConfig.getClientId()));
             params.add(new BasicNameValuePair("client_secret", oAuthConfig.getClientSecret()));
             params.add(new BasicNameValuePair("redirect_uri", oAuthConfig.getRedirectUrl()));
-            params.add(new BasicNameValuePair("refresh_token", oAuthConfig.getRefreshToken()));
+            params.add(new BasicNameValuePair(REFRESH_TOKEN, oAuthConfig.getRefreshToken()));
 
             httpPost.setEntity(new UrlEncodedFormEntity(params));
 
@@ -334,8 +338,8 @@ public class HttpService {
                     String responseBody = EntityUtils.toString(entity);
                     JsonNode jsonNode = JsonUtils.parseJson(responseBody);
 
-                    this.oAuthConfig.setRefreshToken(jsonNode.get("refresh_token").asText());
-                    this.oAuthConfig.setAccessToken(jsonNode.get("access_token").asText());
+                    this.oAuthConfig.setRefreshToken(jsonNode.get(REFRESH_TOKEN).asString());
+                    this.oAuthConfig.setAccessToken(jsonNode.get("access_token").asString());
                 }
             } catch (ParseException e) {
                 throw new HubSpotException("Can not parse response body", e);
@@ -373,23 +377,23 @@ public class HttpService {
                             message = statusText;
                             break;
                         case 207: // Multi-Status
-                            if (jsonNode.has("errors") && jsonNode.get("errors").isArray()) {
-                                message = StreamSupport.stream(jsonNode.get("errors").spliterator(), false)
+                            if (jsonNode.has(ERRORS) && jsonNode.get(ERRORS).isArray()) {
+                                message = StreamSupport.stream(jsonNode.get(ERRORS).spliterator(), false)
                                                        .map(error -> error.has(MESSAGE) ? error
                                                                .get(MESSAGE)
-                                                               .asText() : "")
+                                                               .asString() : "")
                                                        .toList()
                                                        .toString();
                             }
                             break;
                         default:
                             if (jsonNode.has(MESSAGE)) {
-                                message = jsonNode.get(MESSAGE).asText();
+                                message = jsonNode.get(MESSAGE).asString();
                             }
                     }
 
                     if (StringUtils.isNullOrEmpty(message) && jsonNode.has(MESSAGE)) {
-                        message = jsonNode.get(MESSAGE).asText();
+                        message = jsonNode.get(MESSAGE).asString();
                     }
 
                     if (!StringUtils.isNullOrEmpty(message)) {
