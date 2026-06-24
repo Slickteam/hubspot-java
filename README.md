@@ -1,48 +1,86 @@
 # hubspot-java
-Java Wrapper for HubSpot API (<https://developers.hubspot.com/docs/api/overview>)
-Application to register in Hubspot developer portal, so you can use it.
-It uses OAuth2 to authenticate on Hubspot API.
+Java Wrapper for HubSpot API (v3)
 
-#### Currently implemented
-* Company
-* Contact
-* Deal
-* LineItem
-* Object
-* Product
+## Overview
+This project is a Java wrapper for the HubSpot API, using OAuth2 for authentication and Jackson for JSON serialization. It follows a layered architecture with specialized services for each HubSpot entity.
 
-#### Maven Installation
+## Currently implemented services
+* **Association** (`HSAssociationService`)
+* **Company** (`HSCompanyService`)
+* **Contact** (`HSContactService`)
+* **Deal** (`HSDealService`)
+* **LineItem** (`HSLineItemService`)
+* **Pipeline** (`HSPipelineService`)
+* **Product** (`HSProductService`)
+* **Quote** (`HSQuoteService`)
+* **Stage** (`HSStageService`)
 
+## Installation
+
+### Maven
+Add the following dependency to your `pom.xml`:
 
 ```xml
-<repositories>
-	...
-	<repository>
-		<id>bintray</id>
-		<url>http://dl.bintray.com/integrationagent/hubspot-java</url>
-		<releases>
-			<enabled>true</enabled>
-		</releases>
-		<snapshots>
-			<enabled>false</enabled>
-		</snapshots>
-	</repository>
-	...
-</repositories>
-<dependencies>
-	...
-	<dependency>
-		<groupId>com.integrationagent</groupId>
-		<artifactId>hubspot-java</artifactId>
-		<version>0.1</version>
-	</dependency>
-	...
-</dependencies>
+<dependency>
+    <groupId>fr.slickteam.hubspot.api</groupId>
+    <artifactId>hubspot-java</artifactId>
+    <version>3.0.0</version>
+</dependency>
 ```
 
-#### Integration tests
+### Gradle
+Add the following to your `build.gradle` or `build.gradle.kts`:
 
-For the integration tests to work, you must register your version of this project in Hubspot, then get the OAuth2 params to set them inside config.properties file for tests.
+```kotlin
+implementation("fr.slickteam.hubspot.api:hubspot-java:3.0.0")
+```
+
+## Configuration
+
+To use the library, you need to provide your HubSpot OAuth2 credentials. You can do this using the `HubSpotProperties` class.
+
+```java
+HubSpotProperties properties = new HubSpotProperties();
+properties.setAccessToken("your_access_token");
+
+// Optional: for automatic token refresh
+properties.setClientId("your_client_id");
+properties.setClientSecret("your_client_secret");
+properties.setRefreshToken("your_refresh_token");
+
+HubSpot hubSpot = new HubSpot(properties);
+```
+
+## Basic Usage
+
+### Creating a contact
+```java
+HSContact contact = new HSContact("test@example.com", "John", "Doe", "123456789", "customer");
+contact = hubSpot.contact().create(contact);
+System.out.println("Created contact ID: " + contact.getId());
+```
+
+### Searching for companies
+```java
+List<HSCompany> companies = hubSpot.company().searchByCustomProperty("name", "Slickteam", Collections.singletonList("name"));
+```
+
+## Webhooks
+The library provides utilities to handle HubSpot webhooks, including signature verification:
+
+```java
+boolean isValid = HubSpotWebHookSignatureUtils.isSignatureValid(
+    signature,
+    clientSecret,
+    requestMethod,
+    requestURI,
+    payload,
+    timestamp
+);
+```
+
+## Integration tests
+For the integration tests to work, you must register your version of this project in HubSpot, then get the OAuth2 params and set them inside `src/test/resources/config.properties`.
 
 -----
 Developed by DepositFix - Payment Integration for HubSpot
