@@ -24,8 +24,8 @@ public class HSDealService {
 
     private static final System.Logger log = System.getLogger(HSDealService.class.getName());
 
-    private static final String LINE_ITEM_URL = "/crm/v3/objects/line_items/";
-    private static final String DEAL_URL = "/crm/v3/objects/deals/";
+    private static final String LINE_ITEM_URL = "/crm/objects/2026-03/line_items/";
+    private static final String DEAL_URL = "/crm/objects/2026-03/deals/";
     private static final String BATCH = "batch/";
     private static final String READ = "read/";
     private static final String SEARCH = "search/";

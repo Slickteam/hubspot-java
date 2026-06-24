@@ -17,7 +17,7 @@ public class HSPipelineService {
     private static final System.Logger log = System.getLogger(HSPipelineService.class.getName());
     private final HttpService httpService;
     private final HSService hsService;
-    private static final String PIPELINE_URL = "/crm/v3/pipelines/";
+    private static final String PIPELINE_URL = "/crm/pipelines/2026-03/";
     private static final String DEALS = "deals/";
 
     /**

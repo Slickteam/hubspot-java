@@ -17,8 +17,8 @@ import static java.lang.System.Logger.Level.DEBUG;
 public class HSQuoteService {
 
     private static final System.Logger log = System.getLogger(HSQuoteService.class.getName());
-    private static final String QUOTE_URL = "/crm/v3/objects/quotes/";
-    private static final String PATCH_URL = "/crm/v3/objects/quote/";
+    private static final String QUOTE_URL = "/crm/objects/2026-03/quotes/";
+    private static final String PATCH_URL = "/crm/objects/2026-03/quote/";
 
     private final HttpService httpService;
     private final HSService hsService;
