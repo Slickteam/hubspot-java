@@ -1,10 +1,10 @@
-val jacksonVersion: String by project
-val jacksonAnnotationVersion: String by project
-val httpClientVersion: String by project
-val commonsCodecVersion: String by project
-val junitVersion: String by project
-val mockitoVersion: String by project
-val assertJVersion: String by project
+val jacksonVersion = project.property("jacksonVersion")
+val jacksonAnnotationVersion = project.property("jacksonAnnotationVersion")
+val httpClientVersion = project.property("httpClientVersion")
+val commonsCodecVersion = project.property("commonsCodecVersion")
+val junitVersion = project.property("junitVersion")
+val mockitoVersion = project.property("mockitoVersion")
+val assertJVersion = project.property("assertJVersion")
 
 plugins {
     `java-library`
