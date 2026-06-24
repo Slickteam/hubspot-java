@@ -10,9 +10,9 @@ plugins {
     `java-library`
     `maven-publish`
     signing
-    id("org.sonarqube") version "6.3.1.5724"
+    id("org.sonarqube") version "7.3.1.8318"
     id("jacoco")
-    id("org.jreleaser") version "1.20.0"
+    id("org.jreleaser") version "1.24.0"
 }
 
 repositories {
