@@ -64,8 +64,10 @@ public class HttpService {
                 JsonNode value = jsonProperties.get(key);
                 if (value.isObject() && value.has("value")) {
                     hsObject.setProperty(key, value.get("value").asString());
+                } else if (value.isObject() || value.isArray()) {
+                    hsObject.setProperty(key, value.toString());
                 } else {
-                    hsObject.setProperty(key, value.asString());
+                    hsObject.setProperty(key, value.isNull() ? null : value.asString());
                 }
             });
         }
