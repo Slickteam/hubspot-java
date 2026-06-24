@@ -49,7 +49,7 @@ class HSAssociationIT {
         hubSpot = new HubSpot(Helper.provideHubspotProperties());
         HSObject object = new HSObject();
         object.setProperty("price", Long.toString(75));
-        object = hubSpot.hsService().createHSObject("/crm/v3/objects/products", object);
+        object = hubSpot.hsService().createHSObject("/crm/objects/2026-03/products", object);
         testProductId = object.getProperty("hs_object_id");
 
         testEmail1 = "test1" + Instant.now().getEpochSecond() + "@mail.com";
@@ -70,7 +70,7 @@ class HSAssociationIT {
             hubSpot.lineItem().delete(createdLineItemId);
         }
         if (testProductId != null) {
-            hubSpot.hsService().deleteHSObject("/crm/v3/objects/products/" + testProductId);
+            hubSpot.hsService().deleteHSObject("/crm/objects/2026-03/products/" + testProductId);
             testProductId = null;
         }
         // add sleep to avoid "Too many requests" error

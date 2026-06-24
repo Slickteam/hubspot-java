@@ -32,19 +32,11 @@ public class HSAssociationService {
         /**
          * The constant V3.
          */
-        public static final String V3 = "/crm/v3/objects/";
+        public static final String CRM_OBJECTS = "/crm/objects/2026-03/";
         /**
          * The constant V3_ASSOCIATION.
          */
-        public static final String V3_ASSOCIATION = "/crm/v3/associations/";
-        /**
-         * The constant V4_OBJECT.
-         */
-        public static final String V4_OBJECT = "/crm/v4/objects/";
-        /**
-         * The constant V4_ASSOCIATION.
-         */
-        public static final String V4_ASSOCIATION = "/crm/v4/associations/";
+        public static final String CRM_ASSOCIATIONS = "/crm/associations/2026-03/";
     }
 
     private static final String CONTACT = "contact/";
@@ -105,7 +97,7 @@ public class HSAssociationService {
                 "  ]\n" +
                 "}";
         String url =
-                BasePath.V4_ASSOCIATION + CONTACTS + COMPANIES + BATCH + CREATE;
+                BasePath.CRM_ASSOCIATIONS + CONTACTS + COMPANIES + BATCH + CREATE;
         httpService.postRequest(url, associationProperties);
     }
 
@@ -124,7 +116,7 @@ public class HSAssociationService {
                 "  ]\n" +
                 "}";
         String url =
-                BasePath.V4_ASSOCIATION + CONTACTS + COMPANIES + BATCH + CREATE;
+                BasePath.CRM_ASSOCIATIONS + CONTACTS + COMPANIES + BATCH + CREATE;
         httpService.postRequest(url, associationProperties);
     }
 
@@ -188,7 +180,7 @@ public class HSAssociationService {
                 "  ]\n" +
                 "}";
         String url =
-                BasePath.V4_ASSOCIATION + COMPANIES + COMPANIES + BATCH + CREATE;
+                BasePath.CRM_ASSOCIATIONS + COMPANIES + COMPANIES + BATCH + CREATE;
         httpService.postRequest(url, associationProperties);
     }
 
@@ -207,7 +199,7 @@ public class HSAssociationService {
                 "  ]\n" +
                 "}";
         String url =
-                BasePath.V4_ASSOCIATION + COMPANIES + COMPANIES + BATCH + CREATE;
+                BasePath.CRM_ASSOCIATIONS + COMPANIES + COMPANIES + BATCH + CREATE;
         httpService.postRequest(url, associationProperties);
     }
 
@@ -263,7 +255,7 @@ public class HSAssociationService {
                 "    }\n" +
                 "  ]\n" +
                 "}";
-        String url = BasePath.V3_ASSOCIATION + CONTACTS + COMPANIES + BATCH + ARCHIVE;
+        String url = BasePath.CRM_ASSOCIATIONS + CONTACTS + COMPANIES + BATCH + ARCHIVE;
         httpService.postRequest(url, associationProperties);
     }
 
@@ -282,7 +274,7 @@ public class HSAssociationService {
                 INPUTS + inputProperties +
                 "  ]\n" +
                 "}";
-        String url = BasePath.V3_ASSOCIATION + CONTACTS + COMPANIES + BATCH + ARCHIVE;
+        String url = BasePath.CRM_ASSOCIATIONS + CONTACTS + COMPANIES + BATCH + ARCHIVE;
         httpService.postRequest(url, associationProperties);
     }
 
@@ -301,7 +293,7 @@ public class HSAssociationService {
                 INPUTS + inputProperties +
                 "  ]\n" +
                 "}";
-        String url = BasePath.V3_ASSOCIATION + COMPANIES + COMPANIES + BATCH + ARCHIVE;
+        String url = BasePath.CRM_ASSOCIATIONS + COMPANIES + COMPANIES + BATCH + ARCHIVE;
         httpService.postRequest(url, associationProperties);
     }
 
@@ -344,7 +336,7 @@ public class HSAssociationService {
     public List<Long> getContactCompanyIdList(long contactId) throws HubSpotException {
         log.log(DEBUG, "getContactCompanyIdList - contactId : " + contactId);
         String url =
-                BasePath.V4_OBJECT + CONTACTS + contactId + "/" + ASSOCIATION + COMPANIES;
+                BasePath.CRM_OBJECTS + CONTACTS + contactId + "/" + ASSOCIATION + COMPANIES;
         try {
             return hsService.parseJsonObjectToIdList(url);
         } catch (HubSpotException e) {
@@ -366,7 +358,7 @@ public class HSAssociationService {
     public List<Long> getCompanyContactIdList(long companyId) throws HubSpotException {
         log.log(DEBUG, "getCompanyContactIdList - companyId : " + companyId);
         String url =
-                BasePath.V4_OBJECT + COMPANIES + companyId + "/" + ASSOCIATION + CONTACTS;
+                BasePath.CRM_OBJECTS + COMPANIES + companyId + "/" + ASSOCIATION + CONTACTS;
         try {
             return hsService.parseJsonObjectToIdList(url);
         } catch (HubSpotException e) {
@@ -388,7 +380,7 @@ public class HSAssociationService {
     public List<JsonNode> getCompaniesToCompany(long companyId) throws HubSpotException {
         log.log(DEBUG, "getCompaniesToCompany - companyId : " + companyId);
         String url =
-                BasePath.V4_OBJECT + COMPANIES + companyId + "/" + ASSOCIATION + COMPANIES;
+                BasePath.CRM_OBJECTS + COMPANIES + companyId + "/" + ASSOCIATION + COMPANIES;
         try {
             return hsService.parseJsonResultToList(url);
         } catch (HubSpotException e) {
@@ -416,7 +408,7 @@ public class HSAssociationService {
                 .append(CLOSE_BLOCK));
         String postBody = companyIdList.substring(0, companyIdList.length() - 2) + "]\n" + "}";
         String url =
-                BasePath.V4_ASSOCIATION + COMPANY + CONTACT + BATCH + READ;
+                BasePath.CRM_ASSOCIATIONS + COMPANY + CONTACT + BATCH + READ;
         try {
             return hsService.parsePostJsonResultToList(url, postBody);
         } catch (HubSpotException e) {
@@ -438,7 +430,7 @@ public class HSAssociationService {
     public void dealToContact(long dealId, long contactId) throws HubSpotException {
         log.log(DEBUG, "dealToContact - dealId : " + dealId + " | contactId : " + contactId);
         String url =
-                BasePath.V3 + DEAL + dealId + "/" + ASSOCIATION + CONTACT + contactId + "/" + DEAL_TO_CONTACT;
+                BasePath.CRM_OBJECTS + DEAL + dealId + "/" + ASSOCIATION + CONTACT + contactId + "/" + DEAL_TO_CONTACT;
 
         httpService.putRequest(url);
     }
@@ -454,7 +446,7 @@ public class HSAssociationService {
     public void dealToCompany(long dealId, long companyId) throws HubSpotException {
         log.log(DEBUG, "dealToCompany - dealId : " + dealId + COMPANY_ID_LOGS + companyId);
         String url =
-                BasePath.V3 + DEAL + dealId + "/" + ASSOCIATION + COMPANY + companyId + "/" + DEAL_TO_COMPANY;
+                BasePath.CRM_OBJECTS + DEAL + dealId + "/" + ASSOCIATION + COMPANY + companyId + "/" + DEAL_TO_COMPANY;
 
         httpService.putRequest(url);
     }
@@ -469,7 +461,7 @@ public class HSAssociationService {
     public void dealToLineItem(long dealId, long lineItemId) throws HubSpotException {
         log.log(DEBUG, "dealToLineItem - dealId : " + dealId + " | lineItemId : " + lineItemId);
         String url =
-                BasePath.V3 + DEAL + dealId + "/" + ASSOCIATION + LINE_ITEM + lineItemId + "/" + DEAL_TO_LINE_ITEM;
+                BasePath.CRM_OBJECTS + DEAL + dealId + "/" + ASSOCIATION + LINE_ITEM + lineItemId + "/" + DEAL_TO_LINE_ITEM;
 
         httpService.putRequest(url);
     }
@@ -484,7 +476,7 @@ public class HSAssociationService {
     public List<Long> getCompanieIdsToDeal(long dealId) throws HubSpotException {
         log.log(DEBUG, "getCompaniesToDeal - dealId : " + dealId);
         String url =
-                BasePath.V4_OBJECT + DEALS + dealId + "/" + ASSOCIATION + COMPANIES;
+                BasePath.CRM_OBJECTS + DEALS + dealId + "/" + ASSOCIATION + COMPANIES;
         try {
             return hsService.parseJsonObjectToIdList(url);
         } catch (HubSpotException e) {
@@ -506,7 +498,7 @@ public class HSAssociationService {
     public List<Long> getContactIdsToDeal(long dealId) throws HubSpotException {
         log.log(DEBUG, "getContactsToDeal - dealId : " + dealId);
         String url =
-                BasePath.V4_OBJECT + DEALS + dealId + "/" + ASSOCIATION + CONTACTS;
+                BasePath.CRM_OBJECTS + DEALS + dealId + "/" + ASSOCIATION + CONTACTS;
         try {
             return hsService.parseJsonObjectToIdList(url);
         } catch (HubSpotException e) {
@@ -528,7 +520,7 @@ public class HSAssociationService {
     public List<Long> getLineItemIdsToDeal(long dealId) throws HubSpotException {
         log.log(DEBUG, "getLineItemsToDeal - dealId : " + dealId);
         String url =
-                BasePath.V4_OBJECT + DEALS + dealId + "/" + ASSOCIATION + LINE_ITEMS;
+                BasePath.CRM_OBJECTS + DEALS + dealId + "/" + ASSOCIATION + LINE_ITEMS;
         try {
             return hsService.parseJsonObjectToIdList(url);
         } catch (HubSpotException e) {
@@ -550,7 +542,7 @@ public class HSAssociationService {
     public List<Long> getQuoteIdsToDeal(long dealId) throws HubSpotException {
         log.log(DEBUG, "getQuotesToDeal - dealId : " + dealId);
         String url =
-                BasePath.V4_OBJECT + DEALS + dealId + "/" + ASSOCIATION + QUOTES;
+                BasePath.CRM_OBJECTS + DEALS + dealId + "/" + ASSOCIATION + QUOTES;
         try {
             return hsService.parseJsonObjectToIdList(url);
         } catch (HubSpotException e) {
@@ -578,7 +570,7 @@ public class HSAssociationService {
                 .append(CLOSE_BLOCK));
         String postBody = companyIdList.substring(0, companyIdList.length() - 2) + "]\n" + "}";
         String url =
-                BasePath.V4_ASSOCIATION + COMPANY + DEAL + BATCH + READ;
+                BasePath.CRM_ASSOCIATIONS + COMPANY + DEAL + BATCH + READ;
         try {
             return hsService.parsePostJsonResultToList(url, postBody);
         } catch (HubSpotException e) {
@@ -606,7 +598,7 @@ public class HSAssociationService {
                 .append(CLOSE_BLOCK));
         String postBody = dealIdList.substring(0, dealIdList.length() - 2) + "]\n" + "}";
         String url =
-                BasePath.V4_ASSOCIATION + DEAL + COMPANY + BATCH + READ;
+                BasePath.CRM_ASSOCIATIONS + DEAL + COMPANY + BATCH + READ;
         try {
             return hsService.parsePostJsonResultToList(url, postBody);
         } catch (HubSpotException e) {
@@ -634,7 +626,7 @@ public class HSAssociationService {
                 .append(CLOSE_BLOCK));
         String postBody = dealIdList.substring(0, dealIdList.length() - 2) + "]\n" + "}";
         String url =
-                BasePath.V4_ASSOCIATION + DEAL + CONTACT + BATCH + READ;
+                BasePath.CRM_ASSOCIATIONS + DEAL + CONTACT + BATCH + READ;
         try {
             return hsService.parsePostJsonResultToList(url, postBody);
         } catch (HubSpotException e) {
@@ -662,7 +654,7 @@ public class HSAssociationService {
                 .append(CLOSE_BLOCK));
         String postBody = dealIdList.substring(0, dealIdList.length() - 2) + "]\n" + "}";
         String url =
-                BasePath.V4_ASSOCIATION + DEAL + LINE_ITEMS + BATCH + READ;
+                BasePath.CRM_ASSOCIATIONS + DEAL + LINE_ITEMS + BATCH + READ;
         try {
             return hsService.parsePostJsonResultToList(url, postBody);
         } catch (HubSpotException e) {

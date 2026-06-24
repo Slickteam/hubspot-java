@@ -23,7 +23,7 @@ public class HSLineItemService {
     private static final String LOG_PROPERTIES = " | properties : ";
     private static final String RESULTS = "results";
 
-    private static final String LINE_ITEM_URL = "/crm/v3/objects/line_items/";
+    private static final String LINE_ITEM_URL = "/crm/objects/2026-03/line_items/";
     private static final String BATCH = "batch/";
     private static final String READ = "read/";
     private final HttpService httpService;

@@ -23,7 +23,7 @@ public class HSContactService {
 
     private static final System.Logger log = System.getLogger(HSContactService.class.getName());
 
-    private static final String CONTACT_URL = "/crm/v3/objects/contacts/";
+    private static final String CONTACT_URL = "/crm/objects/2026-03/contacts/";
     /**
      * The constant ID_PROPERTY_EMAIL.
      */

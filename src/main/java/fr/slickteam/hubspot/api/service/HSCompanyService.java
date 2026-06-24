@@ -38,8 +38,7 @@ public class HSCompanyService {
                                                                 "date_debut_contrat",
                                                                 "date_fin_contrat",
                                                                 "amount");
-    private static final String COMPANY_URL_V3 = "/crm/v3/objects/companies/";
-    private static final String COMPANY_URL_V4 = "/crm/v4/objects/companies/";
+    private static final String COMPANY_URL = "/crm/objects/2026-03/companies/";
     private static final String BATCH = "batch/";
     private static final String READ = "read/";
     private static final String SEARCH = "search";
@@ -76,7 +75,7 @@ public class HSCompanyService {
      */
     public HSCompany create(HSCompany hsCompany) throws HubSpotException {
         log.log(DEBUG, "create - hsCompany : " + hsCompany);
-        JsonNode jsonNode = (JsonNode) httpService.postRequest(COMPANY_URL_V3, hsCompany.toJsonString());
+        JsonNode jsonNode = (JsonNode) httpService.postRequest(COMPANY_URL, hsCompany.toJsonString());
         hsCompany.setId(jsonNode.path("id").asLong());
         return hsCompany;
     }
@@ -118,7 +117,7 @@ public class HSCompanyService {
      */
     public HSCompany getByID(long id) throws HubSpotException {
         log.log(DEBUG, "getByID - id : " + id);
-        String url = COMPANY_URL_V3 + id;
+        String url = COMPANY_URL + id;
         return getCompany(url);
     }
 
@@ -153,7 +152,7 @@ public class HSCompanyService {
                 "   \"inputs\": [\n" + formatIdList +
                 "   ]\n" +
                 "}";
-        String url = COMPANY_URL_V3 + BATCH + READ;
+        String url = COMPANY_URL + BATCH + READ;
         try {
             JsonNode response = (JsonNode) httpService.postRequest(url, associationProperties);
             List<JsonNode> jsonList = hsService.parseJSONResults(response, RESULTS);
@@ -183,7 +182,7 @@ public class HSCompanyService {
     public HSCompany getByIdAndProperties(long id, List<String> properties) throws HubSpotException {
         log.log(DEBUG, "getByIdAndProperties - id : " + id + LOG_PROPERTIES + properties);
         String propertiesUrl = String.join(",", properties);
-        String url = COMPANY_URL_V3 + id + "?properties=" + propertiesUrl;
+        String url = COMPANY_URL + id + "?properties=" + propertiesUrl;
         return getCompany(url);
     }
 
@@ -297,7 +296,7 @@ public class HSCompanyService {
     public List<HSCompany> getByDomain(String domain) throws HubSpotException {
         log.log(DEBUG, "getByDomain - domain : " + domain);
         List<HSCompany> companies = new ArrayList<>();
-        String url = COMPANY_URL_V3 + domain;
+        String url = COMPANY_URL + domain;
         JsonNode jsonNode = (JsonNode) httpService.getRequest(url);
 
         if (jsonNode.isArray()) {
@@ -322,7 +321,7 @@ public class HSCompanyService {
     public PagedHSCompanyList getCompanies(String after, int limit, List<String> properties) throws HubSpotException {
         log.log(DEBUG, "getCompanies - after : " + after + " | limit : " + limit + LOG_PROPERTIES + properties);
         String propertiesUrl = String.join(",", properties);
-        String url = COMPANY_URL_V3 + "?limit=" + limit + "&after=" + after + "&properties=" + propertiesUrl;
+        String url = COMPANY_URL + "?limit=" + limit + "&after=" + after + "&properties=" + propertiesUrl;
 
         try {
             JsonNode jsonNode = (JsonNode) httpService.getRequest(url);
@@ -356,7 +355,7 @@ public class HSCompanyService {
      */
     public Long getTotalNumberOfCompanies() throws HubSpotException {
         log.log(DEBUG, "getTotalNumberOfCompanies");
-        String url = COMPANY_URL_V3 + SEARCH;
+        String url = COMPANY_URL + SEARCH;
         String searchProperties = """
                 {
                   "filterGroups": [
@@ -399,7 +398,7 @@ public class HSCompanyService {
     public List<HSCompany> queryByDefaultSearchableProperties(String input, List<String> responseProperties,
                                                               int limit) throws HubSpotException {
         log.log(DEBUG, "queryByDefaultSearchableProperties");
-        String url = COMPANY_URL_V3 + SEARCH;
+        String url = COMPANY_URL + SEARCH;
 
         String responsePropertiesList = responseProperties.stream()
                                                           .map(property -> "    \"" + property + "\"")
@@ -479,7 +478,7 @@ public class HSCompanyService {
                                                 List<HSSortOrder> sortOrders,
                                                 int limit) throws HubSpotException {
         log.log(DEBUG, "searchSortedFiltered");
-        String url = COMPANY_URL_V3 + SEARCH;
+        String url = COMPANY_URL + SEARCH;
 
         String filtersPropertyList = propertiesFilters.stream()
                                                       .map(HSCompanyService::buildFilter)
@@ -580,7 +579,7 @@ public class HSCompanyService {
      */
     public HSCompany patch(HSCompany company) throws HubSpotException {
         log.log(DEBUG, "patch - company : " + company);
-        String url = COMPANY_URL_V3 + company.getId();
+        String url = COMPANY_URL + company.getId();
         String properties = company.toJsonString();
 
         try {
@@ -613,7 +612,7 @@ public class HSCompanyService {
         if (id == 0) {
             throw new HubSpotException("Company ID must be provided");
         }
-        String url = COMPANY_URL_V3 + id;
+        String url = COMPANY_URL + id;
 
         httpService.deleteRequest(url);
     }
@@ -627,7 +626,7 @@ public class HSCompanyService {
      */
     public List<Long> getDealIdList(Long companyId) throws HubSpotException {
         log.log(DEBUG, "getDealIdList - companyId : " + companyId);
-        String url = COMPANY_URL_V4 + companyId + "/associations/deals";
+        String url = COMPANY_URL + companyId + "/associations/deals";
         try {
             return hsService.parseJsonObjectToIdList(url);
         } catch (HubSpotException e) {
