@@ -357,30 +357,31 @@ public class HSCompanyService {
     public Long getTotalNumberOfCompanies() throws HubSpotException {
         log.log(DEBUG, "getTotalNumberOfCompanies");
         String url = COMPANY_URL_V3 + SEARCH;
-        String searchProperties = "{\n" +
-                "  \"filterGroups\": [\n" +
-                "    {\n" +
-                "      \"filters\": [\n" +
-                "        {\n" +
-                "          \"propertyName\": \"hs_object_id\",\n" +
-                "          \"operator\": \"HAS_PROPERTY\"\n" +
-                "        },\n" +
-                "        {\n" +
-                "          \"propertyName\": \"hs_parent_company_id\",\n" +
-                "          \"operator\": \"HAS_PROPERTY\"\n" +
-                "        }\n" +
-                "      ]\n" +
-                "    }\n" +
-                "  ],\n" +
-                "  \"sorts\": [\n" +
-                "    \"name\"\n" +
-                "  ],\n" +
-                "  \"properties\": [\n" +
-                "    \"name\"\n" +
-                "  ],\n" +
-                "  \"limit\": 0,\n" +
-                "  \"after\": 0\n" +
-                "}";
+        String searchProperties = """
+                {
+                  "filterGroups": [
+                    {
+                      "filters": [
+                        {
+                          "propertyName": "hs_object_id",
+                          "operator": "HAS_PROPERTY"
+                        },
+                        {
+                          "propertyName": "hs_parent_company_id",
+                          "operator": "HAS_PROPERTY"
+                        }
+                      ]
+                    }
+                  ],
+                  "sorts": [
+                    "name"
+                  ],
+                  "properties": [
+                    "name"
+                  ],
+                  "limit": 0,
+                  "after": 0
+                }""";
 
         JsonNode response = httpService.postRequest(url, searchProperties);
         return response.path("total").asLong();
@@ -458,7 +459,7 @@ public class HSCompanyService {
                                                                                              entry.getValue(),
                                                                                              null,
                                                                                              HubSpotSearchOperator.EQ))
-                                                                                     .collect(Collectors.toList());
+                                                                                     .toList();
 
         return searchSortedFiltered(filtersPropertyList, responseProperties, sortOrders, limit);
     }
@@ -515,8 +516,7 @@ public class HSCompanyService {
                 "          \"operator\": \"" + propertyFilter.getOperator().name() + "\",\n";
 
         switch (propertyFilter.getOperator()) {
-            case IN:
-            case NOT_IN:
+            case IN, NOT_IN:
                 filter += "          \"values\": \"[" + propertyFilter.getValues()
                                                                       .stream()
                                                                       .map(val -> "\"" + val + "\"")
@@ -526,8 +526,7 @@ public class HSCompanyService {
                 filter += "          \"highValue\": \"" + propertyFilter.getHighValue() + "\",\n";
                 filter += "          \"value\": \"" + propertyFilter.getValue() + "\"\n";
                 break;
-            case HAS_PROPERTY:
-            case NOT_HAS_PROPERTY:
+            case HAS_PROPERTY, NOT_HAS_PROPERTY:
                 filter += "          \"value\": \"\"\n";
                 break;
             default:
@@ -535,9 +534,11 @@ public class HSCompanyService {
                 break;
         }
 
-        filter += "        }" +
-                "      ]\n" +
-                "    }\n";
+        filter += """
+                        }\
+                      ]
+                    }
+                """;
         return filter;
     }
 

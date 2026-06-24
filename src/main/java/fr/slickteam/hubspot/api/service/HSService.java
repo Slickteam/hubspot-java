@@ -15,6 +15,7 @@ import java.util.stream.StreamSupport;
  */
 public class HSService {
 
+    public static final String RESULTS = "results";
     private final HttpService httpService;
 
     /**
@@ -65,12 +66,13 @@ public class HSService {
      */
     public List<Long> parseJsonObjectToIdList(String url) throws HubSpotException {
         JsonNode requestResponse = (JsonNode) httpService.getRequest(url);
-        JsonNode results = requestResponse.path("results");
+        JsonNode results = requestResponse.path(RESULTS);
 
         return StreamSupport.stream(results.spliterator(), false)
                             .map(resultObj -> Long.valueOf(resultObj.path("toObjectId").asString()))
                             .collect(Collectors.toList());
     }
+
 
     /**
      * Parse json result to list list.
@@ -81,7 +83,7 @@ public class HSService {
      */
     public List<JsonNode> parseJsonResultToList(String url) throws HubSpotException {
         JsonNode requestResponse = (JsonNode) httpService.getRequest(url);
-        JsonNode results = requestResponse.path("results");
+        JsonNode results = requestResponse.path(RESULTS);
         return StreamSupport.stream(results.spliterator(), false)
                             .collect(Collectors.toList());
     }
@@ -96,7 +98,7 @@ public class HSService {
      */
     public List<JsonNode> parsePostJsonResultToList(String url, String body) throws HubSpotException {
         JsonNode requestResponse = (JsonNode) httpService.postRequest(url, body);
-        JsonNode results = requestResponse.path("results");
+        JsonNode results = requestResponse.path(RESULTS);
         return StreamSupport.stream(results.spliterator(), false)
                             .collect(Collectors.toList());
     }

@@ -151,7 +151,7 @@ public class HSDealService {
     private List<HSLineItem> parseLineItemsData(JsonNode jsonNode) {
         List<HSLineItem> lineItems = new ArrayList<>();
 
-        JsonNode jsonLineItems = jsonNode.path("results");
+        JsonNode jsonLineItems = jsonNode.path(RESULTS);
 
         for (JsonNode jsonLineItem : jsonLineItems) {
             lineItems.add(getLineItemFromJsonNode(jsonLineItem));

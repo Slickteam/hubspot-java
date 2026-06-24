@@ -36,6 +36,8 @@ public class HttpService {
     private static final String AUTHORIZATION = "Authorization";
     private static final String BEARER = "Bearer ";
     private static final String APPLICATION_JSON = "application/json";
+    public static final String REFRESH_TOKEN = "refresh_token";
+    public static final String ERRORS = "errors";
 
     private final String apiBase;
     private final OAuthConfig oAuthConfig;
@@ -322,11 +324,11 @@ public class HttpService {
             HttpPost httpPost = new HttpPost(apiBase + "/oauth/v1/token");
 
             List<NameValuePair> params = new ArrayList<>();
-            params.add(new BasicNameValuePair("grant_type", "refresh_token"));
+            params.add(new BasicNameValuePair("grant_type", REFRESH_TOKEN));
             params.add(new BasicNameValuePair("client_id", oAuthConfig.getClientId()));
             params.add(new BasicNameValuePair("client_secret", oAuthConfig.getClientSecret()));
             params.add(new BasicNameValuePair("redirect_uri", oAuthConfig.getRedirectUrl()));
-            params.add(new BasicNameValuePair("refresh_token", oAuthConfig.getRefreshToken()));
+            params.add(new BasicNameValuePair(REFRESH_TOKEN, oAuthConfig.getRefreshToken()));
 
             httpPost.setEntity(new UrlEncodedFormEntity(params));
 
@@ -336,7 +338,7 @@ public class HttpService {
                     String responseBody = EntityUtils.toString(entity);
                     JsonNode jsonNode = JsonUtils.parseJson(responseBody);
 
-                    this.oAuthConfig.setRefreshToken(jsonNode.get("refresh_token").asString());
+                    this.oAuthConfig.setRefreshToken(jsonNode.get(REFRESH_TOKEN).asString());
                     this.oAuthConfig.setAccessToken(jsonNode.get("access_token").asString());
                 }
             } catch (ParseException e) {
@@ -375,8 +377,8 @@ public class HttpService {
                             message = statusText;
                             break;
                         case 207: // Multi-Status
-                            if (jsonNode.has("errors") && jsonNode.get("errors").isArray()) {
-                                message = StreamSupport.stream(jsonNode.get("errors").spliterator(), false)
+                            if (jsonNode.has(ERRORS) && jsonNode.get(ERRORS).isArray()) {
+                                message = StreamSupport.stream(jsonNode.get(ERRORS).spliterator(), false)
                                                        .map(error -> error.has(MESSAGE) ? error
                                                                .get(MESSAGE)
                                                                .asString() : "")
