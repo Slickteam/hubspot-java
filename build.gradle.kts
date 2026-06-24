@@ -20,7 +20,7 @@ repositories {
 }
 
 group = "fr.slickteam.hubspot.api"
-version = "3.0.0"
+version = "3.0.1"
 description = "Java Wrapper for HubSpot API"
 
 java {
